@@ -1,80 +1,194 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Project Setup"
+description: "Set up the Weam AI project on your local machine using Docker"
 ---
 
 ## Get started in three steps
 
-Get your documentation site running locally and make your first customization.
+Get your **Weam AI** application running locally with Docker and start building.
 
-### Step 1: Set up your local environment
+---
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
+### Step 1: Set up your environment
 
 <AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
+
+<Accordion icon="copy" title="Clone the repository">
+To begin, clone the project from GitHub and create your environment file.
+
+```bash
+git clone https://github.com/weam-ai/weamai.git
+cd weamai
+cp .env.example .env
+```
 </Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Accordion icon="rectangle-terminal" title="Build and run with Docker (Mac/Linux)">
+Use the following commands to build and run the project using Docker Compose:
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
+```bash
+bash build.sh
+docker compose up --build
+```
+
+This will:
+- Build all necessary Docker images
+- Start backend, frontend, and supporting services
+
+<Note>Ensure Docker and Docker Compose are installed before proceeding.</Note>
+</Accordion>
+
 </AccordionGroup>
 
-### Step 3: Go live
+---
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
+### Step 2: Access the application
+
+<AccordionGroup>
+
+<Accordion icon="globe" title="Visit the web interface">
+Once the containers are running, access the application in your browser:
+
+- 🔐 [Signup Page](http://localhost:3000/register)  
+- 🔑 [Login Page](http://localhost:3000/login)
 </Accordion>
+
+</AccordionGroup>
+
+---
+
+### Step 3: System requirements
+
+<AccordionGroup>
+
+<Accordion icon="cpu" title="Minimum configuration">
+To ensure smooth execution, your system must meet these minimum requirements:
+
+> 🧠 **RAM:** 2 GB  
+> 🖥️ **CPU:** Dual-core (2 cores)
+
+<Tip>If you're experiencing performance issues, consider closing background apps or upgrading resources.</Tip>
+</Accordion>
+
+</AccordionGroup>
+
+---
+
+## 🪟 Docker + WSL2 Setup on Windows
+
+Follow this guide to install Docker, set up WSL2 with Ubuntu, and run your development environment smoothly from within Windows.
+
+<AccordionGroup>
+
+<Accordion icon="download" title="1. Install Docker Desktop for Windows">
+📥 **Download Docker Desktop:**  
+👉 [Install Guide](https://docs.docker.com/desktop/setup/install/windows-install/)
+
+During installation:
+- ✅ Enable **WSL 2 integration**
+- ✅ Choose your preferred Linux distro (e.g., **Ubuntu**)
+</Accordion>
+
+<Accordion icon="terminal" title="2. Install WSL2 with Ubuntu">
+Run in **PowerShell (Admin)**:
+
+```powershell
+wsl --install Ubuntu
+```
+
+This will:
+- 📦 Enable WSL features
+- 📥 Install Ubuntu
+- 🛠️ Set as default
+
+📌 **Restart your PC** after installation.
+</Accordion>
+
+<Accordion icon="window" title="3. Open Ubuntu (WSL2 Terminal)">
+Click **Start → Ubuntu**, then set your **username and password** on first launch.
+</Accordion>
+
+<Accordion icon="code" title="4. Set VS Code to Use LF Line Endings">
+> ⚠️ `.sh` files with `CRLF` may break in WSL/Linux.
+
+1. Open folder in **VS Code**
+2. Bottom right: click `CRLF` → change to `LF`
+3. Save the file again
+4. Repeat for all `.sh` files (e.g., `winbuild.sh`, `build.sh`)
+</Accordion>
+
+<Accordion icon="docker" title="5. Ensure Docker Desktop is Running">
+Launch **Docker Desktop** and wait for "Docker is running" message.
+</Accordion>
+
+<Accordion icon="folder-open" title="6. Navigate to Project from Ubuntu">
+In **Ubuntu terminal**, go to your project directory:
+
+```bash
+cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
+```
+
+> Example: `/mnt/c/Users/dhruvish/Documents/weam-ai-project`
+</Accordion>
+
+<Accordion icon="play" title="7. Run winbuild.sh">
+(Optional) Make script executable:
+
+```bash
+chmod +x winbuild.sh
+```
+
+Run it:
+
+```bash
+bash winbuild.sh
+```
+</Accordion>
+
+<Accordion icon="gear" title="8. Set Environment Variables">
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your settings.
+</Accordion>
+
+<Accordion icon="rocket" title="9. Run Docker Compose">
+Start environment:
+
+```bash
+docker-compose up --build
+```
+</Accordion>
+
+</AccordionGroup>
+
+---
+
+## ✅ Key Reminders
+
+- 🔁 Always save `.sh` files with `LF` line endings
+- 🐧 Use **Ubuntu (WSL2)** terminal
+- 🐳 Ensure **Docker Desktop is running** before using Compose
+
+---
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
+<Card title="Explore the codebase" icon="folder-open" href="#">
+  Dive into the project structure and start making changes.
 </Card>
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
+<Card title="Contribute or extend" icon="plus" href="#">
+  Add new features, fix bugs, or extend the Docker setup.
 </Card>
 
 </CardGroup>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  **Need help?** Check the project README or reach out via the GitHub issues tab.
 </Note>
