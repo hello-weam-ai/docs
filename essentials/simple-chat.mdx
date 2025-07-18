@@ -1,0 +1,100 @@
+---
+title: "Simple Chat - Working and Implementation"
+description: "Understand the flow and architecture behind the Simple Chat powered by Python API and tool-enabled LLMs."
+---
+
+<Info>
+  **Simple Chat is a multi-tool, model-based conversational framework**:
+  - Supports dynamic tool invocation (e.g., image generation, web search)
+  - Based on model selection, chat history, and LLM-driven tool dispatch
+</Info>
+
+Use this reference to understand the backend pipeline, tool activation logic, and data flow for generating intelligent responses.
+
+<Steps>
+
+<Step title="User Query Flow">
+
+1. User sends a query from the frontend UI.
+2. Python API receives the request and passes it to the **Service Controller**.
+3. Controller selects an appropriate model service based on the **dropdown selection**.
+4. Initializes the selected LLM along with the default tool-selection logic.
+5. Simultaneously, **Chat Repository** is initialized using the provided chat ID.
+
+</Step>
+
+<Step title="Preparing the Prompt">
+
+- The chat history retrieved from the repository is combined with the new user query.
+- This combined prompt is passed to the LLM, ready for processing.
+- The LLM is bundled with tools:
+  - 🗣️ Simple Chat Tool
+  - 🖼️ Image Generation Tool
+  - 🌐 Web Analysis Tool
+  - 🔍 Web Search Tool
+
+</Step>
+
+<Step title="Tool Invocation Logic">
+
+<Info>
+  **Tool Activation Conditions**
+</Info>
+
+- 🔍 Web Search Tool → Active **only** with `GPT-4.1-search`  
+- 🖼️ Image Generation Tool → Enabled **only** for **GET models**  
+- Simple Chat Tool and Web Analysis Tool are always available.
+
+The LLM evaluates the query and context to select the most suitable tool to fulfill the request.
+
+</Step>
+
+<Step title="Streaming the Response">
+
+1. The selected tool is executed (e.g., web search, image generation).
+2. Tool invokes the LLM if necessary.
+3. The final response is streamed **back to the frontend in real-time**.
+
+</Step>
+
+<Step title="Logging and Storage">
+
+- Each LLM call is tracked:
+  - **Cost** is computed based on input/output tokens using the **Cost Callback**.
+  - **Responses** are logged in MongoDB using the **MongoDB Handler**.
+
+</Step>
+
+<Step title="Architecture Overview">
+
+<iframe src="https://drive.google.com/file/d/1OBW4Rn0mxp8n4SEOf78USnpgvYn5Skc5/preview" width="100%" height="500" allow="autoplay"></iframe>
+
+</Step>
+
+</Steps>
+
+<Note>
+  Tool eligibility is model-sensitive. Always verify the model selection logic before enabling new tools in production. For deeper integration logic, consult the Service Controller or Tool Wrapper implementations.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Tool does not trigger">
+
+- Check model compatibility (e.g., image generation requires a GET model).
+- Ensure LLM has access to the full tool registry.
+- Validate tool dispatch logic in the Service Controller.
+
+</Accordion>
+
+<Accordion title="Response not streaming or delayed">
+
+- Confirm WebSocket or server-sent events are functioning on the frontend.
+- Check LLM latency or rate limiting issues.
+- Review logs in MongoDB and Cost Callback for performance bottlenecks.
+
+</Accordion>
+
+</AccordionGroup>

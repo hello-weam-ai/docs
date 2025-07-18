@@ -1,0 +1,119 @@
+---
+title: "Agents: Working and Implementation"
+description: "Understand how agents operate in the Python API to support both Simple and RAG-style interactions."
+---
+
+<Info>
+  **Agents allow enhanced chat experiences using custom prompts and contextual documents**:
+  - Automatically selects between Simple Chat and RAG Chat
+  - Dynamically assembles tools based on agent settings and selected model
+</Info>
+
+This guide outlines the complete flow from agent selection to response generation and cost tracking.
+
+<Steps>
+
+<Step title="Flow Overview">
+
+1. User submits a query along with a selected agent.
+2. Python API routes the request to the **Service Controller**.
+3. The Service Controller selects the **appropriate model service** based on user input.
+
+</Step>
+
+<Step title="Agent Document Check">
+
+<Info>
+  The system checks whether the selected agent has any uploaded documents.
+</Info>
+
+- ✅ **If documents exist**: A **RAG Chat** is triggered using:
+  - Agent’s custom prompt
+  - Toolset:
+    - 🧠 RAG Tool
+    - 🌐 Web Analysis Tool
+    - 🖼️ Image Generation Tool *(if GPT model selected)*
+    - 🔍 Web Search Tool *(if GPT-4.1 search selected)*
+
+- ❌ **If no documents**: Falls back to a **Simple Chat** using:
+  - Agent’s prompt
+  - Toolset:
+    - 💬 Simple Chat
+    - 🖼️ Image Generation Tool *(if GPT model selected)*
+    - 🌐 Web Analysis Tool
+    - 🔍 Web Search Tool *(if GPT-4.1 search selected)*
+
+</Step>
+
+<Step title="Context Construction">
+
+The following elements are combined into a single context prompt:
+- Chat History  
+- Agent Prompt  
+- User Query  
+
+This compiled context is passed to the **LLM Chain** for response generation.
+
+</Step>
+
+<Step title="Response Streaming and Storage">
+
+1. The LLM generates a response, which is **streamed live to the user**.
+2. System stores:
+   - The **LLM response** in MongoDB
+   - The **token cost** using a **Cost Callback** tracker
+
+</Step>
+
+<Step title="RAG with Agent (when docs exist)">
+
+<Info>
+  RAG chat allows file-based augmentation when the agent has documents uploaded.
+</Info>
+
+1. Uploaded documents are:
+   - Text-extracted
+   - Split into chunks
+   - Embedded using an embedding model
+
+2. Embeddings are stored in **Qdrant** (vector database)
+
+3. During inference:
+   - RAG Tool queries Qdrant for similar chunks
+   - Retrieved chunks are used as **context** for the LLM to enhance answers
+
+</Step>
+
+<Step title="Architecture Diagram">
+
+<iframe src="https://drive.google.com/file/d/1eqTHR-lmSrGSjimzVSdX_h1Sx2SLaTqm/preview" width="100%" height="500" allow="autoplay"></iframe>
+
+</Step>
+
+</Steps>
+
+<Note>
+  Tool activation depends on both the selected agent and the model. Be sure to validate tool permissions and document presence during implementation and testing.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Agent RAG not triggering as expected">
+
+- Confirm the agent has active documents linked in the backend.
+- Check if embeddings were correctly generated and stored in Qdrant.
+- Ensure model selected is GPT-based (for tools like image generation).
+
+</Accordion>
+
+<Accordion title="Agent prompt not applied or missing in context">
+
+- Review agent metadata and prompt formatting.
+- Verify that the context builder includes agent prompt and history before LLM call.
+- Logs in the LLM Chain handler can help diagnose prompt construction issues.
+
+</Accordion>
+
+</AccordionGroup>

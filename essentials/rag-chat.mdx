@@ -1,0 +1,91 @@
+---
+title: "RAG Chat Architecture"
+description: "Understand the Python API flow for Retrieval-Augmented Generation (RAG) when handling file-based queries."
+---
+
+<Info>
+  **RAG Chat integrates document understanding with conversational AI**:
+  - Files are chunked, embedded, and stored in a vector database
+  - Query responses are augmented by retrieved context for high relevance
+</Info>
+
+This guide walks through the RAG-based query resolution pipeline using FastAPI and Qdrant.
+
+<Steps>
+
+<Step title="File Upload and Preprocessing">
+
+1. User uploads a file through the frontend interface.
+2. The backend reads the file content and **splits it into chunks**.
+3. Each chunk is **embedded using an embedding model** to enable similarity search.
+
+</Step>
+
+<Step title="Storage and Retrieval">
+
+- The **embedded chunks are stored in Qdrant**, a high-performance vector database.
+- Upon receiving a query, **similar chunks** are retrieved based on **semantic similarity**.
+
+</Step>
+
+<Step title="Model Selection and Initialization">
+
+1. The **Service Controller** determines the model to use based on user selection.
+2. Initializes the **appropriate LLM service**, ready to process contextual input.
+
+</Step>
+
+<Step title="Chat History and Retrieval Chain">
+
+- The **Chat Repository** fetches previous messages using the provided chat ID.
+- A **retrieval chain** is constructed, combining:
+  - Retrieved document chunks
+  - Chat history
+  - The current user query
+- This composite input serves as the prompt to the LLM.
+
+</Step>
+
+<Step title="Response Streaming and Storage">
+
+1. The LLM generates a response, which is **streamed live to the frontend**.
+2. The system logs:
+   - The **generated response**
+   - The **token-based cost**, using the **Cost Callback**
+   - All data is stored via the **MongoDB Handler**
+
+</Step>
+
+<Step title="Architecture Diagram">
+
+<iframe src="https://drive.google.com/file/d/1AHHhYgbTV_dogHkNfRkKmzuIfEjciYd3/preview" width="100%" height="500" allow="autoplay"></iframe>
+
+</Step>
+
+</Steps>
+
+<Note>
+  Make sure your Qdrant service is running and configured correctly. Embedding models should match those used during both indexing and querying to ensure vector similarity functions accurately.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Chunks not retrieved from Qdrant">
+
+- Ensure embeddings are correctly generated and stored.
+- Check Qdrant connection status and schema consistency.
+- Validate the similarity threshold and filtering logic.
+
+</Accordion>
+
+<Accordion title="Streaming is slow or fails">
+
+- Monitor token usage and LLM latency.
+- Validate if streaming infrastructure (WebSocket/EventStream) is active.
+- Check for large document sizes causing delayed chunk retrieval.
+
+</Accordion>
+
+</AccordionGroup>
