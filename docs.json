@@ -52,10 +52,7 @@
             "group": "Guide",
             "pages": [
               "essentials/features",
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "essentials/role"
             ]
           },
           {
@@ -78,10 +75,7 @@
                 "pages": [
                   "ai-tools/faq/brains"
                 ]
-              },
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              }
             ]
           }, 
           {
@@ -124,7 +118,7 @@
         {
           "anchor": "Community",
           "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "icon": "discord"
         },
         {
           "anchor": "Blog",
