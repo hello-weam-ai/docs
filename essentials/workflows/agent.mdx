@@ -19,6 +19,10 @@ This guide outlines the complete flow from agent selection to response generatio
 2. Python API routes the request to the **Service Controller**.
 3. The Service Controller selects the **appropriate model service** based on user input.
 
+**Developer Tip**:
+- The agent ID and configuration are critical at this point.
+- Ensure agent metadata (tools, prompt, doc presence) is fully loaded.
+
 </Step>
 
 <Step title="Agent Document Check">
@@ -27,21 +31,25 @@ This guide outlines the complete flow from agent selection to response generatio
   The system checks whether the selected agent has any uploaded documents.
 </Info>
 
-- ✅ **If documents exist**: A **RAG Chat** is triggered using:
+- **If documents exist**: A **RAG Chat** is triggered using:
   - Agent’s custom prompt
   - Toolset:
-    - 🧠 RAG Tool
-    - 🌐 Web Analysis Tool
-    - 🖼️ Image Generation Tool *(if GPT model selected)*
-    - 🔍 Web Search Tool *(if GPT-4.1 search selected)*
+    - RAG Tool
+    - Web Analysis Tool
+    - Image Generation Tool *(if GPT model selected)*
+    - Web Search Tool *(if GPT-4.1 search selected)*
 
-- ❌ **If no documents**: Falls back to a **Simple Chat** using:
+- **If no documents**: Falls back to a **Simple Chat** using:
   - Agent’s prompt
   - Toolset:
-    - 💬 Simple Chat
-    - 🖼️ Image Generation Tool *(if GPT model selected)*
-    - 🌐 Web Analysis Tool
-    - 🔍 Web Search Tool *(if GPT-4.1 search selected)*
+    - Simple Chat
+    - Image Generation Tool *(if GPT model selected)*
+    - Web Analysis Tool
+    - Web Search Tool *(if GPT-4.1 search selected)*
+
+**Developer Tip**:
+- Path selection logic is handled inside the Agent Routing Layer.
+- Make sure document presence is reflected in `agent.doc_ids` or a similar flag.
 
 </Step>
 
@@ -54,6 +62,11 @@ The following elements are combined into a single context prompt:
 
 This compiled context is passed to the **LLM Chain** for response generation.
 
+**Developer Tip**:
+- Prompt templates typically follow:  
+  `"You are a helpful assistant. {agent_prompt}\n\n{chat_history}\n\nUser: {query}"`
+- Token overflow is trimmed or batched using a rolling window strategy.
+
 </Step>
 
 <Step title="Response Streaming and Storage">
@@ -62,6 +75,10 @@ This compiled context is passed to the **LLM Chain** for response generation.
 2. System stores:
    - The **LLM response** in MongoDB
    - The **token cost** using a **Cost Callback** tracker
+
+**Developer Tip**:
+- MongoDB schema should track agent ID, query, response, and model metadata.
+- Cost calculation is triggered after the LLM returns, and stored with token usage.
 
 </Step>
 
@@ -76,11 +93,15 @@ This compiled context is passed to the **LLM Chain** for response generation.
    - Split into chunks
    - Embedded using an embedding model
 
-2. Embeddings are stored in **Qdrant** (vector database)
+2. Embeddings are stored in **Qdrant** (or Pinecone)
 
 3. During inference:
    - RAG Tool queries Qdrant for similar chunks
    - Retrieved chunks are used as **context** for the LLM to enhance answers
+
+**Developer Tip**:
+- Ensure embeddings use the same model at upload and retrieval time.
+- Retrieval uses Top-k vector search. Use agent-level metadata for filtering.
 
 </Step>
 

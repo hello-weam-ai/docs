@@ -20,16 +20,16 @@ description: "Step-by-step guide to integrate new language models into the syste
 
 <Step title="OpenRouter Integration (Python stack)">
 
-- 📁 **Service Layer**: `src/chatflow_langchain/service/`
+- **Service Layer**: `src/chatflow_langchain/service/`
   - Add folders/files for the model service (e.g., `custom_gpt`, `title`, `simple_chat`)
   
-- ⚙️ **Controller Logic**: `src/chatflow_langchain/controller/`
+- **Controller Logic**: `src/chatflow_langchain/controller/`
   - Update controllers to handle logic and registration via OpenRouter
 
-- ✨ **Prompt Templates**: `src/prompt/langchain/`
+- **Prompt Templates**: `src/prompt/langchain/`
   - Define or update prompt templates and config for the new model
 
-- 🔁 **Callbacks**: `src/customlib/langchain/`
+- **Callbacks**: `src/customlib/langchain/`
   - Implement logic for:
     - MongoDB persistence
     - Token usage tracking
@@ -39,33 +39,33 @@ description: "Step-by-step guide to integrate new language models into the syste
 
 <Step title="Direct SDK Integration (Python stack)">
 
-- 📦 **Dependencies**: `requirements.txt`
+- **Dependencies**: `requirements.txt`
   - Add SDKs like `openai`, `anthropic`, `mistral`, etc.
 
 - ⚙️ **Model Config**: `src/chatflow_langchain/service/model/config.py`
   - Add default behavior, token limits, and metadata
 
-- 🧠 **Optional Caching**: `chatopenai_cache.py`
+- **Optional Caching**: `chatopenai_cache.py`
   - Add caching, usage tracking, refresh/expiry logic (if OpenAI-specific)
 
-- 🔌 **Controller Updates**: `src/chatflow_langchain/controller/`
+- **Controller Updates**: `src/chatflow_langchain/controller/`
   - Add routing and provider logic
 
-- ✨ **Prompt Updates**: `src/prompt/langchain/`
+- **Prompt Updates**: `src/prompt/langchain/`
   - Align template tone, structure, and behavior for the model
 
 </Step>
 
 <Step title="Node.js Backend Model Configuration">
 
-- 📄 **Constants File**: `src/config/constants/aimodal.js`
+- **Constants File**: `src/config/constants/aimodal.js`
   - Add new model constant
   - Add to `OPENROUTER_PROVIDER`, `MODAL_NAME`
 
-- 📄 **Common Constants**: `src/config/constants/common.js`
+- **Common Constants**: `src/config/constants/common.js`
   - Add model code in `MODEL_CODE`
 
-- 🔑 **API Key Logic**: `src/services/company.js`
+-  **API Key Logic**: `src/services/company.js`
   - Extend `checkApiKey(...)` to support the new model
   - Define a checker function for API validation
 
@@ -73,12 +73,12 @@ description: "Step-by-step guide to integrate new language models into the syste
 
 <Step title="Next.js Frontend Integration">
 
-- 🖼️ **Model Icon**: Place logo in `public/` directory
+- **Model Icon**: Place logo in `public/` directory
 
-- 🔠 **Constant Mapping**: `src/utils/constant.ts`
+- **Constant Mapping**: `src/utils/constant.ts`
   - Add model code, display name, image path, credit info, and sequence list
 
-- 🧠 **Optional Image Feature Support**: `src/utils/helper.ts`
+- **Optional Image Feature Support**: `src/utils/helper.ts`
   - If model supports image generation or conversation, update:
     - `allowImageGeneration`
     - `allowImageConversation`
@@ -133,18 +133,18 @@ Links model to a company and includes config:
 
 <Step title="Summary of Changes by Path">
 
-| 📁 **Path**                          | 🧠 **Purpose**                 |
+| **Path**                          | **Purpose**                 |
 | ------------------------------------ | ------------------------------ |
-| `src/chatflow_langchain/service/`    | 🧩 Define services per model   |
-| `src/chatflow_langchain/controller/` | 🔗 Register & route models     |
-| `src/prompt/langchain/`              | ✨ Add prompt logic/templates   |
-| `src/customlib/langchain/`           | 🔁 Callbacks & token tracking  |
-| `requirements.txt`                   | 📦 Add required SDKs           |
-| `chatopenai_cache.py`                | 🧠 OpenAI-specific cache logic |
-| `src/config/constants/`              | 🏷️ Node model constants       |
-| `src/services/company.js`            | 🔑 API key checker integration |
-| `src/utils/constant.ts`              | 🎨 Model image and metadata    |
-| `public/`                            | 🖼️ Model logos/icons          |
+| `src/chatflow_langchain/service/`    | Define services per model   |
+| `src/chatflow_langchain/controller/` | Register & route models     |
+| `src/prompt/langchain/`              | Add prompt logic/templates   |
+| `src/customlib/langchain/`           | Callbacks & token tracking  |
+| `requirements.txt`                   | Add required SDKs           |
+| `chatopenai_cache.py`                | OpenAI-specific cache logic |
+| `src/config/constants/`              | Node model constants       |
+| `src/services/company.js`            | API key checker integration |
+| `src/utils/constant.ts`              | Model image and metadata    |
+| `public/`                            | Model logos/icons          |
 
 </Step>
 

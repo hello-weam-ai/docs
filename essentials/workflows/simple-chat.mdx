@@ -23,15 +23,40 @@ Use this reference to understand the backend pipeline, tool activation logic, an
 
 </Step>
 
+<Step title="User Query Flow – Deep Dive">
+
+- Query enters through the frontend and hits the **Controller Layer**.
+- The **Service Controller** picks the correct LLM (e.g., GPT-4.1, DALL·E, etc.) based on frontend input (dropdown or config).
+- This LLM is paired with a **default toolset**, registered dynamically depending on the selected model.
+- Simultaneously, the system retrieves chat context by:
+  - Hitting the **Chat Repository**
+  - Loading previous history using the `chat_id`
+- This chat history is essential to maintain continuity in multi-turn conversations.
+
+</Step>
+
 <Step title="Preparing the Prompt">
 
 - The chat history retrieved from the repository is combined with the new user query.
 - This combined prompt is passed to the LLM, ready for processing.
 - The LLM is bundled with tools:
-  - 🗣️ Simple Chat Tool
-  - 🖼️ Image Generation Tool
-  - 🌐 Web Analysis Tool
-  - 🔍 Web Search Tool
+  - Simple Chat Tool
+  - Image Generation Tool
+  - Web Analysis Tool
+  - Web Search Tool
+
+</Step>
+
+<Step title="Preparing the Prompt – Developer Notes">
+
+- The query and chat history are **combined** to form the input prompt.
+- This is passed to the **LLMWrappedTool** interface, which serves as a middleware to:
+  - Track costs
+  - Interface tools
+  - Dispatch the appropriate response
+
+**Why?**  
+Bundling tools with LLM lets the system dynamically delegate tasks — whether it's basic response generation or external calls like image creation.
 
 </Step>
 
@@ -41,11 +66,32 @@ Use this reference to understand the backend pipeline, tool activation logic, an
   **Tool Activation Conditions**
 </Info>
 
-- 🔍 Web Search Tool → Active **only** with `GPT-4.1-search`  
-- 🖼️ Image Generation Tool → Enabled **only** for **GET models**  
+- Web Search Tool → Active **only** with `GPT-4.1-search`  
+- Image Generation Tool → Enabled **only** for **GET models**  
 - Simple Chat Tool and Web Analysis Tool are always available.
 
 The LLM evaluates the query and context to select the most suitable tool to fulfill the request.
+
+</Step>
+
+<Step title="Tool Invocation Logic – Internal Flow">
+
+The **LLMWrappedTool** plays a central role:
+- Evaluates the prompt + history
+- Selects the most appropriate tool from the available options
+
+**Tool Dispatch Breakdown**:
+
+| Tool               | Trigger Condition                              |
+|--------------------|-------------------------------------------------|
+| `Simple Tool`      | Always available                                |
+| `Web Analysis Tool`| Always available                                |
+| `Web Search Tool`  | Selected **only if** GPT-4.1-search is chosen   |
+| `Image Tool`       | Enabled for GET-based models (e.g., for DALL·E) |
+
+The selected tool:
+- May itself access the LLM (e.g., Web Search Tool generates a prompt to analyze search results)
+- Can load additional chat history if needed (ensures stateless components remain contextual)
 
 </Step>
 
@@ -57,11 +103,41 @@ The LLM evaluates the query and context to select the most suitable tool to fulf
 
 </Step>
 
+<Step title="Tool Response and Streaming – Execution Order">
+
+- Tools forward processed queries back to the **LLM**, now enhanced with additional context (e.g., search result or image prompt).
+- The LLM generates a natural language response (or image metadata).
+- That output is streamed via **NodeJS server**, leveraging WebSocket/SSE to the client UI.
+
+Intermediate steps:
+1. **Cost Estimation**: LLM input/output tokens are tracked per interaction
+2. **Tool Cost Calculator**:
+   - Sums up LLM costs + tool-specific costs (e.g., image model cost)
+   - Adds it to DB via the **MongoDB Handler**
+
+</Step>
+
 <Step title="Logging and Storage">
 
 - Each LLM call is tracked:
   - **Cost** is computed based on input/output tokens using the **Cost Callback**.
   - **Responses** are logged in MongoDB using the **MongoDB Handler**.
+
+</Step>
+
+<Step title="Response Logging and Cost Management – Backing Services">
+
+Every response includes:
+- Final message (`response`)
+- Metadata (model, tokens used, cost breakdown)
+- Persisted into MongoDB for:
+  - Billing
+  - Debugging
+  - Auditing
+
+**Cost Flow**:
+- LLM and tool invocation costs are calculated *separately*
+- Tools like **DALL·E** or **GPT-4.1 Search** have their own logic wrapped into the **Tool Cost Calculator**
 
 </Step>
 

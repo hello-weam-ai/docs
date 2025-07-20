@@ -83,6 +83,12 @@
               "ai-tools/claude-code",
               "ai-tools/windsurf"
             ]
+          }, 
+          {
+            "group": "Policies",
+            "pages": [
+              "policies/license"
+            ]
           }
         ]
       },
@@ -92,7 +98,8 @@
           {
             "group": "API documentation",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/node"
             ]
           },
           {

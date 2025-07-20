@@ -19,6 +19,10 @@ This guide walks through the RAG-based query resolution pipeline using FastAPI a
 2. The backend reads the file content and **splits it into chunks**.
 3. Each chunk is **embedded using an embedding model** to enable similarity search.
 
+**Developer Note**:
+- Text chunking uses a tokenizer-aware splitter (e.g., recursive chunker or NLTK-based).
+- Embedding model can be OpenAI, HuggingFace, etc. (must match with query-time embedding).
+
 </Step>
 
 <Step title="Storage and Retrieval">
@@ -26,12 +30,20 @@ This guide walks through the RAG-based query resolution pipeline using FastAPI a
 - The **embedded chunks are stored in Qdrant**, a high-performance vector database.
 - Upon receiving a query, **similar chunks** are retrieved based on **semantic similarity**.
 
+**Developer Note**:
+- Embeddings are stored using `collection_name` in Qdrant.
+- Queries perform a `top_k` similarity search with optional filtering (e.g., by file tag or metadata).
+
 </Step>
 
 <Step title="Model Selection and Initialization">
 
 1. The **Service Controller** determines the model to use based on user selection.
 2. Initializes the **appropriate LLM service**, ready to process contextual input.
+
+**Developer Note**:
+- Controller handles routing to LLMs like GPT-4, Claude, etc.
+- The model is dynamically bound with the Retrieval Chain post-initialization.
 
 </Step>
 
@@ -44,6 +56,10 @@ This guide walks through the RAG-based query resolution pipeline using FastAPI a
   - The current user query
 - This composite input serves as the prompt to the LLM.
 
+**Developer Note**:
+- Retrieval Chain wraps logic for context enrichment.
+- Prompts are generated using templates, formatted in a "history + context + question" order.
+
 </Step>
 
 <Step title="Response Streaming and Storage">
@@ -53,6 +69,10 @@ This guide walks through the RAG-based query resolution pipeline using FastAPI a
    - The **generated response**
    - The **token-based cost**, using the **Cost Callback**
    - All data is stored via the **MongoDB Handler**
+
+**Developer Note**:
+- Token cost calculation is triggered post-inference using prompt + completion lengths.
+- MongoDB entries are structured for analytics, traceability, and auditing.
 
 </Step>
 
