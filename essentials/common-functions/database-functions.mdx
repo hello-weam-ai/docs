@@ -1,0 +1,174 @@
+---
+title: 'Database Functions'
+description: 'Utility functions for accessing MongoDB data in Weam AI repositories'
+icon: 'database'
+---
+
+## Overview
+
+This document outlines repository classes used to fetch data from MongoDB in a structured and consistent manner.
+
+Each class method follows a standard pattern — first call `initialization()` with required arguments, then invoke the respective `_fetch_...` method.
+
+<Tip>
+These repository classes are part of the internal infrastructure and are meant for low-level data access within the Weam AI system.
+</Tip>
+
+---
+
+## CompanyRepository
+
+### `_fetch_company_data`
+
+**Description:**  
+This function retrieves a company's core metadata from MongoDB using its `_id`.
+
+#### Usage
+
+Call the `initialization()` method with:
+
+- `company_id: str`
+- `collection_name: str`
+
+```python
+repo = CompanyRepository()
+repo.initialization(company_id="123456", collection_name="companies")
+company_data = repo._fetch_company_data()
+```
+
+---
+
+## ChatSessionRepository
+
+### `_fetch_chat_session_model_data`
+
+**Description:**  
+Retrieves a Chat session's data from MongoDB using `_id`.
+
+#### Usage
+
+- `company_id: str`
+- `collection_name: str`
+
+```python
+repo = ChatSessionRepository()
+repo.initialization(company_id="123456", collection_name="chatsessions")
+session_data = repo._fetch_chat_session_model_data()
+```
+
+---
+
+## LLMModelRepository
+
+### `_fetch_company_model_data`
+
+**Description:**  
+Retrieves company model data using an API key identifier. It's a core method for accessing LLM configurations across the codebase.
+
+#### Usage
+
+- `api_key_id: str`
+- `collection_name: str`
+
+```python
+repo = LLMModelRepository()
+repo.initialization(api_key_id="apikey-abc", collection_name="llm-models")
+llm_config = repo._fetch_company_model_data()
+```
+
+---
+
+## EmbeddingModelRepository
+
+### `_fetch_company_model_data`
+
+**Description:**  
+Fetches embedding model configurations including model dimensions and other vector settings from MongoDB.
+
+#### Usage
+
+- `api_key_id: str`
+- `collection_name: str`
+
+```python
+repo = EmbeddingModelRepository()
+repo.initialization(api_key_id="apikey-abc", collection_name="embedding-models")
+embedding_config = repo._fetch_company_model_data()
+```
+
+---
+
+## PineconeRepository
+
+### `_fetch_pinecone_company_data`
+
+**Description:**  
+Fetches Pinecone vector DB configurations including index name, environment, and other Pinecone-specific metadata.
+
+#### Usage
+
+- `api_key_id: str`
+- `collection_name: str`
+- `**kwargs`: Optional custom query filters
+
+```python
+repo = PineconeRepository()
+repo.initialization(api_key_id="apikey-abc", collection_name="pinecone-configs")
+pinecone_data = repo._fetch_pinecone_company_data(environment="us-west1")
+```
+
+<Warning>
+Ensure that the Pinecone environment and index are valid, especially when passing custom `**kwargs` in production.
+</Warning>
+
+---
+
+## FileRepository
+
+### `_fetch_file_model_data`
+
+**Description:**  
+Retrieves file-related metadata from MongoDB, used throughout the application for handling user or system files.
+
+#### Usage
+
+- `file_id: str`
+- `collection_name: str`
+
+```python
+repo = FileRepository()
+repo.initialization(file_id="file-123", collection_name="files")
+file_data = repo._fetch_file_model_data()
+```
+
+---
+
+## ChatMemberRepository
+
+### `_fetch_chat_member_model_data`
+
+**Description:**  
+Fetches chat participant data used to manage individual members of a chat session.
+
+#### Usage
+
+- `chat_session_id: str`
+- `collection_name: str`
+
+```python
+repo = ChatMemberRepository()
+repo.initialization(chat_session_id="chat-789", collection_name="chat-members")
+member_data = repo._fetch_chat_member_model_data()
+```
+
+---
+
+## Developer Notes
+
+- All `_fetch_...` functions follow the same convention: call `initialization()` first, then call the method.
+- Errors are not automatically handled — consider wrapping calls in try/except blocks.
+- Data is returned in native Python dictionary format, directly from MongoDB.
+
+<Note>
+This document is intended for backend developers working with internal data repositories. For abstraction-layer APIs or services, refer to the [API reference](/api-reference/introduction).
+</Note>

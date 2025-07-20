@@ -19,24 +19,39 @@
               "index",
               "quickstart",
               "development",
-              "credentialsetup",
-              "environment-variables" 
+              "environment-variables",
+              "credentialsetup"
             ]
           },
           {
             "group": "Developer Guide",
             "pages": [
               "essentials/settings",
-              "essentials/navigation",
-              "essentials/simple-chat",
-              "essentials/rag-chat",
-              "essentials/agent",
-              "essentials/model"
+              {
+                "group": "Common Functions",
+                "pages": [
+                  "essentials/common-functions/database-functions",
+                  "essentials/common-functions/python-functions",
+                  "essentials/common-functions/node-next-functions"
+                ]
+              }, 
+
+              {
+                "group": "Workflows",
+                "pages": [
+                  "essentials/workflows/simple-chat",
+                  "essentials/workflows/rag-chat",
+                  "essentials/workflows/agent",
+                  "essentials/workflows/model"
+                ]
+              }
+
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Guide",
             "pages": [
+              "essentials/features",
               "essentials/markdown",
               "essentials/code",
               "essentials/images",
@@ -44,8 +59,26 @@
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Learn More",
             "pages": [
+              {
+                "group": "Use Cases",
+                "pages": [
+                  "ai-tools/use-cases/video-agent"
+                ]
+              },
+              {
+                "group": "Extended Reading",
+                "pages": [
+                  "ai-tools/extended-reading/rag"
+                ]
+              },
+              {
+                "group": "FAQs",
+                "pages": [
+                  "ai-tools/faq/brains"
+                ]
+              },
               "ai-tools/cursor",
               "ai-tools/claude-code",
               "ai-tools/windsurf"
@@ -113,9 +146,9 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
+      "x": "https://x.com/TheWeamAI",
       "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "linkedin": "https://www.linkedin.com/company/the-weam-ai"
     }
   }
 }

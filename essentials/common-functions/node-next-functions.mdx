@@ -1,0 +1,226 @@
+---
+title: "AI Interaction Flow"
+description: "Detailed breakdown of client and server functions involved in sending prompts to AI models"
+icon: 'workflow'
+---
+
+<Info>
+  This document gives a step-by-step breakdown of how prompts flow through the system:
+  - From frontend trigger to backend Python handlers
+  - Includes hooks, handlers, payload formats, and utility functions
+  - Ideal for developers working on prompt submission, socket handling, and agent-based AI routing
+</Info>
+
+<Steps>
+
+<Step title="1. handleAIApiType(fileMetadata)">
+
+**Purpose:**  
+Determines which backend API should handle the request, based on metadata from an uploaded or selected file.
+
+**Returns:**  
+A string key (e.g. `doc`, `custom_gpt`, `canvas`) used to route the request to the correct backend function.
+
+</Step>
+
+<Step title="2. handleSubmitPrompt(refine = false)">
+
+**Purpose:**  
+Triggers the full lifecycle of sending a user prompt to the LLM backend.
+
+**Behavior:**
+- If it's the user's first message:
+  - Emits a socket event to create a new chat
+  - Adds the user as a member of the chat
+- Always emits a socket event to temporarily **disable chat input** until the model returns a response
+
+</Step>
+
+<Step title="3. enterNewPrompt()">
+
+**Purpose:**  
+Creates a new message entry in MongoDB before sending it to the backend.
+
+**Routing:**  
+Based on the API type determined from `handleAIApiType`.
+
+**Usage:**  
+Should always be called before the message is sent to the backend.
+
+</Step>
+
+<Step title="4. Common Payload Structure (LLM API)">
+
+This structure is reused across all LLM APIs:
+
+```ts
+{
+  query: string,
+  messageId: string,
+  modelId: string,
+  chatId: string,
+  model_name: string,
+  msgCredit: number
+}
+```
+
+</Step>
+
+<Step title="5. Python Backend API Functions">
+
+**Each backend function consumes the above payload format and handles a specific interaction type:**
+
+- `getPerplexityResponse(payload)`  
+  - **Params:** `prompt_id`, `companyId`, `provider`, `code`  
+  - Handles general LLM prompt processing.
+
+- `getAINormatChatResponse(payload)`  
+  - **Used when:** image is uploaded/selected or no prompt is chosen.  
+  - **Params:** `custom_gpt_id`, `img_url`, `companyId`, `provider`, `code`
+
+- `getAIDocResponse(payload)`  
+  - **Used for:** document-based AI chats  
+  - **Params:** `custom_gpt_id`, `companyId`, `provider`, `code`
+
+- `getAICustomGPTResponse(payload)`  
+  - **Used for:** custom GPT agents  
+  - **Important:** Use `agent.model_name` instead of the selected model name  
+  - **Params:** `custom_gpt_id`, `companyId`, `provider`, `code`
+
+- `chatCanvasAiResponse(payload)`  
+  - **Used when:** handling AI Canvas chat responses (selection-based)  
+  - **Params:** `currentMessageId`, `startIndex`, `endIndex`, `custom_gpt_id`, `companyId`, `provider`, `code`
+
+- `getAIProAgentChatResponse(payload)`  
+  - **Used for:** QA agents and Web Proposal agents  
+  - **Additional Param:** `agent_extra_info`
+
+- `getSeoKeyWords(payload)`  
+  - **Used for:** generating SEO keywords based on the user prompt
+
+- `getSalesCallResponse(payload)`  
+  - **Used for:** AI-based sales call generation or response
+
+- `setChatTitleByAI(params)`  
+  - **Used for:** auto-generating chat titles  
+  - **Params:** `modelId`, `chatId`, `code`, `messageId`, `provider`, `model_name`, `companyId`
+
+</Step>
+
+<Step title="6. Hooks Description">
+
+Hooks used to manage file upload, prompt flow, model selection, and more:
+
+- `useThunderBoltPopup()`  
+  - Handles existing uploaded files, agent selections, and prompt selections.
+
+- `useMediaUpload()`  
+  - Manages media uploads (drag-and-drop, copy-paste) for `chatCanvasAiResponse`.
+
+- `useConversation()`  
+  - Central hook that manages:
+    - Conversation state
+    - LLM stream handling
+    - User prompt submission
+
+- `useCustomGpt()`  
+  - Fetches available custom GPT agents from the backend
+
+- `usePrompt()`  
+  - Retrieves the list of saved prompts for the current user
+
+- `useBrainDocs()`  
+  - Loads all uploaded documents used in the current chat
+
+</Step>
+
+<Step title="7. Utility Functions">
+
+Functions that support core interaction workflows:
+
+- `handleModelSelectionUrl()`  
+  - Syncs selected model state with the browser URL
+
+- `blockProAgentAction()`  
+  - Disables input box when a Pro agent is generating a response
+
+- `handleProAgentUrlState()`  
+  - Syncs Pro Agent state with the URL
+
+- `handleNewChatClick()`  
+  - Starts a new chat session and resets frontend state
+
+</Step>
+
+<Step title="8. UI Components">
+
+React components supporting prompt display, file list rendering, and model control:
+
+- `CommonList`  
+  - Renders combined list of private and shared documents (via `useBrainDocs`)
+
+- `RenderModalList`  
+  - Displays the model selection dropdown in the chat UI modal
+
+</Step>
+
+<Step title="9. Utility Hooks">
+
+Low-level hooks used throughout the application for performance and server integration:
+
+- `useIntersectionObserver()`  
+  - Enables infinite scroll for chat or document lists
+
+- `useDebounce()`  
+  - Debounces user input (e.g., search fields) to reduce API calls
+
+- `useServerAction()`  
+  - Executes server-side actions in Next.js
+
+- `commonApi()`  
+  - Handles generic client-side API calls
+
+- `serverApi()`  
+  - Server-specific API invocation wrapper
+
+- `ValidationError`  
+  - Displays Yup-based validation error messages in forms
+
+</Step>
+
+</Steps>
+
+<Note>
+  Use this document as your reference when debugging stuck prompts, adding new AI interaction types, or understanding how sockets and payloads work together across the frontend and backend.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Prompt doesn't reach backend">
+
+Ensure:
+1. `handleSubmitPrompt()` is triggered  
+2. `enterNewPrompt()` runs before submission  
+3. `handleAIApiType()` returns the correct type  
+4. Socket connection is open and active
+
+</Accordion>
+
+<Accordion title="Custom GPT is not responding correctly">
+
+Check:
+- `getAICustomGPTResponse()` uses `agent.model_name`  
+- Payload structure matches the expected schema
+
+</Accordion>
+
+<Accordion title="Pro Agent input not disabled">
+
+Ensure:
+- `blockProAgentAction()` is called before invoking `getAIProAgentChatResponse()`
+
+</Accordion>
+
+</AccordionGroup>

@@ -27,7 +27,7 @@ CELERY_RESULT_BACKEND=redis://localhost:6379
 DELETE_TASK_ON_SUCCESS=True
 ```
 
-#### ☁️ Storage (AWS / MinIO)
+#### Storage (AWS / MinIO)
 ```env
 BUCKET_TYPE=MINIO
 AWS_ACCESS_KEY_ID=your-key
@@ -45,7 +45,7 @@ MINIO_ENDPOINT=http://minio
 MINIO_REGEX_FILE_PATTERN=.*\.json$
 ```
 
-#### ✉️ Email (SES / SMTP)
+#### Email (SES / SMTP)
 ```env
 EMAIL_PROVIDER=SMTP
 AWS_SES_VERIFIED_MAIL=noreply@weam.ai
@@ -56,14 +56,14 @@ SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 ```
 
-#### 🧬 MongoDB
+#### MongoDB
 ```env
 MONOGODB_URI=mongodb://localhost:27017
 DB_DATABASE=weamdb
 MONGO_PORT=27017
 ```
 
-#### 🧠 Qdrant (Vector DB)
+#### Qdrant (Vector DB)
 ```env
 LOCAL_QDRANT_URL=http://localhost:6333
 QDRANT_DASHBOARD_PORT=6333
@@ -72,21 +72,21 @@ QDRANT_URL=https://cloud.qdrant.io
 QDRANT_API_KEY=your-api-key
 ```
 
-#### 🔐 Auth & Security
+#### Auth & Security
 ```env
 JWT_SECRET=supersecret
 JWT_ALGORITHM=HS256
 SECURITY_KEY=global-key
 ```
 
-#### 🐞 Debugger
+#### Debugger
 ```env
 WDB_SOCKET_SERVER=localhost
 WDB_NO_BROWSER_AUTO_OPEN=True
 WDB_PORT=1984
 ```
 
-#### 📈 SEO Agent
+#### SEO Agent
 ```env
 SEO_USER_ID=seo@weam.ai
 SEO_PASSWORD=securepassword
@@ -102,12 +102,12 @@ SERVER_PORT=4050
 API_PREFIX=v1
 ```
 
-#### 🧬 MongoDB
+#### MongoDB
 ```env
 MONOGODB_URI=mongodb://localhost:27017
 ```
 
-#### 🌐 URLs & Services
+#### URLs & Services
 ```env
 FRONT_URL=http://localhost:3000
 BASE_URL=http://localhost:4050
@@ -118,7 +118,7 @@ ANTHROPIC_AI_API_URL=https://api.anthropic.com
 PYTHON_API_URL=http://localhost:9089
 ```
 
-#### 🔑 API Keys
+#### API Keys
 ```env
 WEAM_OPEN_AI_KEY=...
 WEAM_GEMINI_KEY=...
@@ -128,7 +128,7 @@ WEAM_ANTHROPIC_API_KEY=...
 WEAM_DEEPSEEK_KEY=...
 ```
 
-#### 🔐 Auth
+#### Auth
 ```env
 JWT_SECRET=access-secret
 JWT_REFRESH_SECRET=refresh-secret
@@ -137,13 +137,13 @@ JWT_REFRESH_EXPIRE=7d
 QR_NAME=weam-app
 ```
 
-#### 💾 Redis
+#### Redis
 ```env
 REDIS_HOST=localhost
 REDIS_PORT=6379
 ```
 
-#### ☁️ Storage
+#### Storage
 ```env
 BUCKET_TYPE=MINIO
 AWS_ACCESS_KEY_ID=xxx
@@ -153,7 +153,7 @@ AWS_REGION=us-east-1
 MINIO_ENDPOINT=http://localhost:9000
 ```
 
-#### ✉️ Email
+#### Email
 ```env
 EMAIL_PROVIDER=SMTP
 SMTP_SERVER=smtp.gmail.com
@@ -164,7 +164,7 @@ SENDER_EMAIL=noreply@weam.ai
 SUPPORT_EMAIL=support@weam.ai
 ```
 
-#### 🔐 Security & Settings
+#### Security & Settings
 ```env
 SECURITY_KEY=secure-key
 SIGNUP_INFO_EMAIL=welcome@weam.ai
@@ -178,7 +178,7 @@ CSRF_TOKEN_SECRET=csrf-token
 
 <Step title="Next.js — Frontend App">
 
-#### 🌐 Base URLs
+#### Base URLs
 ```env
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:4050
 NEXT_PUBLIC_PYTHON_API_URL=http://localhost:9089
@@ -186,26 +186,26 @@ NEXT_PUBLIC_DOMAIN_URL=http://localhost:3000
 NEXT_PUBLIC_API_PREFIX=/v1
 ```
 
-#### 🍪 Cookies & App Mode
+#### Cookies & App Mode
 ```env
 NEXT_PUBLIC_APP_ENVIRONMENT=dev
 NEXT_PUBLIC_COOKIE_NAME=weam-token
 NEXT_PUBLIC_COOKIE_PASSWORD=encrypt-me
 ```
 
-#### 🖼️ Assets & CDN
+#### Assets & CDN
 ```env
 NEXT_PUBLIC_AWS_S3_URL=https://cdn.weam.ai
 NEXT_PUBLIC_IMAGE_DOMAIN=cdn.weam.ai
 NEXT_PUBLIC_HTTPS_PROTOCOL=true
 ```
 
-#### 🔌 WebSockets
+#### WebSockets
 ```env
 NEXT_PUBLIC_SOCKET_CONNECTION_URL=ws://localhost:3000
 ```
 
-#### ⚡ Firebase
+#### Firebase
 ```env
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 NEXT_PUBLIC_FIREBASE_VAPID_KEY=...
@@ -217,7 +217,7 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
 ```
 
-#### ✅ reCAPTCHA
+#### reCAPTCHA
 ```env
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY_V3=...
 NEXT_PUBLIC_RECAPTCHA_SECRET_KEY_V3=...
@@ -225,7 +225,7 @@ NEXT_PUBLIC_RECAPTCHA_SITE_KEY_V2=...
 NEXT_PUBLIC_RECAPTCHA_SECRET_KEY_V2=...
 ```
 
-#### ⚙️ Other Frontend Config
+#### Other Frontend Config
 ```env
 NEXT_PUBLIC_SECURITY_KEY=secure-frontend-key
 NEXT_PUBLIC_MESSAGE_LIMIT=5
