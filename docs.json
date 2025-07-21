@@ -140,5 +140,24 @@
       "github": "https://github.com/mintlify",
       "linkedin": "https://www.linkedin.com/company/the-weam-ai"
     }
+  },
+  "seo": {
+    "metatags": {
+      "robots": "index, follow",
+      "charset": "UTF-8",
+      "viewport": "width=device-width, initial-scale=1.0",
+      "description": "Complete documentation for weam.ai - the open source collaborative AI platform. Setup guides, API docs, integrations, and best practices for teams",
+      "keywords": "weam.ai documentation, open source AI platform, collaborative AI, team AI tools, AI adoption guide, API documentation, self-hosted AI, AI collaboration platform, digital agency AI, developer docs, AI integration guide, team productivity AI",
+      "author": "Weam AI",
+      "googlebot": "index, follow",
+      "google": "notranslate",
+      "language": "en",
+      "reply-to": "hello@weam.ai"
   }
+},
+"integrations": {
+    "ga4": {
+        "measurementId": "G-7YBCYDSTXE"
+    }
+}
 }
