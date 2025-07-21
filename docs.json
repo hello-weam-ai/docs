@@ -44,8 +44,8 @@
                   "essentials/workflows/agent",
                   "essentials/workflows/model"
                 ]
-              }
-
+              },
+               "essentials/contribution"
             ]
           },
           {
@@ -132,16 +132,10 @@
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
+  "navbar": {w
     "primary": {
       "type": "button",
-      "label": "Dashboard",
+      "label": "Github",
       "href": "https://dashboard.mintlify.com"
     }
   },

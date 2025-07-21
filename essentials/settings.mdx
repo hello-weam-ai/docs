@@ -7,9 +7,9 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
   This guide covers our full-stack system design across backend, frontend, infrastructure, and AI integration layers.
 </Info>
 
-## 🧠 Python Backend Architecture
+## Python Backend Architecture
 
-### ⚙️ Core Application Stack
+### Core Application Stack
 
 | Component           | Tool / Technology         |
 |--------------------|---------------------------|
@@ -21,7 +21,7 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | Task Monitor       | Flower                    |
 | Streaming Response | FastAPI `StreamingResponse` |
 
-### 🤖 AI & Vector Layer
+### AI & Vector Layer
 
 | Component           | Stack                                  |
 |--------------------|----------------------------------------|
@@ -30,13 +30,13 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | Vector DB          | Qdrant (Primary), Pinecone (Optional)  |
 | Scraping / Parsing | Playwright, BeautifulSoup, Crawler4AI  |
 
-### 🔐 Security Config
+### Security Config
 
 - API Key encryption using internal crypto module
 - JWT tokens for access + refresh
 - `.env` based configuration separation for local/dev/prod
 
-### 🧪 Testing & Debugging
+### Testing & Debugging
 
 | Tool             | Purpose                         |
 |------------------|----------------------------------|
@@ -45,7 +45,7 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | WDB              | Visual Debugger (Web-based)     |
 | Docker Override  | `docker-compose-test.yml` setup |
 
-### 📦 Infrastructure
+### Infrastructure
 
 | Tool / Layer       | Description                                |
 |-------------------|--------------------------------------------|
@@ -57,9 +57,9 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 
 <Divider />
 
-## 🟩 Node.js API System Design
+## Node.js API System Design
 
-### 🧩 Core Backend
+### Core Backend
 
 | Component         | Tool / Library           |
 |------------------|--------------------------|
@@ -70,20 +70,20 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | ORM              | Mongoose (MongoDB)       |
 | Streaming        | Socket.IO                |
 
-### 🔒 Security & Middleware
+### Security & Middleware
 
 - Role-based Access Control via JWT
 - Rate-limiting using `express-rate-limit`
 - Encrypted API Keys + Custom middleware
 - `.env` config via `dotenv`
 
-### 🧰 Dev Tools
+### Dev Tools
 
 - Winston + Morgan loggers (`logger.js`, `morgan.js`)
 - Debugging via Chrome DevTools or VSCode debugger
 - Live reload via `nodemon`
 
-### 🔌 Real-time & Storage
+### Real-time & Storage
 
 - Socket.IO for live chat + updates
 - Redis Pub/Sub for socket scaling
@@ -92,9 +92,9 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 
 <Divider />
 
-## ⚛️ Next.js Frontend System
+## Next.js Frontend System
 
-### 🎨 Framework & UI Layer
+### Framework & UI Layer
 
 | Component              | Tool Used                       |
 |------------------------|----------------------------------|
@@ -106,7 +106,7 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | Routing                | Next.js File System Routing     |
 | Auth                   | Firebase + IronSession + Custom |
 
-### 🧱 Feature Modular Structure
+### Feature Modular Structure
 
 | Module                | Path / Directory                              |
 |----------------------|------------------------------------------------|
@@ -117,7 +117,7 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | File Uploads         | `src/components/FileUpload*` + `src/hooks/storage` |
 | Reports              | `src/app/(page)/settings/reports`              |
 
-### 🤖 AI & Integration
+### AI & Integration
 
 - Modular API Clients (`/src/actions/`)
 - Integrated LLM providers (OpenAI, Gemini, Anthropic)
@@ -128,7 +128,7 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
   All services are containerized and orchestrated via Docker Compose. Auth secrets, keys, and access configs are managed securely using `.env` and optional secret managers.
 </Note>
 
-## 🔁 API Request Lifecycle (Python)
+## API Request Lifecycle (Python)
 
 ```text
 Client Request
