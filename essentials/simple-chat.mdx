@@ -42,7 +42,7 @@ Use this reference to understand the backend pipeline, tool activation logic, an
 </Info>
 
 - 🔍 Web Search Tool → Active **only** with `GPT-4.1-search`  
-- 🖼️ Image Generation Tool → Enabled **only** for **GET models**  
+- 🖼️ Image Generation Tool → Enabled **only** for **GPT models**  
 - Simple Chat Tool and Web Analysis Tool are always available.
 
 The LLM evaluates the query and context to select the most suitable tool to fulfill the request.
@@ -83,7 +83,7 @@ The LLM evaluates the query and context to select the most suitable tool to fulf
 
 <Accordion title="Tool does not trigger">
 
-- Check model compatibility (e.g., image generation requires a GET model).
+- Check model compatibility (e.g., image generation requires a GPT model).
 - Ensure LLM has access to the full tool registry.
 - Validate tool dispatch logic in the Service Controller.
 
