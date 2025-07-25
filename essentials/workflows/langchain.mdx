@@ -1,0 +1,164 @@
+---
+title: "LangChain Streaming Chat Integration"
+description: "This guide walks you through building a **FastAPI backend** that uses **LangChain** and **OpenAI** to deliver a **streaming chat interface**."
+---
+
+## Objective
+
+Build a FastAPI API that:
+
+* Accepts a user query
+* Initializes LangChain components (LLM, tools, memory, prompts)
+* Streams LLM responses token-by-token to the frontend
+
+---
+
+## Step 1: System Architecture
+
+```plaintext
+[Frontend]
+   │
+   ▼
+POST /stream-tool-chat-with-openai
+   │
+   ▼
+[ToolController.service_hub_handler()]
+   │
+   ▼
+[LangChain Pipeline]
+ ├── LLM (ChatOpenAI)
+ ├── Tools
+ ├── Prompt Template
+ └── Memory
+   │
+   ▼
+[Async Generator → StreamingResponse → Frontend]
+```
+
+## Step 2: FastAPI Endpoint
+
+```python
+@router.post("/stream-tool-chat-with-openai")
+async def stream_chat(chat_input: ToolChatBase):
+    controller = ToolController()
+    controller.initialization_service_code(code=chat_input.code)
+
+    response_generator = await controller.service_hub_handler(chat_input)
+    return StreamingResponseWithStatusCode(response_generator, media_type="text/event-stream")
+```
+
+## Step 3: Controller Flow
+
+```plaintext
+1️⃣ initialization_service_code(code)
+   → Sets LLM provider (e.g., OPEN_AI)
+
+2️⃣ _select_manager(chat_input)
+   → Dynamically selects the appropriate tool service
+
+3️⃣ selected_tool.initialize_llm(...)
+   → Initializes LangChain LLM (e.g., ChatOpenAI)
+
+4️⃣ selected_tool.initialize_repository(...)
+   → Loads conversation session, credit info, and history
+
+5️⃣ selected_tool.prompt_attach(...)
+   → Optionally attaches a custom prompt template
+
+6️⃣ selected_tool.create_conversation(...)
+   → Logs the new user query into memory
+
+7️⃣ selected_tool.tool_calls_run(...)
+   → Executes the LangChain pipeline and streams results
+```
+
+## Step 4: LangChain Component Setup
+
+### a. LLM Initialization
+
+```python
+from langchain.chat_models import ChatOpenAI
+
+self.llm = ChatOpenAI(
+    model_name="gpt-4",
+    temperature=0.7,
+    streaming=False,
+    openai_api_key="your-api-key"
+)
+```
+
+### b. Memory (Conversation Buffer)
+
+```python
+from langchain.memory import ConversationSummaryBufferMemory
+
+self.memory = ConversationSummaryBufferMemory(
+    llm=self.llm,
+    max_token_limit=1000,
+    return_messages=True
+)
+```
+
+### c. Tool Registration
+
+```python
+from langchain.agents import tool
+
+@tool
+def web_search_preview(query: str) -> str:
+    return f"Search results for {query}"
+
+tools = [web_search_preview]
+llm_with_tools = self.llm.bind_tools(tools=tools, tool_choice='auto')
+```
+
+### d. Prompt Template (Optional)
+
+```python
+from langchain.prompts import ChatPromptTemplate
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You're a helpful assistant."),
+    ("human", "{input}")
+])
+```
+
+## Step 5: Execution & Streaming
+
+### `tool_calls_run()` — Streaming Logic
+
+```python
+async def tool_calls_run(self, query: str) -> AsyncGenerator[str, None]:
+    chain = LLMChain(
+        llm=self.llm_with_tools,
+        memory=self.memory,
+        prompt=prompt,
+        verbose=True
+    )
+
+    async for chunk in chain.astream(input={"input": query}):
+        yield f"data: {chunk.content}\n\n"
+    yield "data: [DONE]\n\n"
+```
+
+## Step 6: Project File Structure (Minimal Setup)
+
+| File                   | Responsibility                                     |
+| ---------------------- | -------------------------------------------------- |
+| `tool_chat.py`         | FastAPI endpoint (`/stream-tool-chat-with-openai`) |
+| `ToolController.py`    | Orchestrates flow based on model/tool              |
+| `OpenAIToolService.py` | LangChain LLM setup and execution                  |
+| `simple_tools.py`      | Custom tool functions (e.g., search)               |
+| `prompt_template.py`   | Optional prompt customization                      |
+
+
+## Step 7: LangChain Concepts in Use
+
+| Concept             | Purpose                                    |
+| ------------------- | ------------------------------------------ |
+| **ChatOpenAI**      | LangChain wrapper for OpenAI chat models   |
+| **Tools**           | Extend LLM behavior with custom logic      |
+| **Memory**          | Maintain conversation history and context  |
+| **Prompt Template** | Structure system/user messages dynamically |
+| **Streaming**       | `StreamingResponse`      |
+| **ToolController**  | Manages initialization and execution flow  |

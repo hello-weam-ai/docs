@@ -19,6 +19,7 @@
               "index",
               "quickstart",
               "development",
+              "self-hosted",
               "environment-variables",
               "credentialsetup"
             ]
@@ -39,10 +40,12 @@
               {
                 "group": "Workflows",
                 "pages": [
+                  "essentials/workflows/llm-query",
                   "essentials/workflows/simple-chat",
                   "essentials/workflows/rag-chat",
                   "essentials/workflows/agent",
-                  "essentials/workflows/model"
+                  "essentials/workflows/model",
+                  "essentials/workflows/langchain"
                 ]
               },
                "essentials/contribution"
@@ -58,22 +61,14 @@
           {
             "group": "Learn More",
             "pages": [
+              "ai-tools/learn-weam",
               {
-                "group": "Use Cases",
+                "group": "Pro Agents",
                 "pages": [
-                  "ai-tools/use-cases/video-agent"
-                ]
-              },
-              {
-                "group": "Extended Reading",
-                "pages": [
-                  "ai-tools/extended-reading/rag"
-                ]
-              },
-              {
-                "group": "FAQs",
-                "pages": [
-                  "ai-tools/faq/brains"
+                  "ai-tools/use-cases/video-agent",
+                  "ai-tools/use-cases/qa-agent",
+                  "ai-tools/use-cases/sales-call",
+                  "ai-tools/use-cases/web-project"
                 ]
               }
             ]
@@ -103,6 +98,30 @@
               "api-reference/endpoint/create",
               "api-reference/endpoint/delete",
               "api-reference/endpoint/webhook"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "FAQs",
+        "groups": [
+          {
+            "group": "FAQs",
+            "pages": [
+              "faq/credit-calculation",
+              "faq/chat-history",
+              "faq/socket-scale"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Extended Reading",
+        "groups": [
+          {
+            "group": "Extended Reading",
+            "pages": [
+              "extended-reading/openai-api"
             ]
           }
         ]

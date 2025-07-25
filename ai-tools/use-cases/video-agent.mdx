@@ -1,16 +1,8 @@
 ---
-title: "Client Sales Call Analyzer Agent"
-description: "Generate structured summaries and key takeaways from client and sales videos using Weam's AI-powered workflow."
-icon: "video"
+title: "Sales video call analyzer agent"
 ---
 
-## Client Sales Call Analyzer Agent
-
-Project managers, product teams, and client-facing roles often receive long video recordings from customers—explaining requirements, giving feedback, or outlining goals. Reviewing these videos manually can be slow, repetitive, and error-prone.
-
-The **Client Sales Call Analyzer Agent** automates that process, helping teams extract actionable insights quickly and consistently.
-
----
+Sales teams and account managers often struggle to remember key details from numerous client calls. Questions like "What was the agreed cost?", "When should I follow up?", and "Did I miss any important points?" plague post-call analysis. Manually reviewing call recordings is time-consuming and inefficient. The Client Video Call Analyzer Agent automates this process, helping teams extract actionable insights and improve their sales performance.
 
 ## What It Does
 
@@ -19,8 +11,6 @@ The **Client Sales Call Analyzer Agent** automates that process, helping teams e
 - Use a default prompt or customize it for your needs
 - Optionally input **YouTube URLs** for public video analysis
 - Adjust logic and behavior in the backend as required
-
----
 
 ## How It Works
 
@@ -36,18 +26,14 @@ The **Client Sales Call Analyzer Agent** automates that process, helping teams e
 - **Multimodal readiness** for future video + audio support  
 - **Cost efficiency** for frequent or large-scale use  
 
----
+## Built for Sales Teams – Adaptable for Any Client-Facing Role
 
-## Built for PMs – Adaptable for Any Team
-
-Although designed for project managers, this agent can be tailored for:
-
-- **Sales** – Analyze discovery or negotiation calls  
-- **UX Research** – Summarize usability feedback sessions  
-- **Customer Support** – Review troubleshooting walkthroughs  
-- **Operations / Compliance** – Log and analyze meeting records  
-
----
+Although designed for sales teams, this agent can be tailored for:
+1. **Customer Success** – Analyze support calls and satisfaction
+2. **Account Management** – Track client relationships and needs
+3. **Consulting** – Document client requirements and feedback
+4. **Training Teams** – Create coaching materials from real calls
+  
 
 ## Example Output
 
@@ -56,8 +42,6 @@ Client requests a streamlined onboarding flow with fewer screens.
 Pain-point: current form length.  
 Action Item: deliver revised wireframe by next Thursday.  
 ```
-
----
 
 ## Watch the Workflow
 
@@ -72,7 +56,130 @@ Action Item: deliver revised wireframe by next Thursday.
   style={{ width: '100%', borderRadius: '0.5rem' }}
 ></iframe>
 
----
+## Developer Guide : 
+
+## Functional Overview
+
+| Capability                               | Description                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| **Video Upload & Context Extraction** | Uploads video, generates summarized context via Gemini Cache API   |
+| **LLM-Powered Analysis**              | Performs deep communication analysis using prompts and transcripts |
+| **Insight Generation**                | Summarizes tone, engagement, pauses, objections, and talk dynamics |
+| **Response Storage**                  | Saves final insights to backend or chat UI                         |
+
+
+## Directional Execution Flow
+
+```plaintext
+VIDEO ANALYSIS PIPELINE
+
+1.  Upload video file to Gemini Files API
+    → Validate file size and duration (Gemini constraints)
+    ↓
+
+2.  Initialize LLM
+    → Load OpenAI or Gemini LLM for downstream analysis
+    ↓
+
+3.  Initialize History & Memory
+    → Store user session, video metadata, and prior results
+    ↓
+
+4.  Create Context via Gemini Cache API
+    → Pre-process video to extract semantic context
+    ↓
+
+5.  Add Prompt Templates
+    → Insert pre-defined instructions:
+       - Objection handling
+       - Sentiment detection
+       - Engagement cues
+       - Talk ratio & pauses
+    ↓
+
+6.  Call LLM with Cached Video Context + Prompts
+    → Generate deep meeting insights
+    ↓
+
+7.  Track Token Usage
+    → Calculate total tokens + estimated cost
+    ↓
+
+8.  Store Final Response
+    → Save result (⚠️ not persisted inside `additional_kwargs`)
+```
+
+## AI (Python) Components
+
+| Component                   | Description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `Gemini Files API`          | Handles video file uploads & validates duration/size limits              |
+| `Gemini Cache API`          | Extracts contextual data from video for efficient LLM input              |
+| `initialize_llm()`          | Loads GPT-4 or Gemini model for semantic reasoning                       |
+| `initialize_history_memory` | Stores session metadata and past user prompts                            |
+| `prompt_templates`          | Structured prompts for behavior, tone, sentiment, and objection analysis |
+| `call_llm()`                | Combines context and prompts to generate final insights                  |
+| `token_cost_tracker`        | Logs token usage and pricing data                                        |
+| `response_store`            | Persists final LLM output                                                |
+
+## Frontend: Next.js — `VIDEO_CALL_ANALYZER` Agent
+
+```plaintext
+User Interaction Flow
+
+1.  User selects "Video Call Analyzer" agent
+    ↓
+
+2.  Form Input (validated client-side):
+    └─ Enter or upload Loop video URL
+
+3.  Backend Call:
+    └─ Python API checks video URL
+        ↓
+    └─ Gemini Cache API prepares transcript context
+        ↓
+    └─ User selects:
+         • Default LLM Prompt OR
+         • Custom Prompt Input
+
+4.  Backend Execution:
+    → Calls `getAIProAgentChatResponse()` with transcript + prompts
+    ↓
+
+5.  Streaming Response:
+    ✔️ Real-time chat-like UI with video call insights
+    ✔️ Highlights tone, pauses, objection handling, etc.
+```
+
+## Shared Next.js Components
+
+| Component          | Description                                            |
+| ------------------ | ------------------------------------------------------ |
+| `ProAgentQuestion` | Generates custom question flow per agent               |
+| `ChatResponse`     | Handles streamed output to the frontend chat component |
+| `setConversation`  | Stores agent data in global frontend state             |
+
+
+## Backend API Functions
+
+| Function Name                 | Description                              | Used By Agents                    |
+| ----------------------------- | ---------------------------------------- | --------------------------------- |
+| `getAIProAgentChatResponse()` | Handles all standard LLM agent responses | QA, Web Proposal, SEO, Video Call |
+| `getSalesCallResponse()`      | Special flow for sales call pipeline     | Sales Call Analyzer               |
+
+
+## Data Contract Example: `extraInformation`
+
+```json
+{
+  "clientName": "Acme Corp",
+  "projectName": "CRM Demo Call Review",
+  "videoLink": "https://loop.example.com/demo123",
+  "submittedBy": "Alice Johnson",
+  "submissionDate": "2025-07-23",
+  "userEmail": "alice@example.com"
+}
+```
 
 ## Try or Customize the Agent
 

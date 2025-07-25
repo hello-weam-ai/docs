@@ -1,0 +1,141 @@
+---
+title: Self-Hosted Setup
+---
+
+## Self-Hosted Deployment
+
+Get your **Weam AI** app securely hosted on your own domain using **NGINX** and **Let's Encrypt SSL**.
+
+### Step 1: Prepare Your Server
+
+<AccordionGroup>
+
+<Accordion icon="server" title="Update & Install NGINX">
+First, update your server and install **NGINX**:
+
+```bash
+sudo apt update
+sudo apt install nginx -y
+```
+
+<Note>Ensure ports `80` and `443` are open on your firewall or cloud provider settings.</Note>
+</Accordion>
+
+<Accordion icon="file-cog" title="Create NGINX Config">
+Create a new NGINX site configuration:
+
+```bash
+sudo nano /etc/nginx/sites-available/weamai
+```
+
+Paste the following and replace `<your-domain>` and `<PORT>` accordingly:
+
+```nginx
+server {
+    listen 80;
+    server_name <your-domain>;
+
+    location / {
+        proxy_pass http://localhost:<PORT>;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /napi/ {
+        proxy_pass http://localhost:<PORT>/napi/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+    }
+
+    location /pyapi/ {
+        proxy_pass http://localhost:<PORT>/pyapi/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /minio/ {
+        proxy_pass http://localhost:<PORT>/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+<Tip>
+Example replacement values:  
+- `<your-domain>` → `app.example.com`  
+- `<PORT>` → `3000`, `4050`, `9089`, etc.
+</Tip>
+</Accordion>
+
+<Accordion icon="link" title="Enable Site & Reload NGINX">
+Enable the config and reload NGINX:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/weamai /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+<Note>If `nginx -t` fails, recheck the config syntax and ensure indentation is correct.</Note>
+</Accordion>
+
+</AccordionGroup>
+
+### Step 2: Secure Your Deployment with SSL
+
+<AccordionGroup>
+
+<Accordion icon="shield-check" title="Install Certbot">
+Install **Certbot** and the NGINX plugin:
+
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+```
+</Accordion>
+
+<Accordion icon="lock" title="Generate SSL Certificate">
+Generate and apply your SSL certificate:
+
+```bash
+sudo certbot --nginx -d <your-domain>
+```
+
+Follow the interactive prompts to enable HTTPS.
+
+<Note>Certbot will auto-renew your certificate every 90 days.</Note>
+</Accordion>
+
+</AccordionGroup>
+
+
+## ✅ Key Reminders
+
+- Use real domain names for HTTPS to work  
+- Make sure DNS records point to your server  
+- Test access at `http://<your-domain>` and `https://<your-domain>`  
+- Restart services when changing NGINX configs
+
+
+## Next Steps
+
+<CardGroup cols={2}>
+
+<Card title="Verify Deployment" icon="check-circle" href="#">
+Ensure your services are reachable and SSL is active.
+</Card>
+
+<Card title="Deploy Updates" icon="rocket" href="#">
+Pull latest changes and restart containers to deploy updates.
+</Card>
+
+</CardGroup>
+
+<Note>
+Need help? Check the project README or ask in the GitHub issues tab.
+</Note>

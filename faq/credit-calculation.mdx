@@ -1,0 +1,160 @@
+---
+title: "Cost calculations on tokens"
+description: "This guide explains how token usage and credit (cost) is calculated and stored for LLM API calls (OpenAI, Gemini, etc.) in your project."
+---
+
+## 1. Overview
+
+The system tracks and calculates:
+
+* Prompt and completion token usage
+* Total cost incurred per request
+* Stores usage and cost per thread/session for auditing, analytics, and billing
+
+
+## 2. Token and Cost Calculation Class
+
+### `CostCalculator`
+
+* **Location:** `src/custom_lib/langchain/callbacks/huggingface/cost/cost_calc_handler.py`
+* **Purpose:** Tracks token usage and calculates total cost of an LLM call.
+
+#### Key Methods:
+
+| Method                                  | Description                                            |
+| --------------------------------------- | ------------------------------------------------------ |
+| `add_prompt_tokens(count: int)`         | Adds number of tokens in prompt                        |
+| `add_completion_tokens(count: int)`     | Adds number of tokens in completion                    |
+| `calculate_total_cost(model_name: str)` | Calculates total cost using model's rate per 1K tokens |
+
+#### Uses:
+
+* A predefined dictionary like `MODEL_COST_PER_1K_TOKENS`
+* Helper function like `get_openai_token_cost_for_model(model_name, input_tokens, output_tokens)`
+
+
+## 3. Async Callback Handler
+
+### `CostCalcCallbackHandler`
+
+* **Location:** `src/custom_lib/langchain/callbacks/huggingface/cost/cost_calc_handler.py`
+* **Purpose:** Hooks into LLM workflow to process and persist cost-related data.
+
+#### Key Method:
+
+| Method                                                      | Description                                                                            |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `async def on_llm_end(self, response: LLMResult, **kwargs)` | Triggered at the end of LLM call; collects tokens, calculates cost, and persists usage |
+
+#### What it does:
+
+* Collects prompt + completion tokens
+* Calls `CostCalculator.calculate_total_cost(...)`
+* Creates `token_data = {...}` including usage and cost
+* Calls `thread_repo.initialization(...)` to store data
+
+## 4. Model Cost Mapping
+
+Model token cost is defined in a model-specific dictionary.
+
+### OpenAI Example:
+
+```python
+MODEL_COST_PER_1K_TOKENS = {
+    "gpt-4": 0.06,
+    "gpt-4-32k": 0.12,
+    "gpt-3.5-turbo": 0.0015,
+}
+```
+
+### Gemini Example:
+
+* **Location:** `src/custom_lib/langchain/callbacks/gemini/cost/cost_calc_handler.py`
+
+```python
+MODEL_COST_PER_1K_INPUT_TOKENS = {
+    "gemini-1.5-flash": 0.000075,
+    "gemini-1.5-flash-8b": 0.0000375,
+    # ... more models
+}
+```
+
+## 5. Token & Cost Persistence
+
+### `ThreadRepository`
+
+* **Location:** `src/chatflow_langchain/repositories/thread_repository.py`
+* **Purpose:** Stores token and cost data for each `thread_id` and `collection_name`.
+
+#### Typical Usage:
+
+```python
+thread_repo.initialization(thread_id=self.thread_id, collection_name=self.collection_name)
+```
+
+Stores:
+
+* Thread/session info
+* Prompt & completion tokens
+* Total cost
+* Model metadata
+
+## 6. Workflow Summary
+
+```plaintext
+[1] User sends LLM request
+      │
+[2] Prompt tokens counted via `add_prompt_tokens`
+      │
+[3] After response, completion tokens added via `add_completion_tokens`
+      │
+[4] `calculate_total_cost(model_name)` computes total charge
+      │
+[5] Callback `on_llm_end` stores token usage and cost to DB
+      │
+[6] `ThreadRepository` handles persistence
+```
+
+## 7. Usage Example (Pseudocode)
+
+```python
+# 1. Initialize
+cost_calculator = CostCalculator()
+callback_handler = CostCalcCallbackHandler(thread_id, collection_name)
+
+# 2. Token Tracking
+cost_calculator.add_prompt_tokens(prompt_tokens)
+cost_calculator.add_completion_tokens(completion_tokens)
+
+# 3. Cost Calculation
+cost = cost_calculator.calculate_total_cost(model_name)
+
+# 4. Callback Trigger (post-response)
+await callback_handler.on_llm_end(response=llm_response)
+```
+
+## 8. Extending to Other APIs
+
+Each LLM provider (e.g., OpenAI, Gemini, Claude) has a dedicated cost handler:
+
+* **Gemini:**
+  File: `callbacks/gemini/cost/cost_calc_handler.py`
+* **OpenAI:**
+  File: `callbacks/huggingface/cost/cost_calc_handler.py`
+
+You can replicate the pattern:
+
+* Define token cost per 1K tokens
+* Hook into `on_llm_end`
+* Use `CostCalculator` + `ThreadRepository`
+
+
+
+## 9. Key Files Summary
+
+| File                     | Purpose                                      |
+| ------------------------ | -------------------------------------------- |
+| `cost_calc_handler.py`   | Token & cost tracking logic                  |
+| `thread_repository.py`   | Persists thread-wise usage data              |
+| `*_cost_calc_handler.py` | API-specific handlers (OpenAI, Gemini, etc.) |
+| `model_cost_mapping.py`  | Model token cost rate definition             |

@@ -1,0 +1,49 @@
+---
+title: "LLM Query Flow"
+---
+
+<Step title="LLM Query Flow Diagram">
+
+This diagram showcases the dual-service processing pipeline that handles incoming user queries using both Python (LLM + streaming) and Node.js (chat orchestration, storage).
+
+<Info>
+  **This architecture separates compute-heavy AI logic from chat state management** to ensure scalability, maintainability, and fast streaming UX.
+</Info>
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/python-api-response.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Python Side: LLM + Stream
+
+1. **Call Python API**  
+   User query is forwarded to the Python FastAPI service.
+
+2. **Python API Response**  
+   FastAPI handles the LLM invocation and prepares to stream the result.
+
+3. **Streaming Response**  
+   Using `StreamingResponse`, chunks are sent to the client in real time.
+
+4. **Send to Frontend**  
+   The response is piped back to the frontend UI for display.
+
+---
+
+### Node.js Side: Chat Session Handling
+
+1. **Call NodeJS API Socket**  
+   A parallel request stores chat session state via Socket.IO.
+
+2. **Store Question**  
+   The message is saved in MongoDB for future chat history.
+
+3. **Create Chat**  
+   If it’s a new session, a chat thread is created.
+
+4. **Add Member to Chat**  
+   The user is registered inside the thread for continued interaction.
+
+</Step>

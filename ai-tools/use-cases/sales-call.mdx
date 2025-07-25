@@ -1,0 +1,152 @@
+---
+title : "Sales audio call analyzer agent" 
+---
+
+The **Sales audio Call Analyzer Agent** extracts insights from sales conversations using audio transcription, web scraping, and LLM-powered analysis — delivering structured, actionable feedback to sales teams.
+
+## Developer Guide : 
+
+## Agent Modes & Services
+
+| Service                   | Input Type                    | Description                                               |
+| ------------------------- | ----------------------------- | --------------------------------------------------------- |
+| **Audio Service**      | Uploaded `.mp3`, `.wav`, etc. | Upload a recorded sales call and analyze via LLM.         |
+| **Phantom Service**    | Fathom/Zoom URL               | Extract transcript using a headless browser (Playwright). |
+| **Transcript Service** | Plain text transcript         | Analyze a pre-written transcript directly.                |
+
+All services support **optional supplemental data** via:
+
+* Uploaded documents (`.docx`, `.pdf`, `.txt`)
+* Website URL
+
+
+## Flow 1: Audio Service
+
+** Purpose:** Analyze uploaded sales call recordings.
+
+```plaintext
+1.  Initialize LLM
+    ↓
+2.  Upload audio to Gemini Files API
+    → Validate file size and duration
+    ↓
+3.  Transcribe audio using Gemini
+    ↓
+4.  [Optional] Supplemental Input:
+    ├─ If URL is provided → Scrape content
+    └─ If document is uploaded → Extract text
+    ↓
+5.  Initialize history & repository
+    ↓
+6.  Add LLM prompt templates for sales call analysis
+    ↓
+7.  Call LLM with:
+    → Transcript + supplemental content
+    ↓
+8.  Delete uploaded audio file (cleanup)
+    ↓
+9.  Calculate token usage and cost
+    ↓
+10. Store final LLM output (⚠️ not in `additional_kwargs`)
+```
+
+---
+
+## Flow 2: Phantom Service
+
+**Purpose:** Analyze Fathom/Zoom URLs using Playwright.
+
+```plaintext
+1.  Initialize LLM
+    ↓
+2.  Use Playwright to extract transcript from the URL
+    ↓
+3.  [Optional] Supplemental Input:
+    ├─ If another URL is provided → Scrape content
+    └─ If document is uploaded → Extract text
+    ↓
+4.  Initialize history & repository
+    ↓
+5.  Add LLM prompt templates
+    ↓
+6.  Call LLM with:
+    → Extracted transcript + supplemental content
+    ↓
+7.  Delete temporary files if any
+    ↓
+8.  Calculate token usage and cost
+    ↓
+9.  Store final response (⚠️ not in `additional_kwargs`)
+```
+
+---
+
+## Flow 3: Transcript Service
+
+**Purpose:** Analyze a pre-provided plain-text transcript.
+
+```plaintext
+1.  Initialize LLM
+    ↓
+2.  [Optional] Supplemental Input:
+    ├─ If a URL is provided → Scrape content
+    └─ If a document is uploaded → Extract text
+    ↓
+3.  Initialize history & repository
+    ↓
+4.  Add LLM prompt templates
+    ↓
+5.  Call LLM with:
+    → Provided transcript + supplemental content
+    ↓
+6.  Delete temporary file (if applicable)
+    ↓
+7.  Calculate token usage and cost
+    ↓
+8.  Store final response (⚠️ not in `additional_kwargs`)
+```
+
+---
+
+## Shared Components
+
+| Component            | Description                                                              |
+| -------------------- | ------------------------------------------------------------------------ |
+| `Gemini Files API`   | Upload and transcribe audio using Gemini's speech-to-text model          |
+| `Playwright`         | Headless browser used to scrape and extract embedded transcript data     |
+| `Scraper`            | Fetches readable text from any public webpage                            |
+| `Document Reader`    | Parses `.docx`, `.pdf`, `.txt`, etc., and extracts clean plain text      |
+| `LLM (GPT/Gemini)`   | Analyzes call content for intent, tone, objections, and insights         |
+| `Prompt Templates`   | Structured prompts to guide sales-focused LLM output                     |
+| `Token Cost Tracker` | Computes total LLM tokens used and cost estimate                         |
+| `Response Store`     | Persists final analysis for audit/logging (excludes `additional_kwargs`) |
+
+---
+
+## Next.js — `SALES_CALL_ANALYZER` Integration
+
+```plaintext
+User Interaction Flow
+
+1.  User selects "Sales Call Analyzer" agent
+    ↓
+2.  Form Input:
+    ├─ Step 1: Provide any of the following:
+    │   ├─ Call transcript (text)
+    │   ├─ Zoom/Fathom URL (auto-fetch transcript)
+    │   └─ Audio upload (.mp3, .wav)
+    └─ Step 2: [Optional]
+        ├─ Website URL
+        └─ Upload document (e.g., proposal, email)
+
+3.  Backend Call:
+    → Uses `proagent code` with user inputs
+    → Calls `getSalesCallResponse()`
+
+4.  Streaming Response:
+    → Displays real-time analysis output in chat
+    → Final summary includes:
+        ✔️ Sales insights
+        ✔️ Objections & resolution
+        ✔️ Talk ratio, sentiment, and key actions
+```

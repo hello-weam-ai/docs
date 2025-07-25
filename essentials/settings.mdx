@@ -30,6 +30,10 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 | Vector DB          | Qdrant (Primary), Pinecone (Optional)  |
 | Scraping / Parsing | Playwright, BeautifulSoup, Crawler4AI  |
 
+<Note>
+  To see how LangChain streaming chat integration is implemented in our system, [refer to this link](https://example.com/langchain-streaming-integration).
+</Note>
+
 ### Security Config
 
 - API Key encryption using internal crypto module
@@ -90,6 +94,11 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 - Email via SMTP
 - MinIO / AWS S3 compatible file storage
 
+<Note>
+  To learn how socket scaling is handled across multiple servers and load balancers using Redis Pub/Sub, [read this guide](https://example.com/socket-scaling-guide).
+</Note>
+
+
 <Divider />
 
 ## Next.js Frontend System
@@ -126,6 +135,7 @@ description: "A breakdown of the architecture, flow, and tooling across Python, 
 
 <Note>
   All services are containerized and orchestrated via Docker Compose. Auth secrets, keys, and access configs are managed securely using `.env` and optional secret managers.
+  👉 To see how LangChain streaming chat integration is implemented in our system, [refer to this link](https://example.com/langchain-streaming-integration).
 </Note>
 
 ## API Request Lifecycle (Python)
@@ -152,8 +162,3 @@ Client Request
 [utils/] → Shared helper methods
   ↓
 Response → JSON or Streaming back to client
-```
-
-<Info>
-For frontend architecture and real-time features, follow a similar modular decomposition in Next.js, using `src/components`, `src/hooks`, and `src/app` for app router-based structure.
-</Info>

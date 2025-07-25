@@ -1,0 +1,122 @@
+---
+title : "QA Agent"
+---
+Automate website quality assurance and bug detection using **Weam's AI-powered analysis workflow**.
+
+Marketing agencies are flooded with website projects and face pressure to deliver market-competitive quality. Quality analysts follow extensive checklists covering functionality and UI, but manually reviewing entire websites for anomalies is time-consuming and exhausting. The QA Agent automates this process, helping teams identify issues quickly and maintain consistent quality standards.
+
+## What It Does
+
+- Crawl and analyze website URLs automatically  
+- Detect bugs, errors, and quality issues across multiple dimensions  
+- Generate detailed reports with actionable recommendations  
+- Evaluate SEO, accessibility, security, and performance metrics  
+- Provide insights for both functionality and UI improvements  
+
+## How It Works
+
+1. **Input** – Submit website URL for analysis  
+2. **Crawling Process** – Agent systematically reviews all website elements  
+3. **Analysis Engine** – Evaluates against comprehensive quality checklist  
+4. **Output** – Delivers detailed report covering SEO best practices, accessibility, code quality, security, content quality, and performance analytics  
+
+## Why This Agent?
+
+- Eliminates repetitive manual QA processes  
+- Ensures consistent quality standards across projects  
+- Reduces time from hours to minutes for website analysis  
+- Provides comprehensive coverage beyond human capacity  
+- Helps beginners learn QA best practices  
+
+## Built for Agencies – Adaptable for Any Web Team
+
+Although designed for marketing agencies, this agent can be tailored for:
+
+- **Development Teams** – Pre-launch quality checks  
+- **E-commerce** – Ensure optimal user experience  
+- **Enterprise IT** – Maintain corporate website standards  
+- **Freelancers** – Deliver professional-grade QA without a team  
+
+
+## Overview
+
+* **Goal**: Automate website QA with AI + PageSpeed + scraping.
+* **Input**: Website URL
+* **Output**:
+
+  * QA Checklist JSON
+  * PageSpeed Analysis JSON
+  * Styled Excel Report (via AWS S3)
+  * Token usage and cost breakdown
+
+## Developer Guide : 
+
+## AI (Python) — Execution Flow
+
+```text
+AI Execution Steps:
+
+1.  Initialize LLM
+2.  Initialize Checklist & PageSpeed Queues
+3.  Scrape the URL → Extract all code files (PHP, HTML, JS, CSS)
+4.  Clean & Filter Unnecessary Code Lines
+5.  Call PageSpeed API:
+      ├─ Mobile Analysis
+      └─ Desktop Analysis
+6.  Count Tokens in Scraped Content
+7.  Initialize LLM Memory & History
+8.  Create LLM Chains:
+      ├─ Scraped Content Analysis Chain
+      └─ PageSpeed Checklist Analysis Chain
+9.  Batch Checklist Items (10 per call)
+10. Batch PageSpeed Results
+11. Add Prompt Templates
+12. Call LLM for Checklist Analysis (batch-wise)
+      → Stream JSON Results into Checklist Queue
+13. On Checklist Completion:
+      → Start PageSpeed Analysis
+      → Stream JSON Results into PageSpeed Queue
+14. Parse PageSpeed JSON (Mobile & Desktop)
+      → Format into UI-ready table structure
+15. Combine All Results
+      → Generate Final Excel Report
+16. Upload Excel Report to AWS S3
+17. Return Final API Response:
+      ├─ PageSpeed JSON  
+      ├─ Excel S3 Filename  
+      └─ Token Usage & Cost Breakdown
+18. Persist Results (Include in `additional_kwargs`)
+```
+
+## AI (Python) — Core Components
+
+| 🔧 Component              | 💬 Description                                                 |
+| ------------------------- | -------------------------------------------------------------- |
+| `scrape_url_content`      | Scrapes all HTML, PHP, CSS, JS files from the provided URL     |
+| `filter_code_lines`       | Cleans up unnecessary or duplicate lines for better analysis   |
+| `pagespeed_api_call`      | Calls Google PageSpeed API (Mobile + Desktop)                  |
+| `count_tokens`            | Ensures token-safe LLM execution                               |
+| `initialize_llm_chain`    | Prepares LLM chain for checklist and performance evaluation    |
+| `batch_checklist_items`   | Groups checklist items in chunks of 10                         |
+| `stream_to_queue`         | Streams intermediate results into Redis Queue for real-time UI |
+| `parse_pagespeed_metrics` | Extracts useful metrics from PageSpeed JSON                    |
+| `create_excel_report`     | Builds styled Excel report using all collected data            |
+| `upload_to_s3`            | Uploads the Excel file to AWS and returns the S3 path          |
+| `calculate_cost`          | Calculates and logs token usage + pricing                      |
+| `store_response`          | Saves all results in DB for auditing or analytics              |
+
+
+## Next.js — Execution Flow
+
+```text
+Node Execution Flow:
+
+1  User selects "QA Specialist" agent from UI
+2  Frontend Form Input → Sends Website URL to backend
+3  Backend triggers Python pipeline via `proagent code`
+4  Calls `getAIProAgentChatResponse()` to stream result
+5  LLM streams results:
+       └─ Live checklist items in frontend UI
+6  Post-processing:
+       ├─ QA Checklist rendered in Chat Window
+       └─ Downloadable Excel link shown
