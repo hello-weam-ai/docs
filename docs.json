@@ -17,7 +17,21 @@
             "group": "Welcome to Your AI Adoption Journey",
             "pages": [
               "index",
-              "essentials/features",
+              {
+                "group": "Features",
+                "pages": [
+                  "essentials/feature/overview",
+                  "essentials/feature/multi-llm",
+                  "essentials/feature/workspaces",
+                  "essentials/feature/brains",
+                  "essentials/feature/chats",
+                  "essentials/feature/prompts",
+                  "essentials/feature/agents",
+                  "essentials/feature/docs",
+                  "essentials/feature/mcp",
+                  "essentials/feature/settings"
+                ]
+              }, 
               "quickstart",
               "development",
               "self-hosted",

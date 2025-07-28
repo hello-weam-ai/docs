@@ -27,21 +27,42 @@ OpenRouter serves as a unified API platform that connects users to a diverse arr
 
 ## How to Create Your OpenRouter API Key
 
-### Step 1: Visit OpenRouter
+### Step 1: Visit OpenRouter Website
 
 Go to [https://openrouter.ai](https://openrouter.ai)
+<img
+  src="https://weam.ai/app/uploads/2025/07/open-router-Google-Search.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
 
-### Step 2: Sign In
+### Step 2:  Sign In to OpenRouter
 
-Sign into your account or create a new one from the homepage.
+First, you need to sign in to your OpenRouter account. If you don't have an account yet, you can create one on the homepage.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/OpenRouter.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
 
 ### Step 3: Navigate to Keys
 
-From the dropdown menu in your profile, select **Keys**.
+From the dropdown menu that appears, select *Keys* to access your API key management section.
+<img
+  src="https://weam.ai/app/uploads/2025/07/OpenRouter.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
 
 ### Step 4: Create API Key
 
-Click the **Create API key** button to begin.
+On the Keys page, click on the *Create API key* button to start generating your new API key.
+<img
+  src="https://weam.ai/app/uploads/2025/07/API-Keys-OpenRouter-3.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
 
 ### Step 5: Configure Your API Key
 
@@ -52,14 +73,27 @@ You will need to provide:
   - Leave blank to allow full account access  
   - Set a number to limit how much this key can spend
 
+<img
+  src="https://weam.ai/app/uploads/2025/07/API-Keys-OpenRouter-2.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
 ### Step 6: Generate Your Key
 
 Click **Create** to generate your API key.
 
+<img
+  src="https://weam.ai/app/uploads/2025/07/API-Keys-OpenRouter.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
 ### Step 7: Copy and Save Your Key
 
-Click **Copy** to copy the key.  
-> **Important:** You will not be able to view this key again. Store it securely in a password manager or environment variable.
+Once the API key is generated, it will be displayed on screen. Click the "Copy" button to copy it to your clipboard.
+Critical Security Warning: Store this key securely as you won't be able to see it again. Save it in a secure location like a password manager or environment variables.
+
 
 
 ## OpenRouter Features and Capabilities (2025)
@@ -73,30 +107,28 @@ Access over 300 models from providers including:
 - Google: Gemini, PaLM  
 - Meta: Llama  
 - Mistral: Mistral models  
+- And many more models
 
 ### Developer-Friendly Integration
 
-- OpenAI-compatible API  
-- SDKs for multiple languages  
-- Simple setup with minimal configuration
+OpenRouter provides an OpenAI-compatible API, making it easy for developers to integrate with existing applications. The platform supports multiple programming languages and frameworks, offering comprehensive documentation and SDKs for seamless implementation.
+
 
 ### Advanced Features
 
-- **Credit Management:** Set spending limits on each API key  
+- **Credit Management:**  API keys on OpenRouter are more powerful than keys used directly for model APIs. They allow users to set credit limits for apps 
 - **OAuth Integration:** Use keys within OAuth flows  
-- **Programmatic Key Management:** Rotate and distribute keys via the API  
+- **Programmatic Key Management:** OpenRouter provides endpoints to programmatically manage your API keys, enabling key creation and management for applications that need to distribute or rotate keys automatically
 
 ### Model Marketplace
 
-Browse and test models directly from the web interface.  
-Search for models, view their documentation, copy example code, and run tests directly.
+OpenRouter acts as a marketplace for various AI models, allowing you to browse and select from a wide range of options. You can search for models, copy the provided API code, and test them directly in your terminal or application.
+
 
 
 ## Pricing and Free Tier
 
-- **Free Tier:** Great for prototyping and small apps  
-- **Pay-as-you-go:** No subscriptions, usage-based billing  
-- **Transparent Pricing:** Visible in the dashboard before you use a model
+OpenRouter offers competitive pricing with no subscription fees. The platform provides a free tier that's perfect for experimentation and small projects, with transparent pay-as-you-go pricing for production use.
 
 ## Using Your OpenRouter API Key
 
@@ -116,6 +148,8 @@ You can use your API key with:
 - Rotate and revoke keys as needed  
 - Use separate keys for each environment/project
 
+That's it! You now have your OpenRouter API key and can access hundreds of AI models through a single, unified interface. Whether you're building chatbots, content generation tools, or any AI-powered application, OpenRouter simplifies the process while providing better reliability and pricing than managing multiple provider APIs directly.
+
 
 ## Understanding OpenRouter's Activity Dashboard
 
@@ -123,37 +157,41 @@ The OpenRouter dashboard gives you a detailed view of how your API key is being 
 
 ### Dashboard Components Explained
 
+<img
+  src="https://weam.ai/app/uploads/2025/07/Activity-OpenRouter.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
 **A - Spend**  
-Shows your total cost based on model usage over the selected period.
+This metric shows your total financial expenditure on AI model usage over the selected time period. OpenRouter calculates the corresponding cost and deducts it from your credits based on your API usage.
 
 **B - Tokens**  
-Displays the total number of tokens used, including both input and output.
+This displays the total number of tokens processed, including both input tokens (your prompts) and output tokens (model responses). The activity page shows input and output tokens for comprehensive usage tracking.
 
 **C - Requests**  
-Total number of API calls made within the selected date range.
+This shows the total number of API calls made to OpenRouter's models during the specified timeframe, giving you insight into your application's request frequency.
 
 ### Additional Features
 
-- **Date Range Filter:** Customize the analysis period (e.g., June 24 to July 24)  
-- **Detailed Activity Table:** Includes:
-  - Timestamp  
-  - Provider/Model  
-  - Application Name  
-  - Token count  
-  - Cost per call  
-  - Response speed  
-  - Completion status  
+- **Date Range Filter:** The "From" and "To" date selectors (24-06-2025 to 24-07-2025 in your screenshot) allow you to analyze usage patterns over specific periods.
 
-- **Export and Filter Tools:** Easily filter usage and export data for reports.
+- **Detailed Activity Table:** Below the summary cards, you'll find a comprehensive table with columns for::
+  - Timestamp : Exact time of each API call
+  - Provider/Model : Which AI model was used for the request
+  - Application Name : The application or source making the request
+  - Token count : Token count for that specific request
+  - Cost per call : Individual request cost
+  - Response speed : Response time metrics
+  - Completion status : Completion status of the request
+
+- **Export and Filter Tools:** The dashboard includes filtering capabilities and export functionality for detailed analysis and reporting.
 
 ## Why This Matters
 
-The dashboard is essential for:
+This activity dashboard helps you see how you've been using models on OpenRouter by providing comprehensive usage analytics. OpenRouter's built-in Usage Accounting allows you to track AI model usage without making additional API calls, making it easy to monitor costs, optimize usage patterns, and understand your application's AI consumption patterns.
+The dashboard is essential for budget management, performance optimization, and understanding which models and usage patterns work best for your specific use cases.
 
-- **Cost Management:** Know exactly how much you're spending  
-- **Performance Optimization:** Track which models respond fastest  
-- **Usage Insight:** See which apps or endpoints consume the most resources  
-- **Audit and Compliance:** Maintain control over key access and usage
 
 
 ## You're Ready to Go
