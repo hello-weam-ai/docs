@@ -117,7 +117,11 @@
           {
             "group": "Extended Reading",
             "pages": [
-              "extended-reading/openai-api"
+              "extended-reading/openai-api",
+              "extended-reading/anthropic-api",
+              "extended-reading/gemini-api",
+              "extended-reading/hugging-face-api",
+              "extended-reading/openrouter-api"
             ]
           }
         ]
