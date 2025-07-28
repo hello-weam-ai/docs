@@ -17,6 +17,7 @@
             "group": "Welcome to Your AI Adoption Journey",
             "pages": [
               "index",
+              "essentials/features",
               "quickstart",
               "development",
               "self-hosted",
@@ -49,13 +50,6 @@
                 ]
               },
                "essentials/contribution"
-            ]
-          },
-          {
-            "group": "Guide",
-            "pages": [
-              "essentials/features",
-              "essentials/role"
             ]
           },
           {
@@ -110,7 +104,9 @@
             "pages": [
               "faq/credit-calculation",
               "faq/chat-history",
-              "faq/socket-scale"
+              "faq/socket-scale",
+               "essentials/role",
+               "faq/how-to-add-api"
             ]
           }
         ]
