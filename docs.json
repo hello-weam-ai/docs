@@ -28,9 +28,8 @@
                   "essentials/feature/prompts",
                   "essentials/feature/agents",
                   "essentials/feature/docs",
-                  "essentials/feature/mcp",
-                  "essentials/feature/settings"
-                ]
+                  "essentials/feature/mcp"
+                                ]
               }, 
               "quickstart",
               "development",
@@ -42,7 +41,7 @@
           {
             "group": "Developer Guide",
             "pages": [
-              "essentials/settings",
+              "essentials/system-design",
               {
                 "group": "Common Functions",
                 "pages": [
@@ -69,14 +68,15 @@
           {
             "group": "Learn More",
             "pages": [
-              "ai-tools/learn-weam",
+              "learn-more/learn-weam",
               {
                 "group": "Pro Agents",
                 "pages": [
-                  "ai-tools/use-cases/video-agent",
-                  "ai-tools/use-cases/qa-agent",
-                  "ai-tools/use-cases/sales-call",
-                  "ai-tools/use-cases/web-project"
+                  "learn-more/use-cases/video-agent",
+                  "learn-more/use-cases/qa-agent",
+                  "learn-more/use-cases/sales-call",
+                  "learn-more/use-cases/web-project",
+                  "learn-more/use-cases/seo-article-writer-agent"
                 ]
               }
             ]

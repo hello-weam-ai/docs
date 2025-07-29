@@ -89,31 +89,30 @@ Once created, all your access tokens are listed and organized for easy managemen
 
 The **Settings** panel provides full control over your account and environment:
 
-- **Profile:** Manage personal info and profile settings  
-- **Account:** Security and notification settings  
-- **Authentication:** Set up 2FA and login options  
-- **Organizations:** Team collaboration and group management  
-- **Billing:** Subscriptions, payments, and usage  
-- **Access Tokens:** Generate/manage API keys  
-- **SSH & GPG Keys:** Git and commit signing keys  
-- **Inference Providers:** Set external inference services  
-- **Webhooks:** Automate repo and model event notifications  
-- **Papers:** Link academic research  
-- **Notifications:** Manage alerts and emails  
-- **Local Apps & Hardware:** Configure devices  
-- **Gated Repositories:** Control access to private models  
-- **Content Preferences:** Manage filtering/display options  
-- **Connected Apps:** Authorize 3rd-party integrations  
-- **MCP:** Model Card Protocol tools  
-- **Theme:** Dark/light/system UI options  
-- **Upgrade to Pro:** Unlock private inference, faster speed, and more
+- **Profile:** In the dropdown menu, look for *Access Tokens* which appears just below *Settings* at the bottom of the menu. Click on *Access Tokens*.
+- **Account:** Configure basic account settings, email preferences, and account security options
+- **Authentication:** Set up two-factor authentication and manage login security methods 
+- **Organizations:** Create and manage organizations for team collaboration and shared resources 
+- **Billing:** Handle subscription plans, payment methods, and usage billing for Pro features 
+- **Access Tokens:** Generate and manage API tokens for programmatic access to Hugging Face services 
+- **SSH & GPG Keys:** Add SSH keys for Git operations and GPG keys for commit signing 
+- **Inference Providers:** Configure third-party inference providers for model deployment and hosting
+- **Webhooks:** Set up automated notifications for repository events and model updates
+- **Papers:** Manage academic papers linked to your models and datasets 
+- **Notifications:** Control email and web notifications for activities and updates 
+- **Local Apps & Hardware:** Manage local applications and hardware configurations for model running  
+- **Gated Repositories:**  Control access permissions for private or restricted model repositories 
+- **Content Preferences:** Set content filtering and display preferences for the platform 
+- **Connected Apps:** Manage third-party applications connected to your Hugging Face account
+- **MCP:** Access the new Model Card Protocol features for enhanced model documentation  
+- **Theme:** Switch between dark, light, and system theme preferences for the interface
+- **Upgrade to Pro:** Access premium features including faster inference and private repositories
 
 
 ## HuggingFace Features and Capabilities (2025)
 
 ### Serverless Inference API
-
-Pay-as-you-go compute for over 60,000+ models including:
+HuggingFace offers a fully-managed production solution for inference where you just pay as you go for the raw compute you use. The platform provides access to over 60,000+ models including:
 
 - Transformers (NLP)
 - Diffusers (image generation)
@@ -121,7 +120,12 @@ Pay-as-you-go compute for over 60,000+ models including:
 - Vision models
 - Speech processing
 
+
+
 ### Popular Model Categories
+
+HuggingFace Transformers provides state-of-the-art machine learning models in text, vision, audio, and multimodal models, for both inference and training.
+
 
 - **Language Models:** GPT, BERT, T5, RoBERTa  
 - **Image Generation:** Stable Diffusion, DALL·E  
@@ -131,12 +135,13 @@ Pay-as-you-go compute for over 60,000+ models including:
 
 ### Inference Endpoints
 
-Deploy models to private, secure endpoints with:
+Deploy models into secure offline endpoints only accessible via direct connection to your Virtual Private Cloud (VPCs). This enterprise feature allows you to:
 
-- Auto-scaling  
-- VPC isolation  
-- Custom or Hub-hosted models  
-- Usage-based billing
+- Deploy custom models or Hub models
+- Scale automatically based on demand
+- Maintain security with private endpoints
+- Pay only for actual usage
+
 
 
 ## Integration Options
@@ -150,6 +155,9 @@ Use your API key with:
 
 ## Free Tier and Pricing
 
+HuggingFace offers generous free access to their Inference API, making it accessible for experimentation and small-scale applications. For production use, they offer scalable pricing based on actual compute usage.
+
+
 - Generous free tier available  
 - Ideal for exploration, demos, and small-scale apps  
 - Scalable pricing for production and enterprise
@@ -157,11 +165,12 @@ Use your API key with:
 
 ## Security Best Practices
 
-- Store keys in environment variables  
-- Never commit keys to public repositories  
-- Use fine-grained permissions when possible  
-- Monitor usage regularly  
-- Revoke compromised keys immediately
+- Store your token securely (use environment variables)
+- Never commit tokens to version control
+- Regenerate tokens if compromised
+- Use fine-grained tokens with minimal required permissions
+- Monitor your usage regularly
+
 
 
 ## You're Ready to Build

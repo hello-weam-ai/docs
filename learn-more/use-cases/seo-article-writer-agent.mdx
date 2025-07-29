@@ -1,0 +1,190 @@
+---
+title: "SEO Optimized Article Generator Agent"
+---
+
+Generate SEO-optimized content at scale using Weam's AI-powered content creation workflow.
+
+## SEO Article Writer
+
+Content teams struggle with creating SEO-friendly articles consistently while identifying high-performing keywords and adapting to search algorithm changes. The time required for research, drafting, and optimization creates bottlenecks that slow down content marketing efforts. The SEO Centric Article Agent automates this process, helping teams produce optimized content efficiently while maintaining quality.
+
+### What It Does
+
+- Analyze target keywords and competitive landscape  
+- Generate topic recommendations based on keyword research  
+- Create SEO-optimized articles following best practices  
+- Suggest associated keywords for better ranking potential  
+- Incorporate business context from your website automatically
+
+### How It Works
+
+1. Input – Provide target keyword and website URL  
+2. Research Phase – Agent analyzes competition and keyword opportunities  
+3. Content Planning – Determines unique angles and creates article structure  
+4. AI Generation – Produces content following SEO and quality guidelines  
+5. Output – Delivers publish-ready article with CTAs and internal linking
+
+### Why This Agent?
+
+- Eliminates content creation bottlenecks  
+- Ensures consistent SEO optimization  
+- Reduces research and writing time by 70%  
+- Adapts to evolving search algorithms  
+- Maintains brand voice and messaging  
+
+### Built for Content Teams – Adaptable for Any Industry
+
+Although designed for marketing agencies, this agent can be tailored for:
+
+- E-commerce – Product descriptions and category content  
+- SaaS Companies – Feature articles and comparison posts  
+- Publishers – News articles and evergreen content  
+- Consultants – Thought leadership and expertise articles  
+
+Powered by **AI (GPT-4)**, custom **scraping tools**, and external APIs like **DataForSEO**.
+
+
+## Step-by-Step Workflow & Routes
+
+
+### Step 1: Business Summary Generation
+
+- Route: `/pro-agent/business-summary`  
+- Purpose: Generate a business summary from a provided website URL.
+
+#### Flow:
+
+```text
+business_service  
+   └── URLCheckerService 
+         └── Check if URL is valid & reachable
+               └── initialize_chat_input
+               └── scrape_url_content
+               └── initialize_llm (e.g., GPT-4)
+               └── create_prompts
+               └── create_chain
+               └── run_chain 
+                     ⮕ Final Summary Response
+```
+
+
+### Step 2: Keyword Research
+
+- Route: `/pro-agent/keyword-research`  
+- Purpose: Fetch relevant SEO keywords with volume, CPC, and competition using AI + DataForSEO.
+
+#### Flow:
+
+```text
+keyword_research_service
+   └── initialize_chat_input
+   └── get_recommended_keywords
+   └── get_keyword_details
+   └── fetch_and_display_keywords (via DataForSEO)
+         ⮕ List of Keywords with Volume & Difficulty
+```
+
+
+### Step 3: Topic Generation
+
+- Route: `/pro-agent/topic-generation`  
+- Purpose: Generate SEO-friendly content topics from keywords.
+
+#### Flow:
+
+```text
+topic_generator_service
+   └── initialize_chat_input
+   └── initialize_llm
+   └── create_prompt
+   └── create_chain
+   └── run_chain 
+         ├── validate_generated_topic
+         └── find_similar_topic_by_website_hash
+               ⮕ Unique SEO-Optimized Topics
+```
+
+
+### Step 4: Article Generation
+
+- Route: `/pro-agent/article-generation`  
+- Purpose: Create a complete SEO-optimized article using the selected topic and scraped competitor content.
+
+#### Flow:
+
+```text
+article_generator_service
+   └── initialize_chat_input
+   └── fetch_articles (Scraper)
+   └── initialize_llm
+   └── initialize_repository
+   └── initialize_memory
+   └── create_prompts
+   └── create_chain
+   └── run_chain 
+         ⮕ Final Article (streamed)
+```
+
+## Core Components Summary
+
+| Component               | Description                                         |
+|-------------------------|-----------------------------------------------------|
+| `URLCheckerService`     | Validates and pings target URL for reachability     |
+| `initialize_llm()`      | Loads GPT-4 and sets up memory/context              |
+| `scrape_url_content()`  | Scrapes and parses the website content              |
+| `create_prompts()`      | Builds dynamic prompts based on inputs              |
+| `run_chain()`           | Executes LangChain-based chain of logic             |
+| `DataForSEO`            | Pulls search volume, CPC, and difficulty metrics    |
+| `Scraper`               | Extracts content from competitors for inspiration   |
+
+
+# Next.js Frontend — SEO Optimized Article Generator
+
+
+## User Journey
+
+| Step | Action                                               |
+|------|------------------------------------------------------|
+| 1    | User inputs a website URL                            |
+| 2    | Backend returns SEO keyword suggestions              |
+| 3    | User selects primary & secondary keywords            |
+| 4    | AI generates topic ➡ full article (live stream)      |
+
+
+## Backend API Calls
+
+| Step     | API Endpoint                                       |
+|----------|----------------------------------------------------|
+| Keywords | `GET /pro-agent/keyword-research?domain=example.com` |
+| Topics   | `POST /pro-agent/topic-generation`                  |
+| Articles | `POST /pro-agent/article-generation`                |
+| Stream   | `getAIProAgentChatResponse()` (SSE or chunked stream) |
+
+
+## Frontend File Structure
+
+```bash
+/pages
+  └── seo-article-generator.tsx    Main Page – SEO Article Generator Interface
+
+/hooks
+  └── useGenerateArticle.ts        Custom Hook – Manages generation state & flow logic
+
+/utils
+  └── api.ts                       API Utility – Axios instance & endpoint handlers
+
+/components
+  └── KeywordSelector.tsx          Component – Select SEO keywords (volume, difficulty)
+  └── TopicDisplay.tsx             Component – Display or edit AI-generated topic
+  └── ArticleStreamView.tsx        Component – Stream and render article paragraphs
+```
+
+
+## Core UI Components
+
+| Component                  | Purpose                                     |
+|----------------------------|---------------------------------------------|
+| `KeywordSelector`          | Displays keywords with volume/difficulty     |
+| `TopicDisplay`             | Shows or edits the AI-generated topic        |
+| `ArticleStreamView`        | Streams and displays paragraphs in real-time |
+| `getAIProAgentChatResponse()` | Makes the stream request to backend API  |
