@@ -31,7 +31,7 @@
                   "essentials/feature/mcp"
                                 ]
               }, 
-              "quickstart",
+              "local-setup",
               "development",
               "self-hosted",
               "environment-variables",

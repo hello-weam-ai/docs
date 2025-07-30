@@ -171,6 +171,53 @@ docker-compose up --build
 
 ---
 
+
+# Skipped Step: Python Base Image Build (`pybase_docker`)
+
+This section outlines why the `pybase_docker` build step is **intentionally skipped** in the Docker workflow and when to re-enable it.
+
+
+## Overview
+
+In the main build script, the following section is **commented out**:
+
+```bash
+# echo "Step 1/5: Building base image (pybase_docker)..."
+# $COMPOSE_CMD build pybase_docker --no-cache || { echo "❌ Failed to build pybase_docker"; exit 1; }
+# echo "✅ pybase_docker image built successfully."
+```
+
+These lines are **intentionally skipped** to **improve build efficiency** and avoid unnecessary steps when working on the frontend or making non-Python-related changes.
+
+## Why Is It Skipped?
+
+| Reason                       | Description                                                                                                                 |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Not Required for Frontend | The `pybase_docker` image is **only used by backend services**. Frontend apps like `weamai-app` (Next.js) don't rely on it. |
+| Time Efficiency           | Building Python images, especially with heavy dependencies, is **time-consuming**. Skipping it avoids delays.               |
+| No Dependency Overlap     | Frontend builds and backend builds are **fully isolated**. Skipping the Python base does **not** affect frontend builds.    |
+
+
+## When to Re-enable This Step
+
+You **should uncomment and run** the `pybase_docker` build lines **if any of the following conditions apply**:
+
+| Condition                     | Description                                                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `requirements.txt` Updated | If you modified dependencies, Docker needs to rebuild with the new packages.                                          |
+| Clean Rebuild Required     | If you're doing a **fresh or forceful rebuild** (e.g., after removing Docker volumes/images), this step is essential. |
+| Python Dependency Issues   | If backend services fail due to missing or outdated Python packages, a rebuild might resolve the issue.               |
+
+To enable this step, simply **uncomment** the following lines in the script:
+
+```bash
+echo "Step 1/5: Building base image (pybase_docker)..."
+$COMPOSE_CMD build pybase_docker --no-cache || { echo "❌ Failed to build pybase_docker"; exit 1; }
+echo "✅ pybase_docker image built successfully."
+```
+
+---
+
 ## Next steps
 
 <CardGroup cols={2}>
