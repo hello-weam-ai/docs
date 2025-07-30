@@ -90,6 +90,21 @@
         ]
       },
       {
+        "tab": "Connections",
+        "groups": [
+          {
+            "group": "Connections",
+            "pages": [
+              "connections/slack",
+              "connections/github",
+              "connections/gmail",
+              "connections/google-drive",
+              "connections/google-calendar"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API reference",
         "groups": [
           {
@@ -97,15 +112,6 @@
             "pages": [
               "api-reference/introduction",
               "api-reference/node"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
             ]
           }
         ]

@@ -1,0 +1,106 @@
+---
+title : "Slack"
+---
+
+# OAuth Configuration and Integration for Slack 
+
+Enable your AI to interact with Slack workspaces programmatically using the following capabilities:
+
+### Manage Channels and Users
+- `slack_list_channels`
+- `slack_create_channel`
+- `slack_archive_channel`
+- `slack_invite_users_to_channel`
+- `slack_kick_user_from_channel`
+- `slack_set_channel_topic`
+- `slack_set_channel_purpose`
+- `slack_list_users`
+
+### Messaging and Threads
+- `slack_send_message`
+- `slack_get_messages`
+- `slack_reply_to_thread`
+- `slack_get_thread_replies`
+- `slack_start_thread`
+- `slack_reply_to_thread_with_broadcast`
+- `slack_get_thread_info`
+- `slack_find_threads_in_channel`
+
+### Direct & Ephemeral Messaging
+- `slack_open_dm`
+- `slack_send_dm`
+- `slack_send_ephemeral_message`
+
+### User Information
+- `slack_get_user_info`
+- `slack_get_user_profile`
+- `slack_get_channel_members`
+
+These functions allow **Weam AI** to automate workflows, retrieve Slack data, and facilitate streamlined communication directly from your AI interface.
+
+---
+
+## Slack MCP OAuth Configuration Setup
+
+### 1. Create a Slack App
+1. Visit [https://api.slack.com/apps](https://api.slack.com/apps)
+2. Click **"Create New App"**
+3. Choose **"From scratch"**
+4. Enter an app name and select your workspace
+
+### 2. Configure OAuth Settings
+1. Go to **OAuth & Permissions**
+2. Add the following redirect URL:
+   ```
+   https://your-domain.com/api/slack/oauth/callback
+   ```
+3. Add these scopes:
+   - `chat:write`
+   - `channels:read`
+   - `channels:history`
+   - `users:read`
+   - `users:read.email`
+
+### 3. Install the App
+1. Go to **Install App** in the sidebar
+2. Click **"Install to Workspace"**
+3. Authorize access when prompted
+
+### 4. Environment Variables
+Obtain your **Client ID** and **Client Secret** from the **Basic Information** section and add to your `.env`:
+
+```env
+SLACK_CLIENT_ID=your-client-id
+SLACK_CLIENT_SECRET=your-client-secret
+SLACK_REDIRECT_URI=https://your-domain.com/api/slack/oauth/callback
+```
+
+---
+
+## GitHub MCP OAuth Configuration Setup
+
+### 1. Create a GitHub OAuth App
+1. Visit [https://github.com/settings/developers](https://github.com/settings/developers)
+2. Click **"New OAuth App"**
+
+### 2. Fill in Application Details
+- **Application Name**: e.g., `Weam AI`
+- **Homepage URL**: `https://your-domain.com`
+- **Application Description**: Brief description of your app
+- **Authorization Callback URL**:
+  ```
+  https://your-domain.com/api/auth/github/callback
+  ```
+
+### 3. Environment Variables
+After registering, copy your **Client ID** and **Client Secret**, and set them in your `.env`:
+
+```env
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
+GITHUB_REDIRECT_URI=https://your-domain.com/api/auth/github/callback
+```
+
+<Callout type="info">
+Ensure that your domain and redirect URLs exactly match between your code and the settings in your Slack and GitHub app configurations.
+</Callout>
