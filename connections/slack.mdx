@@ -73,32 +73,3 @@ Obtain your **Client ID** and **Client Secret** from the **Basic Information** s
 SLACK_CLIENT_ID=your-client-id
 SLACK_CLIENT_SECRET=your-client-secret
 ```
-
----
-
-## GitHub MCP OAuth Configuration Setup
-
-### 1. Create a GitHub OAuth App
-1. Visit [https://github.com/settings/developers](https://github.com/settings/developers)
-2. Click **"New OAuth App"**
-
-### 2. Fill in Application Details
-- **Application Name**: e.g., `Weam AI`
-- **Homepage URL**: `https://your-domain.com`
-- **Application Description**: Brief description of your app
-- **Authorization Callback URL**:
-  ```
-  https://your-domain.com/api/auth/github/callback
-  ```
-
-### 3. Environment Variables
-After registering, copy your **Client ID** and **Client Secret**, and set them in your `.env`:
-
-```env
-GITHUB_CLIENT_ID=your-client-id
-GITHUB_CLIENT_SECRET=your-client-secret
-```
-
-<Callout type="info">
-Ensure that your domain and redirect URLs exactly match between your code and the settings in your Slack and GitHub app configurations.
-</Callout>

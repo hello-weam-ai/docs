@@ -28,7 +28,7 @@
                   "essentials/feature/prompts",
                   "essentials/feature/agents",
                   "essentials/feature/docs",
-                  "essentials/feature/mcp"
+                  "essentials/feature/connections"
                                 ]
               }, 
               "local-setup",
