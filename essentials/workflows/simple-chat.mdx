@@ -1,156 +1,114 @@
 ---
-title: "Simple Chat - Working and Implementation"
-description: "Understand the flow and architecture behind the Simple Chat powered by Python API and tool-enabled LLMs."
+title: "Simple Chat - Architecture and Flow"
+description: "Understand the pipeline and execution model for Simple Chat integrating MCP tools and LangGraph-based control flow."
 ---
 
 <Info>
-  **Simple Chat is a multi-tool, model-based conversational framework**:
-  - Supports dynamic tool invocation (e.g., image generation, web search)
-  - Based on model selection, chat history, and LLM-driven tool dispatch
+  **Simple Chat now uses LangGraph and MCP integration for enhanced tool handling and modular flow**:
+  - Dynamically pulls tools from MCP server
+  - Builds a state machine using LangGraph to control execution between tools and chatbot
+  - Supports new integrations: Slack, GitHub, Google Drive, Gmail, Google Calendar
 </Info>
-
-Use this reference to understand the backend pipeline, tool activation logic, and data flow for generating intelligent responses.
 
 <Steps>
 
 <Step title="User Query Flow">
 
 1. User sends a query from the frontend UI.
-2. Python API receives the request and passes it to the **Service Controller**.
-3. Controller selects an appropriate model service based on the **dropdown selection**.
-4. Initializes the selected LLM along with the default tool-selection logic.
-5. Simultaneously, **Chat Repository** is initialized using the provided chat ID.
+2. The Python API receives the request and passes it to the **Service Controller**.
+3. Controller uses the selected model (from dropdown) to decide which **Model Service** to initialize.
+4. The selected LLM is initialized.
+5. Simultaneously, a **MultiServerClient** fetches all available tools from the **MCP server**.
 
 </Step>
 
-<Step title="User Query Flow – Deep Dive">
+<Step title="Tool Registration and Filtering">
 
-- Query enters through the frontend and hits the **Controller Layer**.
-- The **Service Controller** picks the correct LLM (e.g., GPT-4.1, DALL·E, etc.) based on frontend input (dropdown or config).
-- This LLM is paired with a **default toolset**, registered dynamically depending on the selected model.
-- Simultaneously, the system retrieves chat context by:
-  - Hitting the **Chat Repository**
-  - Loading previous history using the `chat_id`
-- This chat history is essential to maintain continuity in multi-turn conversations.
-
-</Step>
-
-<Step title="Preparing the Prompt">
-
-- The chat history retrieved from the repository is combined with the new user query.
-- This combined prompt is passed to the LLM, ready for processing.
-- The LLM is bundled with tools:
-  - Simple Chat Tool
-  - Image Generation Tool
-  - Web Analysis Tool
-  - Web Search Tool
+- Tools received from MCP include:
+  - Slack
+  - GitHub
+  - Google Drive
+  - Google Calendar
+  - Gmail
+- These tools are matched against the current query.
+- **Unnecessary tools are filtered out** before being **bound** with the LLM.
 
 </Step>
 
-<Step title="Preparing the Prompt – Developer Notes">
+<Step title="LangGraph StateGraph Construction">
 
-- The query and chat history are **combined** to form the input prompt.
-- This is passed to the **LLMWrappedTool** interface, which serves as a middleware to:
-  - Track costs
-  - Interface tools
-  - Dispatch the appropriate response
-
-**Why?**  
-Bundling tools with LLM lets the system dynamically delegate tasks — whether it's basic response generation or external calls like image creation.
+- With tools filtered and bound, a **LangGraph StateGraph** is created:
+  - Contains a `ToolNode` for tool execution.
+  - Contains a `ChatbotNode` for normal LLM-based responses.
 
 </Step>
 
-<Step title="Tool Invocation Logic">
+<Step title="Chat History Initialization">
+
+- In parallel, the **Chat Repository** is initialized using the provided `chat_id`.
+- Full chat history is retrieved.
+- History is used to **create memory** for the conversation flow.
+
+</Step>
+
+<Step title="StateGraph Execution">
+
+- The LangGraph `StateGraph` is invoked.
+- Based on the query and history:
+  - If tool usage is detected → `ToolNode` is called
+  - Else → `ChatbotNode` is used to generate a natural LLM response
+- The combined context (query + history) is passed to the chatbot.
+
+</Step>
+
+<Step title="Tool Invocation Rules">
 
 <Info>
-  **Tool Activation Conditions**
+  **Tool Activation Based on Model Selection**
 </Info>
 
-- Web Search Tool → Active **only** with `GPT-4.1-search`  
-- Image Generation Tool → Enabled **only** for **GPT models**  
-- Simple Chat Tool and Web Analysis Tool are always available.
-
-The LLM evaluates the query and context to select the most suitable tool to fulfill the request.
-
-</Step>
-
-<Step title="Tool Invocation Logic – Internal Flow">
-
-The **LLMWrappedTool** plays a central role:
-- Evaluates the prompt + history
-- Selects the most appropriate tool from the available options
-
-**Tool Dispatch Breakdown**:
-
-| Tool               | Trigger Condition                              |
-|--------------------|-------------------------------------------------|
-| `Simple Tool`      | Always available                                |
-| `Web Analysis Tool`| Always available                                |
-| `Web Search Tool`  | Selected **only if** GPT-4.1-search is chosen   |
-| `Image Tool`       | Enabled for GET-based models (e.g., for DALL·E) |
-
-The selected tool:
-- May itself access the LLM (e.g., Web Search Tool generates a prompt to analyze search results)
-- Can load additional chat history if needed (ensures stateless components remain contextual)
+| Tool                 | Condition                                           |
+|----------------------|-----------------------------------------------------|
+| `Web Search Tool`    | Only used if **GPT-4.1-search** model is selected   |
+| `Image Generation`   | Only used for **GET-based GPT models**             |
+| `MCP Tools` (Slack, GitHub, etc.) | Dynamically fetched and filtered per query |
 
 </Step>
 
 <Step title="Streaming the Response">
 
-1. The selected tool is executed (e.g., web search, image generation).
-2. Tool invokes the LLM if necessary.
-3. The final response is streamed **back to the frontend in real-time**.
+1. The selected tool (if needed) is invoked.
+2. The tool may internally call the LLM to complete its task.
+3. The final response is streamed back to the **frontend in real-time**.
 
 </Step>
 
-<Step title="Tool Response and Streaming – Execution Order">
+<Step title="Logging and Cost Management">
 
-- Tools forward processed queries back to the **LLM**, now enhanced with additional context (e.g., search result or image prompt).
-- The LLM generates a natural language response (or image metadata).
-- That output is streamed via **NodeJS server**, leveraging WebSocket/SSE to the client UI.
-
-Intermediate steps:
-1. **Cost Estimation**: LLM input/output tokens are tracked per interaction
-2. **Tool Cost Calculator**:
-   - Sums up LLM costs + tool-specific costs (e.g., image model cost)
-   - Adds it to DB via the **MongoDB Handler**
-
-</Step>
-
-<Step title="Logging and Storage">
-
-- Each LLM call is tracked:
-  - **Cost** is computed based on input/output tokens using the **Cost Callback**.
-  - **Responses** are logged in MongoDB using the **MongoDB Handler**.
-
-</Step>
-
-<Step title="Response Logging and Cost Management – Backing Services">
-
-Every response includes:
-- Final message (`response`)
-- Metadata (model, tokens used, cost breakdown)
-- Persisted into MongoDB for:
-  - Billing
-  - Debugging
-  - Auditing
-
-**Cost Flow**:
-- LLM and tool invocation costs are calculated *separately*
-- Tools like **DALL·E** or **GPT-4.1 Search** have their own logic wrapped into the **Tool Cost Calculator**
+- LLM token cost is calculated using input/output lengths.
+- This cost is written to the DB using the **Cost Callback**.
+- The **MongoDB Handler** logs:
+  - Final response
+  - Token usage
+  - Tool activations
+  - Total cost breakdown
 
 </Step>
 
 <Step title="Architecture Overview">
 
-<iframe src="https://drive.google.com/file/d/1OBW4Rn0mxp8n4SEOf78USnpgvYn5Skc5/preview" width="100%" height="500" allow="autoplay"></iframe>
+<img
+  src="https://weam.ai/app/uploads/2025/07/simplechat.png"
+  alt="LLM Query Flow Diagram"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
 
 </Step>
 
 </Steps>
 
 <Note>
-  Tool eligibility is model-sensitive. Always verify the model selection logic before enabling new tools in production. For deeper integration logic, consult the Service Controller or Tool Wrapper implementations.
+  Web Search and Image Generation are **still model-gated** — verify model-specific logic before invoking or binding such tools. For deeper logic, inspect the Service Controller and LangGraph Node implementations.
 </Note>
 
 ## Troubleshooting
@@ -159,17 +117,19 @@ Every response includes:
 
 <Accordion title="Tool does not trigger">
 
-- Check model compatibility (e.g., image generation requires a GPT model).
-- Ensure LLM has access to the full tool registry.
-- Validate tool dispatch logic in the Service Controller.
+- Ensure the tool is compatible with the selected model.
+- Verify MultiServerClient has pulled the latest tools from MCP.
+- Check filtering logic — the tool might have been excluded during matching.
+- Review LangGraph transition from ChatbotNode → ToolNode.
 
 </Accordion>
 
-<Accordion title="Response not streaming or delayed">
+<Accordion title="No streaming or delay in response">
 
-- Confirm WebSocket or server-sent events are functioning on the frontend.
-- Check LLM latency or rate limiting issues.
-- Review logs in MongoDB and Cost Callback for performance bottlenecks.
+- Confirm the frontend WebSocket/SSE connections are intact.
+- Validate LangGraph state execution (especially transitions).
+- Check if tool execution has bottlenecks or is calling LLM internally.
+- Monitor MongoDB logs for signs of latency or cost overages.
 
 </Accordion>
 

@@ -28,56 +28,6 @@ With these capabilities, Weam AI lets you automate repository management, monito
 
 ---
 
-## Detailed OAuth Setup Instructions
-
-Steps to set up OAuth with GitHub to get your Client ID, Client Secret, and configure redirect URLs:
-
-### Create a GitHub OAuth App
-
-#### Navigate to GitHub Settings
-- Go to GitHub and sign in to your account
-- Click your profile picture in the top-right corner
-- Select "Settings" from the dropdown menu
-
-#### Access Developer Settings
-- Scroll down in the left sidebar and click "Developer settings"
-- Click "OAuth Apps" in the left sidebar
-
-### Create New OAuth App
-- Click the "New OAuth App" button
-- You'll see a form to register your application
-
-### Fill Out Application Details
-- **Application name**: Enter a descriptive name for your app  
-- **Homepage URL**: Enter your application's homepage URL (e.g., https://yourapp.com)  
-- **Application description**: (Optional) Add a brief description  
-- **Authorization callback URL**: This is your redirect URL where GitHub will send users after authorization (e.g., https://yourapp.com/auth/github/callback)  
-
-### Register the Application
-- Click "Register application" to create your OAuth app
-
-### Retrieve Your Credentials
-#### Get Client ID and Client Secret
-- After registration, you'll be redirected to your app's settings page
-- Your Client ID will be displayed prominently
-- Click "Generate a new client secret" to create your Client Secret
-- Copy and securely store both values immediately (the client secret won't be shown again)
-
-### Managing Redirect URLs
-#### Update Redirect URLs (if needed)
-- From your OAuth app settings page, you can modify the "Authorization callback URL"
-- For development, you might use `http://localhost:3000/auth/github/callback`
-- For production, use your actual domain
-- Click "Update application" to save changes
-
-### Important Security Notes
-- Keep your Client Secret private and never expose it in client-side code  
-- Use environment variables to store these credentials in your application  
-- The redirect URL must exactly match what you configure in GitHub (including protocol, domain, port, and path)  
-- You can update these settings anytime from the OAuth Apps section in your GitHub developer settings  
-- Your OAuth flow will then redirect users to GitHub for authorization and back to your specified callback URL with an authorization code that you can exchange for an access token.
----
-
 ## GitHub MCP OAuth Configuration Setup
 
 ### 1. Create a GitHub OAuth App
