@@ -1,0 +1,102 @@
+---
+title: "MCP Configuration Workflow"
+description: "Detailed frontend process for integrating and managing third-party services using MCP (Model Context Protocol)."
+---
+
+## Overview
+
+This workflow describes the general process for configuring and connecting third-party services through the **Model Context Protocol (MCP)** integration system.  
+MCP will store service data per user.
+
+## Workflow Steps
+
+### 1. Environment Setup
+
+- Configure environment variables for the target service:
+  - `Client ID`
+  - `Client Secret`
+- Set up service configuration object with:
+  - OAuth endpoints
+  - Required scopes
+
+### 2. OAuth Flow Implementation
+
+- **Initiation**
+  - User clicks **"Connect"**
+  - Generate OAuth `state`
+  - Redirect to service's OAuth URL
+
+- **Callback**
+  - Service redirects back with an `authorization code`
+  - Frontend exchanges the code for an access token
+
+- **Validation**
+  - Verify the OAuth `state`
+  - Handle and display errors as needed
+
+- **Storage**
+  - Encrypt and store access token with user information in the database
+
+### 3. Database Update
+
+- **Database Store**
+  - Store the MCP service token in the user's collection like:
+
+    ```json
+    mcpdata: {
+      SLACK: {},
+      GITHUB: {}
+    }
+    ```
+
+- **Disconnect Handler**
+  - When disconnecting, remove the specific service token object from the user's database entry
+
+### 4. State Management
+
+- Use **Redux** to manage:
+  - Connection status
+  - Loading states
+  - MCP data
+
+- Store:
+  - Encrypted tokens securely
+  - User service selections
+
+- Track:
+  - Selected MCP services
+  - Tool configurations for each
+
+### 5. Tool Integration Points
+
+- Define tools/actions available per service (e.g., Slack, GitHub)
+- Configure service selection options in the UI
+- Map service codes to respective tool functionality
+
+### 6. Chat Interface
+
+- Load user’s connected MCP services when the chat page loads
+- Display available MCP tools grouped by service
+- User selects a tool from the list
+- Collect required parameters using dynamic UI forms
+- User submits a query, and the system processes the tool invocation
+- Show results or tool responses inline within the chat interface
+
+### 7. Disconnect MCP
+
+- **User Initiation**
+  - User clicks **"Disconnect"** in the service configuration modal
+  - A confirmation dialog is shown to avoid accidental disconnections
+  - User confirms the disconnection
+
+- **Frontend State Update**
+  - Show "Disconnecting..." loading state
+  - Disable disconnect button during the process
+  - Display visual feedback (spinner, progress bar, etc.)
+
+- **Backend API Call**
+  - Send a POST request to the backend with:
+    - User authentication
+    - Target service information
+  - Handle response or error from the API
+

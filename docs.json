@@ -59,7 +59,8 @@
                   "essentials/workflows/rag-chat",
                   "essentials/workflows/agent",
                   "essentials/workflows/model",
-                  "essentials/workflows/langchain"
+                  "essentials/workflows/langchain",
+                  "essentials/workflows/mcp-workflow"
                 ]
               },
                "essentials/contribution"
