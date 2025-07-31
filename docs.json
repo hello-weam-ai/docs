@@ -97,9 +97,15 @@
             "pages": [
               "connections/slack",
               "connections/github",
-              "connections/gmail",
-              "connections/google-drive",
-              "connections/google-calendar"
+              {
+                "group": "Google",
+                "pages": [
+                  "connections/google/google-apps",
+                  "connections/google/gmail",
+                  "connections/google/google-drive",
+                  "connections/google/google-calendar"
+                                ]
+              }
             ]
           }
         ]

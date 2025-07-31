@@ -1,0 +1,63 @@
+---
+title : "Google Apps"
+---
+
+## Google OAuth Configuration Setup
+
+### Create a Google Cloud Project
+- Visit https://console.cloud.google.com/
+- Click "Select a project" dropdown at the top
+- Click "New Project"
+- Enter a project name and click "Create"
+- Wait for the project to be created and select it
+
+### Enable Required APIs
+- Go to APIs & Services > Library
+- Search for and enable:
+  - Google+ API (for basic profile access)
+  - Gmail API (if email access needed)
+  - Any other APIs your application requires
+- Click "Enable" for each API
+
+### Configure OAuth Consent Screen
+- Go to APIs & Services > OAuth consent screen
+- Choose "External" user type (or Internal for G Suite domains)
+- Fill in required fields:
+  - App name: Your application name
+  - User support email: Your email address
+  - Developer contact information: Your email
+  - Add Authorized domains (your production domain)
+- Click "Save and Continue"
+- Add scopes (e.g., userinfo.email, userinfo.profile)
+- Click "Save and Continue" through remaining steps
+
+### Create OAuth Credentials
+- Go to APIs & Services > Credentials
+- Click "Create Credentials" > "OAuth client ID"
+- Select "Web application" as application type
+- Enter a name for your OAuth client
+- Add Authorized redirect URIs:
+  - `https://your-domain.com/auth/google/callback`
+- Click "Create"
+
+### Verify Your Application
+- Go back to OAuth consent screen
+- Click "Publish App" to make it available to all users
+- For unverified apps, add test users in the "Test users" section
+
+#### For Production Verification:
+- Click "Submit for verification"
+- Provide required documentation:
+  - Privacy Policy URL
+  - Terms of Service URL
+  - App homepage URL
+- Complete security assessment questionnaire
+- Wait 1–7 days for Google's review
+
+### Environment Variables
+Obtain your Client ID and Client Secret from the Credentials section and add to your `.env`:
+
+```env
+GOOGLE_CLIENT_ID=your-client-id.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=https://your-domain.com/auth/google/callback
