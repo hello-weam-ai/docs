@@ -177,13 +177,13 @@
     "primary": {
       "type": "button",
       "label": "Github",
-      "href": "https://github.com/weam-ai/weamai"
+      "href": "https://github.com/weam-ai/weam"
     }
   },
   "footer": {
     "socials": {
       "x": "https://x.com/TheWeamAI",
-      "github": "https://github.com/weam-ai/weamai",
+      "github": "https://github.com/weam-ai/weam",
       "linkedin": "https://www.linkedin.com/company/the-weam-ai"
     }
   },
