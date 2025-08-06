@@ -97,31 +97,6 @@ embedding_config = repo._fetch_company_model_data()
 
 ---
 
-## PineconeRepository
-
-### `_fetch_pinecone_company_data`
-
-**Description:**  
-Fetches Pinecone vector DB configurations including index name, environment, and other Pinecone-specific metadata.
-
-#### Usage
-
-- `api_key_id: str`
-- `collection_name: str`
-- `**kwargs`: Optional custom query filters
-
-```python
-repo = PineconeRepository()
-repo.initialization(api_key_id="apikey-abc", collection_name="pinecone-configs")
-pinecone_data = repo._fetch_pinecone_company_data(environment="us-west1")
-```
-
-<Warning>
-Ensure that the Pinecone environment and index are valid, especially when passing custom `**kwargs` in production.
-</Warning>
-
----
-
 ## FileRepository
 
 ### `_fetch_file_model_data`

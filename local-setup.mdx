@@ -4,14 +4,28 @@ title: Local Setup
 
 ## Get your **Weam AI** application running locally with Docker and start building.
 
----
+<Tip>
+  <strong>Minimum configuration:</strong> To ensure smooth execution, your system must meet these minimum requirements:
+
+  <ul>
+    <li><strong>RAM:</strong> 8 GB</li>
+    <li><strong>CPU:</strong> Quad-core (4 cores)</li>
+  </ul>
+
+  ✅ Based on our testing, the app runs best with this configuration, providing a smooth and responsive experience.  
+  ⚠️ Using lower specs may lead to noticeable latency or performance issues.
+
+  If you're experiencing performance issues, consider closing background apps or upgrading system resources.
+</Tip>
+
+
 ## Mac/Linux Setup 
 
 ### Step 1: Set up your environment
 
 <AccordionGroup>
 
-<Accordion icon="copy" title="Clone the repository">
+<Accordion icon="copy" title="Clone the repository" defaultOpen>
 To begin, clone the project from GitHub and create your environment file.
 
 ```bash
@@ -21,7 +35,7 @@ cp .env.example .env
 ```
 </Accordion>
 
-<Accordion icon="rectangle-terminal" title="Build and run with Docker (Mac/Linux)">
+<Accordion icon="rectangle-terminal" title="Build and run with Docker (Mac/Linux)" defaultOpen>
 Use the following commands to build and run the project using Docker Compose:
 
 ```bash
@@ -43,31 +57,12 @@ This will:
 
 <AccordionGroup>
 
-<Accordion icon="globe" title="Visit the web interface">
+<Accordion icon="globe" title="Visit the web interface" defaultOpen>
 Once the containers are running, access the application in your browser:
 
 - [Signup Page](http://localhost:3000/register)  
 - [Login Page](http://localhost:3000/login)
 </Accordion>
-
-</AccordionGroup>
-
-
-### Step 3: System requirements
-
-<AccordionGroup>
-
-  <Accordion icon="terminal" title="Minimum configuration">
-    To ensure smooth execution, your system must meet these minimum requirements:
-
-    >  **RAM:** 8 GB  
-    > **CPU:** Quad-core (4 cores)
-
-    ✅ Based on our testing, the app runs best with this configuration, providing a smooth and responsive experience.  
-    ⚠️ Using lower specs may lead to noticeable latency or performance issues.
-
-    <Tip>If you're experiencing performance issues, consider closing background apps or upgrading system resources.</Tip>
-  </Accordion>
 
 </AccordionGroup>
 
@@ -79,7 +74,7 @@ Follow this guide to install Docker, set up WSL2 with Ubuntu, and run your devel
 
 <AccordionGroup>
 
-<Accordion icon="download" title="1. Install Docker Desktop for Windows">
+<Accordion icon="download" title="1. Install Docker Desktop for Windows" defaultOpen>
 **Download Docker Desktop:**  
 👉 [Install Guide](https://docs.docker.com/desktop/setup/install/windows-install/)
 
@@ -88,7 +83,7 @@ During installation:
 - ✅ Choose your preferred Linux distro (e.g., **Ubuntu**)
 </Accordion>
 
-<Accordion icon="terminal" title="2. Install WSL2 with Ubuntu">
+<Accordion icon="terminal" title="2. Install WSL2 with Ubuntu" defaultOpen>
 Run in **PowerShell (Admin)**:
 
 ```powershell
@@ -103,11 +98,11 @@ This will:
 **Restart your PC** after installation.
 </Accordion>
 
-<Accordion icon="window" title="3. Open Ubuntu (WSL2 Terminal)">
+<Accordion icon="window" title="3. Open Ubuntu (WSL2 Terminal)" defaultOpen>
 Click **Start → Ubuntu**, then set your **username and password** on first launch.
 </Accordion>
 
-<Accordion icon="code" title="4. Set VS Code to Use LF Line Endings">
+<Accordion icon="code" title="4. Set VS Code to Use LF Line Endings" defaultOpen>
 > ⚠️ `.sh` files with `CRLF` may break in WSL/Linux.
 
 1. Open folder in **VS Code**
@@ -116,11 +111,11 @@ Click **Start → Ubuntu**, then set your **username and password** on first lau
 4. Repeat for all `.sh` files (e.g., `winbuild.sh`, `build.sh`)
 </Accordion>
 
-<Accordion icon="docker" title="5. Ensure Docker Desktop is Running">
+<Accordion icon="docker" title="5. Ensure Docker Desktop is Running" defaultOpen>
 Launch **Docker Desktop** and wait for "Docker is running" message.
 </Accordion>
 
-<Accordion icon="folder-open" title="6. Navigate to Project from Ubuntu">
+<Accordion icon="folder-open" title="6. Navigate to Project from Ubuntu" defaultOpen>
 In **Ubuntu terminal**, go to your project directory:
 
 ```bash
@@ -130,7 +125,7 @@ cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
 > Example: `/mnt/c/Users/dhruvish/Documents/weam-ai-project`
 </Accordion>
 
-<Accordion icon="play" title="7. Run winbuild.sh">
+<Accordion icon="play" title="7. Run winbuild.sh" defaultOpen>
 (Optional) Make script executable:
 
 ```bash
@@ -144,7 +139,7 @@ bash winbuild.sh
 ```
 </Accordion>
 
-<Accordion icon="gear" title="8. Set Environment Variables">
+<Accordion icon="gear" title="8. Set Environment Variables" defaultOpen>
 Copy `.env.example` to `.env`:
 
 ```bash
@@ -154,7 +149,7 @@ cp .env.example .env
 Edit `.env` with your settings.
 </Accordion>
 
-<Accordion icon="rocket" title="9. Run Docker Compose">
+<Accordion icon="rocket" title="9. Run Docker Compose" defaultOpen>
 Start environment:
 
 ```bash
