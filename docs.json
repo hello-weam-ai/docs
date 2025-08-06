@@ -32,8 +32,8 @@
                                 ]
               }, 
               "local-setup",
-              "development",
               "self-hosted",
+              "development",
               "environment-variables",
               "credentialsetup"
             ]

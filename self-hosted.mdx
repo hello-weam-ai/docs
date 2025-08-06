@@ -10,7 +10,7 @@ Get your **Weam AI** app securely hosted on your own domain using **NGINX** and 
 
 <AccordionGroup>
 
-<Accordion icon="server" title="Update & Install NGINX">
+<Accordion icon="server" title="Update & Install NGINX"  defaultOpen>
 First, update your server and install **NGINX**:
 
 ```bash
@@ -21,7 +21,7 @@ sudo apt install nginx -y
 <Note>Ensure ports `80` and `443` are open on your firewall or cloud provider settings.</Note>
 </Accordion>
 
-<Accordion icon="file" title="Create NGINX Config">
+<Accordion icon="file" title="Create NGINX Config" defaultOpen>
 Create a new NGINX site configuration:
 
 ```bash
@@ -73,7 +73,7 @@ Example replacement values:
 </Tip>
 </Accordion>
 
-<Accordion icon="link" title="Enable Site & Reload NGINX">
+<Accordion icon="link" title="Enable Site & Reload NGINX" defaultOpen>
 Enable the config and reload NGINX:
 
 ```bash
@@ -91,7 +91,7 @@ sudo systemctl reload nginx
 
 <AccordionGroup>
 
-<Accordion icon="shield-check" title="Install Certbot">
+<Accordion icon="shield-check" title="Install Certbot" defaultOpen>
 Install **Certbot** and the NGINX plugin:
 
 ```bash
@@ -99,7 +99,7 @@ sudo apt install certbot python3-certbot-nginx -y
 ```
 </Accordion>
 
-<Accordion icon="lock" title="Generate SSL Certificate">
+<Accordion icon="lock" title="Generate SSL Certificate" defaultOpen>
 Generate and apply your SSL certificate:
 
 ```bash
