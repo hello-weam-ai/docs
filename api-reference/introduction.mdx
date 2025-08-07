@@ -1,49 +1,23 @@
 ---
-title: 'Python API'
-description: 'Explore, test, and integrate Python APIs effortlessly using Swagger, Redocly, and Postman.'
+title: "Introduction"
+description: "Example section for showcasing API endpoints"
 ---
 
 <Note>
-  This documentation provides an interactive and visual guide to explore all available Python API endpoints. You can remove this section if you're not using the API reference features.
+  If you're not looking to build API reference documentation, you can delete this section by removing the api-reference folder.
 </Note>
 
-## Welcome to the Python API Suite
+## Welcome
 
-Our Python-based API offers developers flexible and well-documented endpoints designed for ease of integration and testing. Below, you’ll find various tools to interact with and understand the API.
+There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
 
----
-
-## API Explorer Tools
-
-<Card
-  title="Swagger UI"
-  icon="code"
-  href="http://localhost:9089/docs"
->
-  Use the interactive Swagger UI to test and try out endpoints in real-time.
+<Card title="Plant Store Endpoints" icon="leaf" href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json">
+  View the OpenAPI specification file
 </Card>
-
-<Card
-  title="Redocly Viewer"
-  icon="book-open"
-  href="http://localhost:9089/redoc"
->
-  A structured, readable interface for reviewing all endpoints and schema definitions.
-</Card>
-
-<Card
-  title="Postman Collection"
-  icon="terminal"
-  href="https://documenter.getpostman.com/view/36531136/2sB34Zr4fg"
->
-  Download our pre-configured Postman Collection to test endpoints easily.
-</Card>
-
----
 
 ## Authentication
 
-All API requests require Bearer Token authentication. Make sure to include a valid token in your request headers when accessing secured endpoints.
+All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
 
 ```json
 "security": [
@@ -51,3 +25,4 @@ All API requests require Bearer Token authentication. Make sure to include a val
     "bearerAuth": []
   }
 ]
+```
