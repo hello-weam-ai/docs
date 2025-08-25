@@ -1,0 +1,206 @@
+---
+title: "Sales Video Call Analyzer"
+---
+
+Transform client call recordings into actionable insights. Extract key details, action items, and follow-ups from video calls without manual review.
+
+## Features
+
+- **Video Processing**: Upload Loom files or analyze YouTube URLs
+- **Smart Summarization**: Automatic extraction of highlights and action items  
+- **Custom Prompts**: Use default templates or create custom analysis workflows
+- **Fast Processing**: Powered by Gemini 2.0 Flash API
+
+## How It Works
+
+The analyzer processes videos through a structured pipeline:
+
+```
+Video Upload → Context Extraction → LLM Analysis → Insight Generation → Storage
+```
+
+## Core Components
+
+| Component | Purpose |
+|-----------|---------|
+| Gemini Files API | Video upload and validation |
+| Gemini Cache API | Context extraction and preprocessing |
+| LLM Engine | Analysis using GPT-4 or Gemini models |
+| Prompt Templates | Structured analysis instructions |
+| Token Tracker | Usage monitoring and cost calculation |
+
+## Implementation
+
+### Video Analysis Pipeline
+
+```python
+def analyze_video(video_url, custom_prompt=None):
+    # 1. Upload and validate video
+    file_response = gemini_files_api.upload(video_url)
+    
+    # 2. Extract context via cache API
+    context = gemini_cache_api.process(file_response)
+    
+    # 3. Initialize LLM with context
+    llm = initialize_llm(model="gemini-2.0-flash")
+    
+    # 4. Apply analysis prompts
+    prompts = load_prompt_templates(custom_prompt)
+    
+    # 5. Generate insights
+    response = llm.analyze(context, prompts)
+    
+    # 6. Store results
+    return store_response(response)
+```
+
+### Processing Flow
+
+1. **Upload Validation**
+   - Validates file size and duration constraints
+   - Checks format compatibility
+
+2. **Context Extraction**
+   - Pre-processes video using Gemini Cache API
+   - Extracts semantic context for analysis
+
+3. **LLM Analysis**
+   - Applies prompt templates for sales-focused insights
+   - Generates structured output with key findings
+
+4. **Result Storage**
+   - Saves analysis to backend storage
+   - Tracks token usage and costs
+
+## API Reference
+
+### Endpoints
+
+**Primary Analysis Endpoint**
+```
+POST /analyze-video
+```
+
+**Request Body**
+```json
+{
+  "videoLink": "https://loom.com/share/example",
+  "promptType": "default|custom",
+  "customPrompt": "Focus on objection handling and engagement",
+  "clientContext": {
+    "name": "Acme Corp",
+    "project": "Q4 Demo Review"
+  }
+}
+```
+
+**Response Format**
+```json
+{
+  "summary": "Client showed strong interest in automation features",
+  "actionItems": [
+    "Follow up with pricing proposal by Friday",
+    "Schedule technical deep dive for next week"
+  ],
+  "keyInsights": [
+    "Budget concerns around implementation timeline",
+    "Strong alignment with current workflow needs"
+  ],
+  "tokenUsage": 1250,
+  "processingTime": "3.2s"
+}
+```
+
+### Functions
+
+| Function | Purpose |
+|----------|---------|
+| `getAIProAgentChatResponse()` | Standard LLM agent processing |
+| `getSalesCallResponse()` | Sales-specific analysis pipeline |
+
+## Configuration
+
+### Model Settings
+- **Primary Model**: Gemini 2.0 Flash (recommended)
+- **Alternative**: GPT-4 for specialized analysis
+- **Context Window**: Up to 1M tokens
+
+### File Constraints
+- **Maximum Duration**: 2 hours
+- **Supported Formats**: MP4, MOV, WebM
+- **File Size Limit**: 500MB
+- **Source Types**: Direct upload, Loom URLs, YouTube URLs
+
+### Analysis Templates
+Built-in templates for common analysis patterns:
+- Objection identification and handling
+- Sentiment and engagement tracking
+- Talk ratio and conversation flow
+- Key decision points and next steps
+
+## Usage Examples
+
+### Basic Analysis
+```bash
+curl -X POST /api/analyze-video \
+  -H "Content-Type: application/json" \
+  -d '{
+    "videoLink": "https://loom.com/share/abc123",
+    "promptType": "default"
+  }'
+```
+
+### Custom Analysis
+```bash
+curl -X POST /api/analyze-video \
+  -H "Content-Type: application/json" \
+  -d '{
+    "videoLink": "https://youtube.com/watch?v=xyz789",
+    "promptType": "custom",
+    "customPrompt": "Focus on technical questions and feature requests"
+  }'
+```
+
+## Performance Considerations
+
+### File Limits
+- Maximum video duration: 2 hours
+- Supported formats: MP4, MOV, WebM
+- File size limit: 500MB
+
+### Processing Time
+- Average processing: 30-60 seconds per hour of video
+- Parallel processing supported for multiple videos
+- Caching reduces repeat analysis time by 80%
+
+## Error Handling
+
+Common error scenarios and responses:
+
+| Error Code | Description | Solution |
+|------------|-------------|----------|
+| `VIDEO_TOO_LARGE` | File exceeds size limit | Compress video or split into segments |
+| `INVALID_URL` | URL not accessible | Verify video is public and URL is correct |
+| `QUOTA_EXCEEDED` | API rate limit reached | Implement request throttling |
+| `PROCESSING_FAILED` | Analysis pipeline error | Retry with different prompt or video format |
+
+## Integration Notes
+
+### Authentication
+API calls require valid authentication tokens. Include in request headers:
+```
+Authorization: Bearer your-api-key
+```
+
+### Rate Limits  
+- 100 requests per hour per API key
+- 10 concurrent video processing jobs
+- Token usage tracked per request
+
+### Webhooks
+Optional webhook support for async processing:
+```json
+{
+  "webhookUrl": "https://your-app.com/video-analyzed",
+  "events": ["analysis.completed", "analysis.failed"]
+}

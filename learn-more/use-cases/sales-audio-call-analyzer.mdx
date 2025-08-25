@@ -1,0 +1,374 @@
+---
+title: "Sales Audio Call Analyzer"
+---
+
+Extract actionable insights from sales conversations through automated transcription and AI-powered analysis. 
+
+Support for multiple input formats including direct audio upload, meeting platform URLs, and text transcripts.
+
+## Features
+
+- **Multi-format Input**: Audio files, Fathom/Zoom URLs, or plain text transcripts
+- **Automated Transcription**: Speech-to-text conversion using Gemini Files API
+- **Context Enhancement**: Optional document and website content integration
+- **Sales-focused Analysis**: Specialized prompts for objection handling, sentiment, and action items
+- **Real-time Processing**: Streaming analysis results with cost tracking
+
+## Architecture Overview
+
+The analyzer supports three distinct processing modes based on input type:
+
+```
+Audio Upload → Transcription → Analysis → Insights
+Meeting URL → Extraction → Analysis → Insights  
+Text Input → Direct Analysis → Insights
+```
+
+## Processing Modes
+
+### Audio Service
+Processes uploaded audio files through transcription and analysis.
+
+**Supported Formats**: MP3, WAV, M4A, FLAC  
+**File Size Limit**: 25MB  
+**Duration Limit**: 2 hours
+
+### Phantom Service  
+Extracts transcripts from meeting platform URLs using browser automation.
+
+**Supported Platforms**: Fathom, Zoom, Google Meet  
+**Method**: Playwright headless browser extraction  
+**Authentication**: Platform-specific session handling
+
+### Transcript Service
+Analyzes pre-existing text transcripts directly.
+
+**Input Format**: Plain text  
+**Size Limit**: 50,000 characters  
+**Encoding**: UTF-8
+
+## Implementation
+
+### Audio Processing Workflow
+
+```python
+def process_audio_call(audio_file, supplemental_data=None):
+    # 1. Initialize components
+    llm = initialize_llm()
+    
+    # 2. Upload and transcribe
+    file_response = gemini_files_api.upload(audio_file)
+    transcript = gemini_files_api.transcribe(file_response)
+    
+    # 3. Process supplemental content
+    context = ""
+    if supplemental_data:
+        if supplemental_data.get('url'):
+            context += scrape_website(supplemental_data['url'])
+        if supplemental_data.get('documents'):
+            context += extract_document_text(supplemental_data['documents'])
+    
+    # 4. Analyze conversation
+    analysis_chain = create_sales_analysis_chain(llm)
+    insights = analysis_chain.process(transcript, context)
+    
+    # 5. Cleanup and logging
+    cleanup_temp_files(audio_file)
+    cost = calculate_token_cost(insights.token_usage)
+    store_analysis_results(insights, cost)
+    
+    return insights
+```
+
+### URL Extraction Workflow
+
+```python
+def process_meeting_url(meeting_url, supplemental_data=None):
+    # 1. Initialize browser automation
+    playwright_session = initialize_playwright()
+    
+    # 2. Extract transcript
+    transcript = playwright_session.extract_transcript(meeting_url)
+    
+    # 3. Process supplemental content (same as audio service)
+    context = process_supplemental_data(supplemental_data)
+    
+    # 4. Analyze and return results
+    return analyze_sales_conversation(transcript, context)
+```
+
+## API Reference
+
+### Analysis Endpoint
+
+```
+POST /api/sales-call-analysis
+```
+
+**Request Body (Audio Upload)**
+```json
+{
+  "inputType": "audio",
+  "audioFile": "base64_encoded_audio_data",
+  "fileName": "sales_call.mp3",
+  "supplementalData": {
+    "websiteUrl": "https://client-company.com",
+    "documents": ["proposal.pdf", "pricing.docx"]
+  },
+  "analysisOptions": {
+    "focusAreas": ["objections", "sentiment", "next_steps"],
+    "generateSummary": true
+  }
+}
+```
+
+**Request Body (Meeting URL)**
+```json
+{
+  "inputType": "url",
+  "meetingUrl": "https://fathom.video/call/abc123",
+  "platformType": "fathom",
+  "supplementalData": {
+    "websiteUrl": "https://client-company.com"
+  }
+}
+```
+
+**Request Body (Text Transcript)**
+```json
+{
+  "inputType": "transcript",
+  "transcriptText": "Sales rep: Thanks for joining today's call...",
+  "supplementalData": {
+    "documents": ["product_spec.pdf"]
+  }
+}
+```
+
+**Response Format**
+```json
+{
+  "analysisId": "sca_12345",
+  "status": "completed",
+  "insights": {
+    "summary": "Client showed strong interest in automation features",
+    "sentiment": {
+      "overall": "positive",
+      "score": 0.75,
+      "keyMoments": [
+        {
+          "timestamp": "00:05:23",
+          "sentiment": "concern",
+          "topic": "implementation timeline"
+        }
+      ]
+    },
+    "objections": [
+      {
+        "objection": "Worried about integration complexity",
+        "response": "Provided case study of similar client success",
+        "resolved": true
+      }
+    ],
+    "actionItems": [
+      "Send technical integration guide",
+      "Schedule follow-up demo for next Tuesday"
+    ],
+    "talkRatio": {
+      "salesRep": 45,
+      "client": 55
+    }
+  },
+  "metadata": {
+    "processingTime": "23s",
+    "tokenUsage": 3200,
+    "cost": 0.048,
+    "transcriptLength": 1450
+  }
+}
+```
+
+## Core Components
+
+| Component | Purpose |
+|-----------|---------|
+| Gemini Files API | Audio upload and transcription |
+| Playwright Engine | Browser automation for URL extraction |
+| Web Scraper | Website content extraction |
+| Document Parser | PDF, DOCX, TXT content extraction |
+| LLM Analysis Chain | Sales-focused conversation analysis |
+| Prompt Templates | Structured analysis instructions |
+| Cost Tracker | Token usage and pricing calculation |
+
+## Configuration
+
+### Audio Processing Settings
+```json
+{
+  "transcription": {
+    "model": "gemini-pro",
+    "language": "auto-detect",
+    "speakerDiarization": true,
+    "maxDuration": 7200
+  },
+  "fileValidation": {
+    "maxSize": "25MB",
+    "allowedFormats": ["mp3", "wav", "m4a", "flac"]
+  }
+}
+```
+
+### Analysis Parameters
+```json
+{
+  "analysis": {
+    "focusAreas": [
+      "objection_handling",
+      "sentiment_analysis", 
+      "talk_ratio",
+      "action_items",
+      "decision_makers"
+    ],
+    "summaryLength": "detailed",
+    "includeTimestamps": true
+  }
+}
+```
+
+## Usage Examples
+
+### Audio File Analysis
+
+```bash
+curl -X POST /api/sales-call-analysis \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "inputType": "audio",
+    "audioFile": "data:audio/mp3;base64,UklGRnoG...",
+    "fileName": "client_call.mp3",
+    "analysisOptions": {
+      "focusAreas": ["objections", "next_steps"]
+    }
+  }'
+```
+
+### Meeting URL Analysis
+
+```bash
+curl -X POST /api/sales-call-analysis \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputType": "url",
+    "meetingUrl": "https://fathom.video/call/xyz789",
+    "platformType": "fathom",
+    "supplementalData": {
+      "websiteUrl": "https://prospect-company.com"
+    }
+  }'
+```
+
+### Python Implementation
+
+```python
+import requests
+import base64
+
+# Audio file analysis
+with open('sales_call.mp3', 'rb') as audio_file:
+    audio_data = base64.b64encode(audio_file.read()).decode()
+
+response = requests.post('/api/sales-call-analysis', json={
+    'inputType': 'audio',
+    'audioFile': f'data:audio/mp3;base64,{audio_data}',
+    'fileName': 'sales_call.mp3',
+    'analysisOptions': {
+        'focusAreas': ['objections', 'sentiment', 'action_items'],
+        'generateSummary': True
+    }
+})
+
+analysis = response.json()
+print(f"Summary: {analysis['insights']['summary']}")
+print(f"Action Items: {analysis['insights']['actionItems']}")
+```
+
+## Performance & Limits
+
+### Processing Metrics
+- **Audio Transcription**: 1-3 minutes per hour of audio
+- **URL Extraction**: 15-45 seconds depending on platform
+- **Text Analysis**: 5-15 seconds for typical call transcripts
+- **Concurrent Processing**: Up to 10 analyses simultaneously
+
+### Rate Limits
+- **API Requests**: 100 analyses per hour per API key
+- **File Uploads**: 50MB total per hour
+- **Token Usage**: Tracked and reported per analysis
+
+### Platform Limitations
+- **Fathom**: Requires public or shared call links
+- **Zoom**: Cloud recordings only, local recordings not supported
+- **Google Meet**: Requires Google Workspace with recording enabled
+
+## Error Handling
+
+### Common Error Responses
+
+| Status Code | Error Type | Description | Solution |
+|-------------|------------|-------------|----------|
+| `400` | `INVALID_AUDIO_FORMAT` | Unsupported audio file format | Convert to MP3, WAV, M4A, or FLAC |
+| `413` | `FILE_TOO_LARGE` | Audio file exceeds size limit | Compress audio or split into segments |
+| `422` | `TRANSCRIPTION_FAILED` | Unable to process audio content | Check audio quality and format |
+| `404` | `URL_NOT_ACCESSIBLE` | Meeting URL is private or invalid | Verify URL is public and accessible |
+| `429` | `RATE_LIMIT_EXCEEDED` | Too many concurrent requests | Implement request throttling |
+
+### Error Response Format
+
+```json
+{
+  "error": {
+    "code": "TRANSCRIPTION_FAILED",
+    "message": "Unable to transcribe audio content",
+    "details": {
+      "fileName": "sales_call.mp3",
+      "fileSize": "15.2MB",
+      "duration": "45:23",
+      "reason": "Audio quality too low for reliable transcription"
+    }
+  }
+}
+```
+
+## Integration Guide
+
+### Authentication
+
+All requests require Bearer token authentication:
+```bash
+curl -H "Authorization: Bearer your-api-key"
+```
+
+### Webhook Support
+
+Configure webhooks for analysis completion:
+```json
+{
+  "webhookUrl": "https://your-app.com/sales-analysis-complete",
+  "events": ["analysis.completed", "analysis.failed", "transcription.completed"]
+}
+```
+
+### Streaming Results
+
+For real-time progress updates:
+```
+GET /api/sales-call-analysis/{analysisId}/stream
+```
+
+Returns Server-Sent Events:
+```
+data: {"type": "progress", "step": "transcription", "completion": 30}
+data: {"type": "insights", "category": "objections", "data": [...]}
+data: {"type": "complete", "analysisId": "sca_12345"}
+```

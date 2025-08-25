@@ -1,106 +1,102 @@
 ---
 title: "New LLM Model Integration"
-description: "Step-by-step guide to integrate new language models into the system for Python, Node.js, and Next.js stacks."
 ---
 
-<Info>
-  **This guide outlines the full integration process for adding a new LLM model**, whether it connects via OpenRouter or directly through SDKs like OpenAI, Claude, Groq, or Mistral.
-</Info>
+Step-by-step guide for integrating new language models into the Python, Node.js, and Next.js stacks.
 
-<Steps>
+## Integration Types
 
-<Step title="Integration Flow Overview">
+### OpenRouter Integration
+For models accessed through OpenRouter (RAG, Simple Tool Chat, CustomGPT)
 
-1. Choose between integration types:
-   - **OpenRouter-based**: for models like RAG, Simple Tool Chat, CustomGPT, etc.
-   - **Direct SDK-based**: for OpenAI, Claude, Groq, Mistral, etc.
-2. Update relevant services, controllers, prompts, SDKs, and model metadata.
+### Direct SDK Integration  
+For direct API integration (OpenAI, Claude, Groq, Mistral)
 
-</Step>
+## Python Stack Integration
 
-<Step title="OpenRouter Integration (Python stack)">
+### OpenRouter-Based Models
 
-- **Service Layer**: `src/chatflow_langchain/service/`
-  - Add folders/files for the model service (e.g., `custom_gpt`, `title`, `simple_chat`)
-  
-- **Controller Logic**: `src/chatflow_langchain/controller/`
-  - Update controllers to handle logic and registration via OpenRouter
+**Service Layer**: `src/chatflow_langchain/service/`
+- Add model service folders (`custom_gpt`, `title`, `simple_chat`)
 
-- **Prompt Templates**: `src/prompt/langchain/`
-  - Define or update prompt templates and config for the new model
+**Controller Logic**: `src/chatflow_langchain/controller/`
+- Update controllers for OpenRouter registration and routing
 
-- **Callbacks**: `src/customlib/langchain/`
-  - Implement logic for:
-    - MongoDB persistence
-    - Token usage tracking
-    - Streaming response management
+**Prompt Templates**: `src/prompt/langchain/`
+- Define prompt templates and configuration
 
-</Step>
+**Callbacks**: `src/customlib/langchain/`
+- Implement MongoDB persistence
+- Token usage tracking
+- Streaming response management
 
-<Step title="Direct SDK Integration (Python stack)">
+### Direct SDK Integration
 
-- **Dependencies**: `requirements.txt`
-  - Add SDKs like `openai`, `anthropic`, `mistral`, etc.
+**Dependencies**: `requirements.txt`
+- Add required SDKs (`openai`, `anthropic`, `mistral`)
 
-- ⚙️ **Model Config**: `src/chatflow_langchain/service/model/config.py`
-  - Add default behavior, token limits, and metadata
+**Model Configuration**: `src/chatflow_langchain/service/model/config.py`
+- Add default behavior and token limits
+- Define model metadata
 
-- **Optional Caching**: `chatopenai_cache.py`
-  - Add caching, usage tracking, refresh/expiry logic (if OpenAI-specific)
+**Optional Caching**: `chatopenai_cache.py`
+- Add caching logic (OpenAI-specific)
+- Usage tracking and refresh/expiry logic
 
-- **Controller Updates**: `src/chatflow_langchain/controller/`
-  - Add routing and provider logic
+**Controller Updates**: `src/chatflow_langchain/controller/`
+- Add routing and provider logic
 
-- **Prompt Updates**: `src/prompt/langchain/`
-  - Align template tone, structure, and behavior for the model
+**Prompt Updates**: `src/prompt/langchain/`
+- Align templates for model behavior
 
-</Step>
+## Node.js Backend Configuration
 
-<Step title="Node.js Backend Model Configuration">
+### Constants Configuration
 
-- **Constants File**: `src/config/constants/aimodal.js`
-  - Add new model constant
-  - Add to `OPENROUTER_PROVIDER`, `MODAL_NAME`
+**AI Model Constants**: `src/config/constants/aimodal.js`
+- Add new model constant
+- Update `OPENROUTER_PROVIDER`, `MODAL_NAME`
 
-- **Common Constants**: `src/config/constants/common.js`
-  - Add model code in `MODEL_CODE`
+**Common Constants**: `src/config/constants/common.js`
+- Add model code in `MODEL_CODE`
 
--  **API Key Logic**: `src/services/company.js`
-  - Extend `checkApiKey(...)` to support the new model
-  - Define a checker function for API validation
+### API Key Management
 
-</Step>
+**Company Service**: `src/services/company.js`
+- Extend `checkApiKey()` for new model support
+- Define API validation checker function
 
-<Step title="Next.js Frontend Integration">
+## Next.js Frontend Integration
 
-- **Model Icon**: Place logo in `public/` directory
+### Assets and Constants
 
-- **Constant Mapping**: `src/utils/constant.ts`
-  - Add model code, display name, image path, credit info, and sequence list
+**Model Icon**: Place logo in `public/` directory
 
-- **Optional Image Feature Support**: `src/utils/helper.ts`
-  - If model supports image generation or conversation, update:
-    - `allowImageGeneration`
-    - `allowImageConversation`
+**Constant Mapping**: `src/utils/constant.ts`
+- Add model code, display name, image path
+- Configure credit info and sequence list
 
-</Step>
+### Feature Support
 
-<Step title="Database Migration and Model Metadata">
+**Helper Functions**: `src/utils/helper.ts`
+- Update `allowImageGeneration` if supported
+- Update `allowImageConversation` if supported
 
-### `Model` Collection
+## Database Schema
 
-Defines global model metadata:
+### Model Collection
+Global model metadata:
+
 ```json
 {
   "title": "Model Name",
-  "code": "MODEL_CODE",
+  "code": "MODEL_CODE", 
   "isActive": true
 }
-````
+```
 
-### `CompanyModel` Collection
-
-Links model to a company and includes config:
+### CompanyModel Collection
+Company-specific model configuration:
 
 ```json
 {
@@ -112,7 +108,7 @@ Links model to a company and includes config:
   },
   "company": {
     "name": "Company Name",
-    "slug": "company-slug",
+    "slug": "company-slug", 
     "id": "CompanyId"
   },
   "config": {
@@ -129,27 +125,28 @@ Links model to a company and includes config:
 }
 ```
 
-</Step>
+## Integration Checklist
 
-<Step title="Summary of Changes by Path">
+| Component | Purpose | Path |
+|-----------|---------|------|
+| Service Layer | Model-specific services | `src/chatflow_langchain/service/` |
+| Controllers | Model routing and registration | `src/chatflow_langchain/controller/` |
+| Prompt Templates | Model prompt configuration | `src/prompt/langchain/` |
+| Callbacks | Token tracking and persistence | `src/customlib/langchain/` |
+| Dependencies | Required SDKs | `requirements.txt` |
+| Node Constants | Model constants and codes | `src/config/constants/` |
+| API Key Logic | Validation and checking | `src/services/company.js` |
+| Frontend Constants | UI metadata and configuration | `src/utils/constant.ts` |
+| Model Assets | Logos and icons | `public/` |
 
-| **Path**                          | **Purpose**                 |
-| ------------------------------------ | ------------------------------ |
-| `src/chatflow_langchain/service/`    | Define services per model   |
-| `src/chatflow_langchain/controller/` | Register & route models     |
-| `src/prompt/langchain/`              | Add prompt logic/templates   |
-| `src/customlib/langchain/`           | Callbacks & token tracking  |
-| `requirements.txt`                   | Add required SDKs           |
-| `chatopenai_cache.py`                | OpenAI-specific cache logic |
-| `src/config/constants/`              | Node model constants       |
-| `src/services/company.js`            | API key checker integration |
-| `src/utils/constant.ts`              | Model image and metadata    |
-| `public/`                            | Model logos/icons          |
+## Testing Requirements
 
-</Step>
-
-</Steps>
+- End-to-end testing from model selection to response
+- Prompt behavior validation
+- Tool compatibility verification  
+- API key validation testing
+- Cost tracking accuracy
 
 <Note>
-Always test end-to-end from model selection to final response and cost tracking. Ensure prompt behavior, tool compatibility, and API key validation are functioning as expected.
+Always test the complete integration flow including model selection, prompt processing, response generation, and cost tracking before deployment.
 </Note>

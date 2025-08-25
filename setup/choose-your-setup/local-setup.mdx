@@ -1,0 +1,321 @@
+---
+title: "Local Setup"
+description: "Run Weam AI on your local machine for development, testing, or evaluation using Docker."
+---
+
+<Tip>
+  **Minimum configuration:** To ensure smooth execution, your system must meet these minimum requirements:
+
+  - **RAM:** 8 GB
+  - **CPU:** Quad-core (4 cores)
+  - **Storage:** 10GB free disk space
+  - **Docker Desktop** installed
+  - **Git** installed
+
+**Operating Systems**
+
+- **MacOS** (Intel or Apple Silicon)
+- **Linux** (Ubuntu 20.04+ recommended)
+- **Windows** 10/11 with WSL2
+
+Based on our testing, the app runs best with this configuration, providing a smooth and responsive experience.  
+  
+**⚠️ Using lower specs may lead to noticeable latency or performance issues.**
+
+If you're experiencing performance issues, consider closing background apps or upgrading system resources.
+</Tip>
+
+## Installation Steps
+
+<Tabs>
+<Tab title="macOS/Linux">
+
+<Steps>
+
+<Step title="Clone Repository">
+Clone the project from GitHub and create your environment file:
+
+```bash
+git clone https://github.com/Weam AI-ai/Weam AI.git
+cd Weam AI
+cp .env.example .env
+```
+</Step>
+
+<Step title="Build and Start Services">
+Use the following commands to build and run the project:
+
+```bash
+bash build.sh
+docker compose up --build
+```
+
+This will:
+- Build all necessary Docker images
+- Start backend, frontend, and supporting services
+
+<Note>Ensure Docker and Docker Compose are installed before proceeding.</Note>
+</Step>
+
+<Step title="Verify Installation">
+The build process takes 5-10 minutes on the first run. Once complete, you should see:
+
+```
+Weam AI-frontend    | Ready - started server on 0.0.0.0:3000
+Weam AI-backend     | Server running on port 4050
+Weam AI-python      | Application startup complete
+```
+</Step>
+
+<Step title="Access Application">
+Open your browser and navigate to:
+
+- **Main Application:** [http://localhost:3000](http://localhost:3000)
+- **Registration:** [http://localhost:3000/register](http://localhost:3000/register)  
+- **Login:** [http://localhost:3000/login](http://localhost:3000/login)
+</Step>
+
+</Steps>
+
+</Tab>
+<Tab title="Windows (WSL2)">
+
+<Steps>
+
+<Step title="Install Docker Desktop">
+[Official Installation Guide](https://docs.docker.com/desktop/setup/install/windows-install/)
+
+**During installation:**
+- ✅ Enable **WSL 2 integration**
+- ✅ Choose your preferred Linux distro (e.g., **Ubuntu**)
+</Step>
+
+<Step title="Install WSL2 with Ubuntu">
+Run in **PowerShell (Admin)**:
+
+```powershell
+wsl --install Ubuntu
+```
+
+This will:
+- Enable WSL features
+- Install Ubuntu
+- Set as default
+
+**Restart your PC** after installation.
+</Step>
+
+<Step title="Configure Line Endings">
+⚠️ `.sh` files with `CRLF` may break in WSL/Linux.
+
+1. Open folder in **VS Code**
+2. Bottom right: click `CRLF` → change to `LF`
+3. Save the file again
+4. Repeat for all `.sh` files (e.g., `winbuild.sh`, `build.sh`)
+</Step>
+
+<Step title="Clone Repository">
+In **Ubuntu terminal**, clone the project:
+
+```bash
+git clone https://github.com/Weam AI-ai/Weam AI.git
+cd Weam AI
+cp .env.example .env
+```
+
+Navigate to your project directory:
+```bash
+cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
+```
+
+**Example:** `/mnt/c/Users/dhruvish/Documents/Weam AI-project`
+</Step>
+
+<Step title="Set Execute Permissions">
+Make script executable:
+
+```bash
+chmod +x winbuild.sh
+```
+
+Run it:
+
+```bash
+bash winbuild.sh
+```
+</Step>
+
+<Step title="Start Services">
+Start the environment:
+
+```bash
+docker compose up --build
+```
+</Step>
+
+<Step title="Verify Installation">
+The build process takes 5-10 minutes on the first run. Once complete, you should see:
+
+```
+Weam AI-frontend    | Ready - started server on 0.0.0.0:3000
+Weam AI-backend     | Server running on port 4050
+Weam AI-python      | Application startup complete
+```
+</Step>
+
+<Step title="Access Application">
+Open your browser and navigate to:
+
+- **Main Application:** [http://localhost:3000](http://localhost:3000)
+- **Registration:** [http://localhost:3000/register](http://localhost:3000/register)  
+- **Login:** [http://localhost:3000/login](http://localhost:3000/login)
+</Step>
+
+</Steps>
+
+</Tab>
+</Tabs>
+
+## Service Ports
+
+| Service | Port | URL |
+|---------|------|-----|
+| **Frontend (Next.js)** | 3000 | http://localhost:3000 |
+| **Backend (Node.js)** | 4050 | http://localhost:4050 |
+| **Python API** | 9089 | http://localhost:9089 |
+| **MongoDB** | 27017 | Internal only |
+| **Redis** | 6379 | Internal only |
+| **Qdrant (Vector DB)** | 6333 | http://localhost:6333 |
+| **MinIO (File Storage)** | 9000 | http://localhost:9000 |
+
+## Troubleshooting
+
+<Tabs>
+<Tab title="macOS/Linux">
+
+<AccordionGroup>
+
+<Accordion title="Build Failures">
+**Common causes:**
+- Docker doesn't have enough memory allocated (8GB minimum)
+- Ports 3000, 4050, and 9089 are already in use
+- Docker daemon not running
+
+**Solutions:**
+- Increase Docker's memory limit in Docker Desktop settings
+- Stop other services using those ports: `sudo lsof -i :3000`
+- Start Docker Desktop and wait for it to fully load
+</Accordion>
+
+<Accordion title="Permission Errors">
+**On Linux:**
+- Add your user to the docker group: `sudo usermod -aG docker $USER`
+- Restart your terminal session after adding to the docker group
+- Try: `newgrp docker` to apply group changes immediately
+
+**On macOS:**
+- Ensure Docker Desktop has proper permissions
+- Try running with `sudo` if needed (not recommended for regular use)
+</Accordion>
+
+<Accordion title="Out of Memory">
+**Solutions:**
+- Close other applications to free up RAM
+- Increase Docker's memory limit in Docker Desktop settings
+- Consider upgrading system RAM if consistently running into issues
+- Use `docker system prune` to clean up unused containers and images
+</Accordion>
+
+</AccordionGroup>
+
+</Tab>
+<Tab title="Windows (WSL2)">
+
+<AccordionGroup>
+
+<Accordion title="WSL2 Issues">
+**Common problems:**
+- WSL2 not properly installed or configured
+- Docker Desktop not integrated with WSL2
+- Line ending issues with shell scripts
+
+**Solutions:**
+- Verify WSL2: `wsl --list --verbose`
+- Enable WSL2 integration in Docker Desktop settings
+- Convert line endings: `dos2unix build.sh winbuild.sh`
+- Restart Docker Desktop after enabling WSL2 integration
+</Accordion>
+
+<Accordion title="Path and Permission Issues">
+**Windows-specific fixes:**
+- Use Ubuntu terminal, not PowerShell or Command Prompt
+- Navigate using `/mnt/c/` paths for Windows drives
+- Set execute permissions: `chmod +x *.sh`
+- Ensure you're in the correct project directory
+
+**Example paths:**
+```bash
+# Windows path: C:\Users\username\Documents\Weam AI
+# WSL2 path: /mnt/c/Users/username/Documents/Weam AI
+```
+</Accordion>
+
+<Accordion title="Docker Desktop Problems">
+**Solutions:**
+- Ensure Docker Desktop is running before commands
+- Check WSL2 integration is enabled in Docker settings
+- Restart Docker Desktop if containers fail to start
+- Verify virtualization is enabled in BIOS
+</Accordion>
+
+</AccordionGroup>
+
+</Tab>
+</Tabs>
+
+## Key Reminders
+
+- Always save `.sh` files with `LF` line endings on Windows
+- Use **Ubuntu (WSL2)** terminal for Windows development
+- The first build takes longer due to image downloads and compilation
+
+## Advanced Configuration
+
+<AccordionGroup>
+
+<Accordion title="Python Base Image Build (Optional)">
+
+<Info>
+The `pybase_docker` build step is **intentionally skipped** to improve build efficiency and avoid unnecessary steps when working on frontend changes.
+</Info>
+
+### Why It's Skipped
+| Reason | Description |
+|--------|-------------|
+| **Not Required for Frontend** | The `pybase_docker` image is only used by backend services |
+| **Time Efficiency** | Building Python images with heavy dependencies is time-consuming |
+| **No Dependency Overlap** | Frontend and backend builds are fully isolated |
+
+### When to Re-enable
+
+<Warning>
+**Uncomment the `pybase_docker` build lines if:**
+- You modified `requirements.txt` dependencies
+- You're doing a fresh/clean rebuild  
+- Backend services fail due to missing Python packages
+</Warning>
+
+**To enable, uncomment these lines in the build script:**
+
+```bash
+echo "Step 1/5: Building base image (pybase_docker)..."
+$COMPOSE_CMD build pybase_docker --no-cache || { echo "❌ Failed to build pybase_docker"; exit 1; }
+echo "✅ pybase_docker image built successfully."
+```
+</Accordion>
+
+</AccordionGroup>
+
+<Note>
+  **Need help?** Reach out via the [GitHub issues](https://github.com/Weam-ai/Weam-ai/issues) or [Discord Community](https://discord.com) for faster response.
+</Note>

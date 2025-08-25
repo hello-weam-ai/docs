@@ -1,0 +1,110 @@
+---
+title: "Roles and Permissions"
+---
+
+Weam AI uses a comprehensive role-based permission system to control access levels and capabilities within your workspace. 
+
+Understanding these roles helps you manage team access effectively and maintain security.
+
+## Detailed Permission Matrix
+
+### Company Admin Permissions
+
+| Feature                             | Create | Read | Update | Delete |
+|-------------------------------------|:------:|:----:|:------:|:------:|
+| Invite Member                       | ✅     | ✅   | ✅     | ✅     |
+| Add Workspace                       | ✅     | ✅   | ✅     | ✅     |
+| Add Brain                           | ✅     | ✅   | ✅     | ✅     |
+| Chats                               | ✅     | ✅   | ✅     | ✅     |
+| Docs                                | ✅     | ✅   | ✅     | ✅     |
+| Prompts                             | ✅     | ✅   | ✅     | ✅     |
+| Agents                              | ✅     | ✅   | ✅     | ✅     |
+| Manage Billing                      | ✅     | ✅   | ✅     | ✅     |
+| Add LLM Models                      | ✅     | ✅   | ✅     | ✅     |
+| Shared Links                        | ✅     | ✅   | ✅     | ✅     |
+| Archive (All Workspaces & Brains)   | ✅     | ✅   | ✅     | ✅     |
+| Members                             | ✅     | ✅   | ✅     | ✅     |
+
+### Manager Permissions
+
+| Feature                             | Create | Read | Update | Delete |
+|-------------------------------------|:------:|:----:|:------:|:------:|
+| Invite Member                       | ✅     | ✅   | ✅     | ✅     |
+| Add Workspace                       | ✅     | ✅   | ✅     | ✅     |
+| Add Brain                           | ✅     | ✅   | ✅     | ✅     |
+| Chats                               | ✅     | ✅   | ✅     | ✅     |
+| Docs                                | ✅     | ✅   | ✅     | ✅     |
+| Prompts                             | ✅     | ✅   | ✅     | ✅     |
+| Agents                              | ✅     | ✅   | ✅     | ✅     |
+| Manage Billing                      | ❌     | ❌   | ❌     | ❌     |
+| Add LLM Models                      | ✅     | ✅   | ✅     | ✅     |
+| Shared Links                        | ✅     | ✅   | ✅     | ✅     |
+| Archive (All Workspaces & Brains)   | ✅     | ✅   | ✅     | ✅     |
+| Members                             | ✅     | ✅   | ✅     | ✅     |
+
+### User Permissions
+
+| Feature                             | Create | Read | Update | Delete |
+|-------------------------------------|:------:|:----:|:------:|:------:|
+| Invite Member                       | ❌     | ❌   | ❌     | ❌     |
+| Add Workspace                       | ❌     | ❌   | ❌     | ❌     |
+| Add Brain                           | ✅     | ✅   | ✅     | ✅     |
+| Chats (only their own)              | ✅     | ✅   | ✅     | ✅     |
+| Docs (only their own)               | ✅     | ✅   | ✅     | ✅     |
+| Prompts (only their own)            | ✅     | ✅   | ✅     | ✅     |
+| Agents (only their own)             | ✅     | ✅   | ✅     | ✅     |
+| Manage Billing                      | ❌     | ❌   | ❌     | ❌     |
+| Add LLM Models                      | ❌     | ❌   | ❌     | ❌     |
+| Shared Links (only their own)       | ✅     | ✅   | ✅     | ✅     |
+| Archive (only Brains they created)  | ✅     | ✅   | ✅     | ✅     |
+| Members                             | ❌     | ❌   | ❌     | ❌     |
+
+## Permission Management
+
+### Assigning Roles
+1. Navigate to Settings > Members
+2. When inviting new members, select their role from the dropdown
+3. Choose between "User", "Manager", or "Company Admin"
+4. Send the invitation with the appropriate role assigned
+
+### Changing User Roles
+Company Admins and Managers can modify existing user roles:
+1. Go to Settings > Members
+2. Locate the user in the members list
+3. Update their role through the role management interface
+4. Changes take effect immediately
+
+## Private Brain Control
+
+### Enable/Disable Private Brain Access
+As a manager or admin on Weam AI, you have control over how your team members interact with the platform through the Private Brain Access feature.
+
+Located in the settings panel, this feature enables you to disable or enable private brain access for specific team members. When disabled, users are directed to collaborate only in shared brains, ensuring all AI interactions contribute to team level knowledge.
+
+**This functionality is particularly useful when you want to:**
+- Encourage collaborative work in shared spaces
+- Maintain oversight of AI usage
+- Ensure company resources are focused on team level objectives only
+
+## Delete and Archive Functionality
+
+| **Functionality**  | **Archive** | **Delete**  |
+| --- | :---: | :---: |
+| Chat  |    | ✅  |
+| Doc |    | ✅  |
+| Prompt |    | ✅  |
+| Agents  |    | ✅  |
+| Brain | ✅  |    |
+| Workspace | ✅  |    |
+
+## Teams Management (Admins Only)
+
+### Creating Teams
+The Teams feature in Weam AI simplifies member organisation. This functionality allows admins to create groups, typically aligned with departments or project teams within Weam AI.
+
+**Creating Teams:** 
+Located next to the **Invite tab** in the Members section, the Teams feature enables admins to:
+- Create department-specific teams (Sales, Marketing, Customer Success, etc.)
+- Add multiple team members to groups with a single action
+
+Understanding these permission boundaries helps ensure appropriate access control while maintaining team productivity and security.

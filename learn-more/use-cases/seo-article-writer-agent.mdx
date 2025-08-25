@@ -1,190 +1,469 @@
 ---
-title: "SEO Optimized Article Generator Agent"
+title: "SEO Article Generator"
 ---
 
-Generate SEO-optimized content at scale using Weam's AI-powered content creation workflow.
+Automate SEO-optimized content creation with AI-powered keyword research, competitive analysis, and structured article generation. 
 
-## SEO Article Writer
+Streamline content production from keyword discovery to publish-ready articles.
 
-Content teams struggle with creating SEO-friendly articles consistently while identifying high-performing keywords and adapting to search algorithm changes. The time required for research, drafting, and optimization creates bottlenecks that slow down content marketing efforts. The SEO Centric Article Agent automates this process, helping teams produce optimized content efficiently while maintaining quality.
+## Features
 
-### What It Does
+- **Keyword Research Integration**: DataForSEO API for volume, CPC, and competition metrics
+- **Competitive Analysis**: Automated content scraping and gap analysis
+- **Topic Generation**: AI-powered topic suggestions based on keyword data
+- **Content Creation**: Full article generation with SEO optimization
+- **Real-time Processing**: Live streaming of content generation progress
 
-- Analyze target keywords and competitive landscape  
-- Generate topic recommendations based on keyword research  
-- Create SEO-optimized articles following best practices  
-- Suggest associated keywords for better ranking potential  
-- Incorporate business context from your website automatically
+## Architecture Overview
 
-### How It Works
+The content generation process follows a four-stage pipeline:
 
-1. Input – Provide target keyword and website URL  
-2. Research Phase – Agent analyzes competition and keyword opportunities  
-3. Content Planning – Determines unique angles and creates article structure  
-4. AI Generation – Produces content following SEO and quality guidelines  
-5. Output – Delivers publish-ready article with CTAs and internal linking
-
-### Why This Agent?
-
-- Eliminates content creation bottlenecks  
-- Ensures consistent SEO optimization  
-- Reduces research and writing time by 70%  
-- Adapts to evolving search algorithms  
-- Maintains brand voice and messaging  
-
-### Built for Content Teams – Adaptable for Any Industry
-
-Although designed for marketing agencies, this agent can be tailored for:
-
-- E-commerce – Product descriptions and category content  
-- SaaS Companies – Feature articles and comparison posts  
-- Publishers – News articles and evergreen content  
-- Consultants – Thought leadership and expertise articles  
-
-Powered by **AI (GPT-4)**, custom **scraping tools**, and external APIs like **DataForSEO**.
-
-
-## Step-by-Step Workflow & Routes
-
-
-### Step 1: Business Summary Generation
-
-- Route: `/pro-agent/business-summary`  
-- Purpose: Generate a business summary from a provided website URL.
-
-#### Flow:
-
-```text
-business_service  
-   └── URLCheckerService 
-         └── Check if URL is valid & reachable
-               └── initialize_chat_input
-               └── scrape_url_content
-               └── initialize_llm (e.g., GPT-4)
-               └── create_prompts
-               └── create_chain
-               └── run_chain 
-                     ⮕ Final Summary Response
+```
+Business Analysis → Keyword Research → Topic Generation → Article Creation
 ```
 
+## Processing Pipeline
 
-### Step 2: Keyword Research
+### Stage 1: Business Context Analysis
+Analyze the target website to understand business focus, audience, and content style.
 
-- Route: `/pro-agent/keyword-research`  
-- Purpose: Fetch relevant SEO keywords with volume, CPC, and competition using AI + DataForSEO.
+### Stage 2: Keyword Research  
+Research and validate keywords using DataForSEO API for search volume and competition data.
 
-#### Flow:
+### Stage 3: Topic Development
+Generate SEO-optimized topic suggestions based on keyword opportunities and competitive gaps.
 
-```text
-keyword_research_service
-   └── initialize_chat_input
-   └── get_recommended_keywords
-   └── get_keyword_details
-   └── fetch_and_display_keywords (via DataForSEO)
-         ⮕ List of Keywords with Volume & Difficulty
+### Stage 4: Article Generation
+Create comprehensive articles with proper SEO structure, internal linking, and calls-to-action.
+
+## Implementation
+
+### Business Summary Generation
+
+```python
+def generate_business_summary(website_url):
+    # 1. Validate URL accessibility
+    url_checker = URLCheckerService()
+    if not url_checker.is_reachable(website_url):
+        raise URLNotAccessibleError(website_url)
+    
+    # 2. Extract website content
+    scraped_content = scrape_url_content(website_url)
+    
+    # 3. Initialize LLM for analysis
+    llm = initialize_llm(model="gpt-4")
+    
+    # 4. Generate business summary
+    prompts = create_business_analysis_prompts()
+    chain = create_analysis_chain(llm, prompts)
+    
+    summary = chain.run(scraped_content)
+    return summary
 ```
 
+### Keyword Research Workflow
 
-### Step 3: Topic Generation
-
-- Route: `/pro-agent/topic-generation`  
-- Purpose: Generate SEO-friendly content topics from keywords.
-
-#### Flow:
-
-```text
-topic_generator_service
-   └── initialize_chat_input
-   └── initialize_llm
-   └── create_prompt
-   └── create_chain
-   └── run_chain 
-         ├── validate_generated_topic
-         └── find_similar_topic_by_website_hash
-               ⮕ Unique SEO-Optimized Topics
+```python
+def research_keywords(domain, seed_keywords):
+    # 1. Initialize DataForSEO client
+    dataforseo_client = DataForSEOClient()
+    
+    # 2. Get keyword suggestions
+    keyword_suggestions = dataforseo_client.get_keyword_ideas(
+        keywords=seed_keywords,
+        location="United States",
+        language="en"
+    )
+    
+    # 3. Analyze keyword metrics
+    keyword_data = []
+    for keyword in keyword_suggestions:
+        metrics = dataforseo_client.get_keyword_metrics(keyword)
+        keyword_data.append({
+            'keyword': keyword,
+            'search_volume': metrics['search_volume'],
+            'competition': metrics['competition_level'],
+            'cpc': metrics['cost_per_click'],
+            'difficulty': metrics['keyword_difficulty']
+        })
+    
+    return sorted(keyword_data, key=lambda x: x['search_volume'], reverse=True)
 ```
 
+### Article Generation Process
 
-### Step 4: Article Generation
-
-- Route: `/pro-agent/article-generation`  
-- Purpose: Create a complete SEO-optimized article using the selected topic and scraped competitor content.
-
-#### Flow:
-
-```text
-article_generator_service
-   └── initialize_chat_input
-   └── fetch_articles (Scraper)
-   └── initialize_llm
-   └── initialize_repository
-   └── initialize_memory
-   └── create_prompts
-   └── create_chain
-   └── run_chain 
-         ⮕ Final Article (streamed)
+```python
+def generate_seo_article(topic, keywords, business_context):
+    # 1. Research competitor content
+    competitor_articles = fetch_competitor_content(keywords)
+    
+    # 2. Initialize content generation chain
+    llm = initialize_llm(model="gpt-4")
+    memory = initialize_memory()
+    
+    # 3. Create article generation prompts
+    prompts = create_article_prompts(
+        topic=topic,
+        target_keywords=keywords,
+        business_context=business_context,
+        competitor_insights=competitor_articles
+    )
+    
+    # 4. Generate article sections
+    article_chain = create_content_chain(llm, prompts, memory)
+    
+    # Stream article generation
+    for section in article_chain.stream():
+        yield section
+    
+    return article_chain.get_final_output()
 ```
 
-## Core Components Summary
+## API Reference
 
-| Component               | Description                                         |
-|-------------------------|-----------------------------------------------------|
-| `URLCheckerService`     | Validates and pings target URL for reachability     |
-| `initialize_llm()`      | Loads GPT-4 and sets up memory/context              |
-| `scrape_url_content()`  | Scrapes and parses the website content              |
-| `create_prompts()`      | Builds dynamic prompts based on inputs              |
-| `run_chain()`           | Executes LangChain-based chain of logic             |
-| `DataForSEO`            | Pulls search volume, CPC, and difficulty metrics    |
-| `Scraper`               | Extracts content from competitors for inspiration   |
+### Business Summary Endpoint
 
+```
+POST /pro-agent/business-summary
+```
 
-# Next.js Frontend — SEO Optimized Article Generator
+**Request Body**
+```json
+{
+  "websiteUrl": "https://example.com",
+  "analysisDepth": "comprehensive",
+  "focusAreas": ["products", "target_audience", "brand_voice"]
+}
+```
 
+**Response Format**
+```json
+{
+  "summary": {
+    "businessType": "E-commerce Platform",
+    "targetAudience": "Small to medium businesses",
+    "keyProducts": ["Inventory Management", "Point of Sale"],
+    "brandVoice": "Professional, approachable, solution-focused",
+    "contentThemes": ["efficiency", "growth", "automation"]
+  },
+  "metadata": {
+    "processingTime": "8s",
+    "pagesAnalyzed": 5,
+    "contentLength": 12500
+  }
+}
+```
 
-## User Journey
+### Keyword Research Endpoint
 
-| Step | Action                                               |
-|------|------------------------------------------------------|
-| 1    | User inputs a website URL                            |
-| 2    | Backend returns SEO keyword suggestions              |
-| 3    | User selects primary & secondary keywords            |
-| 4    | AI generates topic ➡ full article (live stream)      |
+```
+GET /pro-agent/keyword-research
+```
 
+**Query Parameters**
+- `domain`: Target domain for research
+- `seedKeywords`: Comma-separated list of seed keywords
+- `location`: Geographic location for search data
+- `limit`: Maximum number of keywords to return
 
-## Backend API Calls
+**Response Format**
+```json
+{
+  "keywords": [
+    {
+      "keyword": "inventory management software",
+      "searchVolume": 8100,
+      "competition": "medium",
+      "cpc": 12.45,
+      "difficulty": 65,
+      "trend": "stable",
+      "relatedKeywords": [
+        "warehouse management system",
+        "stock control software"
+      ]
+    }
+  ],
+  "totalKeywords": 150,
+  "processingTime": "12s"
+}
+```
 
-| Step     | API Endpoint                                       |
-|----------|----------------------------------------------------|
-| Keywords | `GET /pro-agent/keyword-research?domain=example.com` |
-| Topics   | `POST /pro-agent/topic-generation`                  |
-| Articles | `POST /pro-agent/article-generation`                |
-| Stream   | `getAIProAgentChatResponse()` (SSE or chunked stream) |
+### Topic Generation Endpoint
 
+```
+POST /pro-agent/topic-generation
+```
 
-## Frontend File Structure
+**Request Body**
+```json
+{
+  "primaryKeyword": "inventory management software",
+  "secondaryKeywords": ["warehouse management", "stock control"],
+  "businessContext": "B2B SaaS platform targeting SMEs",
+  "contentType": "informational",
+  "targetLength": "long-form"
+}
+```
+
+**Response Format**
+```json
+{
+  "topics": [
+    {
+      "title": "Complete Guide to Inventory Management Software for Small Businesses",
+      "angle": "Comprehensive educational guide",
+      "targetKeywords": ["inventory management software", "small business"],
+      "estimatedDifficulty": "medium",
+      "contentOutline": [
+        "What is Inventory Management Software?",
+        "Key Features to Look For",
+        "Implementation Best Practices",
+        "ROI and Cost Analysis"
+      ]
+    }
+  ],
+  "competitorGaps": [
+    "Lack of SME-specific implementation guides",
+    "Limited cost comparison content"
+  ]
+}
+```
+
+### Article Generation Endpoint
+
+```
+POST /pro-agent/article-generation
+```
+
+**Request Body**
+```json
+{
+  "topic": {
+    "title": "Complete Guide to Inventory Management Software",
+    "targetKeywords": ["inventory management", "warehouse software"],
+    "contentType": "guide"
+  },
+  "requirements": {
+    "wordCount": 2500,
+    "includeImages": true,
+    "internalLinks": 3,
+    "callsToAction": 2
+  },
+  "businessContext": {
+    "companyName": "StockWise",
+    "products": ["Inventory Pro", "Warehouse Manager"],
+    "targetAudience": "SME operations managers"
+  }
+}
+```
+
+**Response Format (Streaming)**
+```
+data: {"type": "section", "title": "Introduction", "content": "Effective inventory management..."}
+data: {"type": "section", "title": "Key Features", "content": "Modern inventory systems..."}
+data: {"type": "meta", "wordCount": 2487, "readabilityScore": 68}
+data: {"type": "complete", "articleId": "art_12345"}
+```
+
+## Core Components
+
+| Component | Purpose |
+|-----------|---------|
+| URLCheckerService | Website accessibility validation |
+| DataForSEO Client | Keyword metrics and search data |
+| Content Scraper | Competitor content extraction |
+| LLM Chain | Content generation and optimization |
+| Topic Validator | Topic uniqueness and SEO potential |
+| Article Formatter | SEO structure and formatting |
+
+## Configuration
+
+### Keyword Research Settings
+
+```json
+{
+  "dataforseo": {
+    "apiKey": "your-dataforseo-key",
+    "location": "2840",
+    "language": "en",
+    "maxKeywords": 1000,
+    "includeRelated": true
+  },
+  "filtering": {
+    "minSearchVolume": 100,
+    "maxDifficulty": 80,
+    "excludeQuestions": false
+  }
+}
+```
+
+### Content Generation Parameters
+
+```json
+{
+  "generation": {
+    "model": "gpt-4",
+    "maxTokens": 4000,
+    "temperature": 0.7,
+    "structure": {
+      "introduction": 150,
+      "mainSections": 4,
+      "wordsPerSection": 400,
+      "conclusion": 100
+    }
+  },
+  "seo": {
+    "keywordDensity": 1.5,
+    "headingStructure": "h1-h2-h3",
+    "metaDescriptionLength": 155,
+    "internalLinks": 3
+  }
+}
+```
+
+## Usage Examples
+
+### Complete Article Generation Workflow
 
 ```bash
-/pages
-  └── seo-article-generator.tsx    Main Page – SEO Article Generator Interface
+# 1. Generate business summary
+curl -X POST /pro-agent/business-summary \
+  -H "Content-Type: application/json" \
+  -d '{"websiteUrl": "https://stockwise.com"}'
 
-/hooks
-  └── useGenerateArticle.ts        Custom Hook – Manages generation state & flow logic
+# 2. Research keywords
+curl -X GET "/pro-agent/keyword-research?domain=stockwise.com&seedKeywords=inventory,warehouse"
 
-/utils
-  └── api.ts                       API Utility – Axios instance & endpoint handlers
+# 3. Generate topic
+curl -X POST /pro-agent/topic-generation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "primaryKeyword": "inventory management software",
+    "businessContext": "B2B SaaS for SMEs"
+  }'
 
-/components
-  └── KeywordSelector.tsx          Component – Select SEO keywords (volume, difficulty)
-  └── TopicDisplay.tsx             Component – Display or edit AI-generated topic
-  └── ArticleStreamView.tsx        Component – Stream and render article paragraphs
+# 4. Create article
+curl -X POST /pro-agent/article-generation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": {
+      "title": "Complete Inventory Management Guide",
+      "targetKeywords": ["inventory software", "warehouse management"]
+    }
+  }'
 ```
 
+### Python Integration
 
-## Core UI Components
+```python
+import requests
 
-| Component                  | Purpose                                     |
-|----------------------------|---------------------------------------------|
-| `KeywordSelector`          | Displays keywords with volume/difficulty     |
-| `TopicDisplay`             | Shows or edits the AI-generated topic        |
-| `ArticleStreamView`        | Streams and displays paragraphs in real-time |
-| `getAIProAgentChatResponse()` | Makes the stream request to backend API  |
+class SEOArticleGenerator:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://api.example.com"
+    
+    def generate_article(self, website_url, target_keyword):
+        # 1. Business analysis
+        business_data = self.analyze_business(website_url)
+        
+        # 2. Keyword research
+        keywords = self.research_keywords(website_url, target_keyword)
+        
+        # 3. Topic generation
+        topic = self.generate_topic(keywords[0], business_data)
+        
+        # 4. Article creation
+        article = self.create_article(topic, keywords, business_data)
+        
+        return article
+    
+    def analyze_business(self, url):
+        response = requests.post(f"{self.base_url}/pro-agent/business-summary", 
+                               json={"websiteUrl": url})
+        return response.json()
+    
+    def research_keywords(self, domain, seed_keyword):
+        response = requests.get(f"{self.base_url}/pro-agent/keyword-research",
+                              params={"domain": domain, "seedKeywords": seed_keyword})
+        return response.json()["keywords"]
+
+# Usage
+generator = SEOArticleGenerator("your-api-key")
+article = generator.generate_article("https://example.com", "inventory software")
+```
+
+## Performance & Limits
+
+### Processing Metrics
+- **Business Analysis**: 5-15 seconds per website
+- **Keyword Research**: 10-30 seconds for 100 keywords
+- **Topic Generation**: 3-8 seconds per topic
+- **Article Creation**: 45-90 seconds for 2000-word articles
+
+### Rate Limits
+- **API Requests**: 100 requests per hour per API key
+- **DataForSEO Calls**: Limited by DataForSEO subscription
+- **Content Generation**: 20 articles per day per account
+
+### Content Specifications
+- **Article Length**: 500-5000 words
+- **Keyword Density**: 1-3% for target keywords
+- **Reading Level**: Flesch score 60-80 (accessible)
+- **SEO Structure**: H1, H2, H3 hierarchy with keyword optimization
+
+## Error Handling
+
+### Common Error Responses
+
+| Status Code | Error Type | Description | Solution |
+|-------------|------------|-------------|----------|
+| `400` | `INVALID_WEBSITE_URL` | Website URL inaccessible or invalid | Verify URL format and website accessibility |
+| `429` | `KEYWORD_QUOTA_EXCEEDED` | DataForSEO API limit reached | Upgrade DataForSEO plan or wait for reset |
+| `422` | `INSUFFICIENT_CONTENT` | Website lacks adequate content for analysis | Provide alternative content sources |
+| `500` | `GENERATION_FAILED` | Article generation pipeline error | Retry with simplified requirements |
+
+### Error Response Format
+
+```json
+{
+  "error": {
+    "code": "KEYWORD_QUOTA_EXCEEDED",
+    "message": "DataForSEO API quota exceeded",
+    "details": {
+      "quotaUsed": 950,
+      "quotaLimit": 1000,
+      "resetDate": "2024-02-01T00:00:00Z"
+    }
+  }
+}
+```
+
+## Integration Guide
+
+### Authentication
+
+All requests require API key authentication:
+```bash
+curl -H "Authorization: Bearer your-api-key"
+```
+
+### Webhook Configuration
+
+Configure webhooks for content completion:
+```json
+{
+  "webhookUrl": "https://your-app.com/content-ready",
+  "events": ["article.completed", "keyword.research.completed"]
+}
+```
+
+### Content Quality Controls
+
+Generated articles include:
+- **SEO Optimization**: Proper keyword placement and density
+- **Readability**: Target Flesch score of 60-80
+- **Structure**: Logical H1-H6 heading hierarchy
+- **Internal Linking**: Strategic links to related content
+- **Meta Elements**: Optimized title tags and descriptions
+- **Content Guidelines**: Brand voice and style consistency

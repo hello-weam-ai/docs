@@ -1,0 +1,205 @@
+---
+title: "Launch and Verify Installation"
+description: "Start Weam AI services and verify everything works correctly"
+---
+
+<Info>
+This guide covers service startup, health checks, connectivity testing, and verification steps for both local development and production deployments.
+</Info>
+
+## Start Services
+
+Launch your Weam AI application services using Docker Compose.
+
+<Tabs>
+<Tab title="Local Development">
+
+**Navigate to project directory and start services:**
+
+```bash
+cd Weam AI
+
+# Start all services in detached mode
+docker compose up -d
+
+# Check service status
+docker compose ps
+```
+
+**Expected container status:**
+All services should show "Up" status for successful startup.
+
+</Tab>
+<Tab title="Production Deployment">
+
+**Start services and verify web server:**
+
+```bash
+# Start services in background
+docker compose up -d
+
+# Verify NGINX is running
+sudo systemctl status nginx
+
+# Check SSL certificate status
+curl -I https://your-domain.com
+```
+
+**Production checklist:**
+- All Docker containers running
+- NGINX service active
+- SSL certificate valid
+- Domain accessible via HTTPS
+
+</Tab>
+</Tabs>
+
+## Service Health Verification
+
+Verify each Weam AI service is running correctly and responding to requests.
+
+### Container Status Check
+
+Monitor Docker container health and resource usage:
+
+```bash
+# Check all containers are running
+docker compose ps
+
+# Monitor resource usage
+docker stats
+
+# View service logs
+docker compose logs frontend
+docker compose logs backend  
+docker compose logs python-api
+```
+
+### Expected Service Output
+
+When services start successfully, you should see these log messages:
+
+```
+Weam AI-frontend    | Ready - started server on 0.0.0.0:3000
+Weam AI-backend     | Server running on port 4050  
+Weam AI-python      | Application startup complete
+Weam AI-mongodb     | MongoDB ready
+Weam AI-redis       | Redis server ready
+```
+
+### Service Port Configuration
+
+Verify services are listening on correct ports:
+
+| Service | Port | Status Check |
+|---------|------|--------------|
+| **Frontend (Next.js)** | 3000 | `netstat -tlnp \| grep 3000` |
+| **Backend (Node.js)** | 4050 | `netstat -tlnp \| grep 4050` |
+| **Python API** | 9089 | `netstat -tlnp \| grep 9089` |
+| **MongoDB** | 27017 | Internal container network |
+| **Redis** | 6379 | Internal container network |
+| **Qdrant Vector DB** | 6333 | `curl http://localhost:6333` |
+
+## Connectivity Testing
+
+Test API endpoints and service communication to ensure proper functionality.
+
+### Local Development Testing
+
+Test each service endpoint for local development environment:
+
+```bash
+# Test frontend application
+curl http://localhost:3000
+
+# Test backend API health
+curl http://localhost:4050/napi/health
+
+# Test Python API health  
+curl http://localhost:9089/pyapi/health
+
+# Test vector database
+curl http://localhost:6333/health
+```
+
+**Expected responses:**
+- Frontend: HTML page or redirect response
+- Backend API: JSON health status
+- Python API: Service health information
+- Vector DB: Qdrant status information
+
+### Production Deployment Testing
+
+Test production deployment through NGINX proxy:
+
+```bash
+# Test HTTPS access
+curl -I https://your-domain.com
+
+# Test API endpoints through NGINX
+curl https://your-domain.com/napi/health
+curl https://your-domain.com/pyapi/health
+
+# Verify SSL certificate
+openssl s_client -connect your-domain.com:443 -servername your-domain.com
+```
+
+**SSL verification checklist:**
+- Certificate valid and not expired
+- Domain name matches certificate
+- Certificate chain complete
+- HTTPS redirect working
+
+## Database Verification
+
+Verify database connectivity and data storage functionality.
+
+### MongoDB Connection Test
+
+Check MongoDB database is accessible and configured correctly:
+
+```bash
+# Connect to MongoDB container
+docker exec -it Weam AI-mongodb mongosh
+
+# List available databases
+show dbs
+
+# Switch to application database
+use Weam AIdb
+
+# Check collections exist
+show collections
+
+# Verify database indexes
+db.users.getIndexes()
+```
+
+### Redis Cache Test
+
+Verify Redis caching service is operational:
+
+```bash
+# Connect to Redis container
+docker exec -it Weam AI-redis redis-cli
+
+# Test Redis connection
+ping
+
+# Check Redis info
+info server
+```
+
+### Vector Database Test
+
+Test Qdrant vector database for AI functionality:
+
+```bash
+# Check Qdrant collections
+curl http://localhost:6333/collections
+
+# Verify Qdrant health
+curl http://localhost:6333/health
+```
+
+Your Weam AI installation is now ready for use! Start exploring the features and building your team workflows.

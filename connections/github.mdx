@@ -1,50 +1,47 @@
 ---
-title : "Github"
+title : "GitHub"
 ---
 
-GitHub Connection through MCP in Weam, allows your platform to perform a wide variety of development and collaboration tasks. The supported functions are organized as follows:
+Connect with GitHub repositories and perform development operations through OAuth integration.
 
-**Repository and Commit Management**  
-github_get_repositories  
-github_get_repository_info  
-github_get_commits  
-github_get_repository_branches  
-github_get_tags_or_branches  
+## Available Functions
 
-**Branch Operations**  
-github_create_branch  
+### Repository Management
+- `github_get_repositories`
+- `github_get_repository_info`
+- `github_get_commits`
+- `github_get_repository_branches`
+- `github_get_tags_or_branches`
 
-**Issues and Pull Requests**  
-github_get_repository_issues  
-github_create_pull_request  
-github_get_pull_request_details  
-github_get_pull_requests  
+### Branch Operations
+- `github_create_branch`
 
-**User Information & Global Search**  
-github_get_user_info  
-github_global_search  
+### Issues and Pull Requests
+- `github_get_repository_issues`
+- `github_create_pull_request`
+- `github_get_pull_request_details`
+- `github_get_pull_requests`
 
-With these capabilities, Weam AI lets you automate repository management, monitor commits and branches, track issues, collaborate via pull requests, retrieve user data, and search across GitHub—all through intuitive AI-driven ‘connections’.
+### User Information
+- `github_get_user_info`
+- `github_global_search`
 
----
+## OAuth Setup
 
-## GitHub MCP OAuth Configuration Setup
-
-### 1. Create a GitHub OAuth App
-1. Visit [https://github.com/settings/developers](https://github.com/settings/developers)
+### 1. Create OAuth App
+1. Visit [github.com/settings/developers](https://github.com/settings/developers)
 2. Click **"New OAuth App"**
 
-### 2. Fill in Application Details
-- **Application Name**: e.g., `Weam AI`
+### 2. Configure Application
+- **Application Name**: `Weam AI`
 - **Homepage URL**: `https://your-domain.com`
-- **Application Description**: Brief description of your app
 - **Authorization Callback URL**:
   ```
   https://your-domain.com/api/auth/github/callback
   ```
 
 ### 3. Environment Variables
-After registering, copy your **Client ID** and **Client Secret**, and set them in your `.env`:
+Add to your `.env` file:
 
 ```env
 GITHUB_CLIENT_ID=your-client-id
@@ -52,6 +49,6 @@ GITHUB_CLIENT_SECRET=your-client-secret
 GITHUB_REDIRECT_URI=https://your-domain.com/api/auth/github/callback
 ```
 
-<Callout type="info">
-Ensure that your domain and redirect URLs exactly match between your code and the settings in your Slack and GitHub app configurations.
-</Callout>
+<Info>
+Ensure redirect URLs match exactly between your GitHub app settings and environment configuration.
+</Info>

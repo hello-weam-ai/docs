@@ -1,83 +1,40 @@
 ---
-title: 'System Services & Utilities'
-description: 'Core services for MongoDB access, error handling, encryption, notifications, and model defaults.'
+title: "Python Services & Utilities"
 ---
+Core services for MongoDB access, error handling, encryption, notifications, and model management.
 
-## 1. Database Connection & Initialization
+## Database Services
 
-### `MongoDBClient`
+### MongoDBClient
 
-#### `__init__`
+Singleton MongoDB connection manager using environment variables.
 
-:small_blue_diamond: **Description:**  
-Initializes a MongoDB connection using environment variables. Implements a Singleton pattern to ensure only one connection is active.
-
-**Required environment variables:**
-
+**Environment Variables:**
 - `DB_USERNAME`
-- `DB_PASSWORD`
-- `DB_HOST` *(default: `localhost`)*
-- `DB_PORT` *(default: `27017`)*
-- `DB_DATABASE` *(default: `customai`)*
-- `DB_CONNECTION` *(default: `mongodb`)*
+- `DB_PASSWORD` 
+- `DB_HOST` (default: `localhost`)
+- `DB_PORT` (default: `27017`)
+- `DB_DATABASE` (default: `customai`)
+- `DB_CONNECTION` (default: `mongodb`)
 
-#### `get_database`
-
-:small_blue_diamond: **Description:**  
-Retrieves the target MongoDB database instance.
-
-**Parameters:**
-
-- `db_name` *(optional)*: custom database name
-
-**Returns:**  
-MongoDB database instance
+**Methods:**
+- `get_database(db_name=None)` - Returns MongoDB database instance
 
 ```python
 db = MongoDBClient().get_database()
 ```
 
----
+### Database Utilities
 
-## 2. Callback Handlers
+#### `get_db_instance(db_name=None)`
+Retrieves singleton database instance across the application.
 
-### `MongoDBCallbackHandler`
+```python
+db = get_db_instance()
+```
 
-#### `on_llm_end`
-
-:small_blue_diamond: **Description:**  
-Handles post-processing after an LLM generates output, including chat updates and token tracking.
-
-**Parameters:**
-
-- `response`: `LLMResult` object from the model
-
-**Functionality:**
-
-- Tracks usage
-- Updates memory and credits
-- Saves chat history
-
-<Note>
-Essential for systems where token usage and memory management are critical.
-</Note>
-
----
-
-## 3. Error Handling
-
-### `mongodb_connection_error_handler`
-
-:small_blue_diamond: **Description:**  
-Global handler for MongoDB-related connection issues.
-
-**Handles:**
-
-- `ServerSelectionTimeoutError`
-- General connection failures
-
-**Returns:**  
-Standardized HTTP response with error details.
+#### `mongodb_connection_error_handler(exc)`
+Global error handler for MongoDB connection issues.
 
 ```python
 @app.exception_handler(MongoDBConnectionError)
@@ -85,200 +42,151 @@ async def handler(request, exc):
     return mongodb_connection_error_handler(exc)
 ```
 
----
+## Callback Handlers
 
-## 4. Utility Functions
+### MongoDBCallbackHandler
 
-### `get_db_instance`
+Post-processing handler for LLM operations.
 
-:small_blue_diamond: **Description:**  
-Retrieves a Singleton-based database instance across the app.
+**Methods:**
+- `on_llm_end(response: LLMResult)` - Handles token tracking, memory updates, and chat history
 
-**Parameters:**
+**Features:**
+- Usage tracking
+- Credit updates
+- Memory management
+- Chat history persistence
 
-- `db_name` *(optional)*
+## Encryption Services
 
-**Returns:**  
-MongoDB DB instance
+### MessageEncryptor
 
-```python
-db = get_db_instance()
-```
-
----
-
-## Utility Classes
-
-### `MessageEncryptor`
-
-Utility for encrypting plaintext using AES in ECB mode.
-
-#### Constructor:
+AES encryption utility for plaintext messages.
 
 ```python
 encryptor = MessageEncryptor(key=b'sixteenbytekey123')
+encrypted = encryptor.encrypt("plaintext message")
 ```
 
-#### Methods:
+**Methods:**
+- `encrypt(plaintext: str) -> str` - Returns Base64-encoded ciphertext
 
-- `encrypt(plaintext: str) -> str`: Encrypts text to Base64-encoded ciphertext.
+### MessageDecryptor
 
----
-
-### `MessageDecryptor`
-
-Utility for decrypting AES-encrypted Base64 strings.
-
-#### Constructor:
+AES decryption utility for encrypted messages.
 
 ```python
 decryptor = MessageDecryptor(key=b'sixteenbytekey123')
+plaintext = decryptor.decrypt("base64_ciphertext")
 ```
 
-#### Methods:
+**Methods:**
+- `decrypt(ciphertext: str) -> str` - Returns decrypted plaintext
 
-- `decrypt(ciphertext: str) -> str`: Decrypts Base64 string back to plaintext.
+## Model Repositories
 
----
+### DefaultGeminiModelRepository
 
-### `get_user_data(user_id: str) -> dict`
+Manages default Gemini model configurations per company.
 
-Fetches user profile data by user ID.  
-**Returns:** A dictionary of user information.
-
----
-
-## Default Model Repositories
-
-### `DefaultGeminiModelRepository`
-
-Manages the default Gemini model per company.
-
-#### Methods:
-
+**Methods:**
 - `get_default_model_key()`
 - `get_encrypt_key()`
 - `get_decrypt_key()`
 
----
+### DefaultAnthropicModelRepository
 
-### `DefaultAnthropicModelRepository`
+Handles default Anthropic model configurations.
 
-Handles Anthropic model defaults.
-
-#### Methods:
-
+**Methods:**
 - `get_default_model_key()`
 - `get_encrypt_key()`
 - `get_decrypt_key()`
 
----
+### DefaultOpenAIModelRepository
 
-### `DefaultOpenAIModelRepository`
+Manages default OpenAI model configurations.
 
-For managing the default OpenAI model configuration.
-
-#### Method:
-
+**Methods:**
 - `get_default_model_key()`
 
----
+## Notification Services
 
-## Email & Notification Services
+### EmailService
 
-### `EmailService`
-
-Abstraction layer for sending emails via AWS SES or SMTP.
-
-#### Constructor:
+Email sending abstraction for AWS SES or SMTP.
 
 ```python
 service = EmailService()
-```
-
-#### Method:
-
-- `send_email(...)`: Sends templated email via configured provider.
-
-**Usage:**
-
-```python
 service.send_email(email, subject, username, content_body, slug, template_name)
 ```
 
 <Note>
-Selected via the `EMAIL_PROVIDER` environment variable.
+Provider selection via `EMAIL_PROVIDER` environment variable.
 </Note>
 
----
+### Firebase
 
-### `Firebase`
-
-Service class for sending push notifications using Firebase Cloud Messaging.
-
-#### Constructor:
+Push notification service using Firebase Cloud Messaging.
 
 ```python
 firebase = Firebase()
+firebase.send_push_notification(
+    tokens=["token1", "token2"], 
+    title="Alert", 
+    body="Notification message"
+)
 ```
 
-#### Method:
-
+**Methods:**
 - `send_push_notification(tokens: list, title: str, body: str = None)`
 
-**Example:**
+## Security Services
 
-```python
-firebase.send_push_notification(tokens=["token1"], title="Alert", body="You’ve got mail.")
-```
+### LLMAPIKeyDecryptionHandler
 
----
-
-## API Key Decryption
-
-### `LLMAPIKeyDecryptionHandler`
-
-Handles secure decryption of API keys from MongoDB.
-
-#### Methods:
-
-- `initialization(api_key_id: str, collection_name: str)`
-- `decrypt() -> bytes`
-
-**Example:**
+Secure API key decryption from MongoDB.
 
 ```python
 handler = LLMAPIKeyDecryptionHandler()
 handler.initialization("key-id", "keys-collection")
-plaintext = handler.decrypt()
+decrypted_key = handler.decrypt()
 ```
 
+**Methods:**
+- `initialization(api_key_id: str, collection_name: str)`
+- `decrypt() -> bytes`
+
 <Warning>
-Make sure the environment contains the correct decrypt key.
+Ensure correct decrypt key is configured in environment variables.
 </Warning>
 
----
+## Streaming Utilities
 
-## Streaming Enhancements
+### StreamingResponseWithStatusCode
 
-### `StreamingResponseWithStatusCode`
-
-Custom subclass of FastAPI’s `StreamingResponse`.
-
-#### Key Feature:
-
-Allows **dynamic status code updates** while streaming data chunks to the client.
-
-#### Method:
-
-- `stream_response(send)`: Streams and sets status code mid-stream
-
-**Usage:**
+Enhanced FastAPI StreamingResponse with dynamic status code updates.
 
 ```python
 return StreamingResponseWithStatusCode(generator_func())
 ```
 
-<Note>
-Use this when streaming model responses where the status might change (e.g. invalid request mid-stream).
-</Note>
+**Features:**
+- Dynamic status code changes during streaming
+- Mid-stream error handling
+- Compatible with FastAPI streaming responses
+
+**Methods:**
+- `stream_response(send)` - Streams content with status code management
+
+## User Services
+
+### get_user_data(user_id: str)
+
+Retrieves user profile information by user ID.
+
+**Returns:** Dictionary containing user information
+
+```python
+user_info = get_user_data("user_123")
+```

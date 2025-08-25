@@ -1,102 +1,121 @@
 ---
 title: "MCP Configuration Workflow"
-description: "Detailed frontend process for integrating and managing third-party services using MCP (Model Context Protocol)."
 ---
+
+Frontend process for integrating and managing third-party services using Model Context Protocol (MCP).
 
 ## Overview
 
-This workflow describes the general process for configuring and connecting third-party services through the **Model Context Protocol (MCP)** integration system.  
-MCP will store service data per user.
+MCP provides standardized connections between AI systems and external data sources, storing service data per user for secure access management.
 
-## Workflow Steps
+## Integration Steps
 
 ### 1. Environment Setup
-
-- Configure environment variables for the target service:
+- Configure service environment variables:
   - `Client ID`
   - `Client Secret`
-- Set up service configuration object with:
+- Set up service configuration:
   - OAuth endpoints
   - Required scopes
 
 ### 2. OAuth Flow Implementation
 
-- **Initiation**
-  - User clicks **"Connect"**
-  - Generate OAuth `state`
-  - Redirect to service's OAuth URL
+**Initiation:**
+- User clicks "Connect"
+- Generate OAuth `state`
+- Redirect to service OAuth URL
 
-- **Callback**
-  - Service redirects back with an `authorization code`
-  - Frontend exchanges the code for an access token
+**Callback Processing:**
+- Service redirects with `authorization code`
+- Frontend exchanges code for access token
+- Verify OAuth `state`
+- Handle errors and display feedback
 
-- **Validation**
-  - Verify the OAuth `state`
-  - Handle and display errors as needed
+**Token Storage:**
+- Encrypt access token
+- Store with user information in database
 
-- **Storage**
-  - Encrypt and store access token with user information in the database
+### 3. Database Management
 
-### 3. Database Update
+**Storage Structure:**
+```json
+mcpdata: {
+  SLACK: {},
+  GITHUB: {},
+  GOOGLE_DRIVE: {}
+}
+```
 
-- **Database Store**
-  - Store the MCP service token in the user's collection like:
-
-    ```json
-    mcpdata: {
-      SLACK: {},
-      GITHUB: {}
-    }
-    ```
-
-- **Disconnect Handler**
-  - When disconnecting, remove the specific service token object from the user's database entry
+**Disconnect Process:**
+- Remove specific service token from user collection
+- Update user's MCP data object
 
 ### 4. State Management
 
-- Use **Redux** to manage:
-  - Connection status
-  - Loading states
-  - MCP data
+**Redux Store:**
+- Connection status tracking
+- Loading states management
+- MCP data persistence
 
-- Store:
-  - Encrypted tokens securely
-  - User service selections
+**Secure Storage:**
+- Encrypted token storage
+- User service selections
+- Tool configurations per service
 
-- Track:
-  - Selected MCP services
-  - Tool configurations for each
+### 5. Tool Integration
 
-### 5. Tool Integration Points
+**Service Mapping:**
+- Define available tools per service (Slack, GitHub, etc.)
+- Configure UI service selection options
+- Map service codes to tool functionality
 
-- Define tools/actions available per service (e.g., Slack, GitHub)
-- Configure service selection options in the UI
-- Map service codes to respective tool functionality
+**Tool Configuration:**
+- Service-specific tool settings
+- Parameter requirements per tool
+- Permission management
 
-### 6. Chat Interface
+### 6. Chat Interface Integration
 
-- Load user’s connected MCP services when the chat page loads
-- Display available MCP tools grouped by service
-- User selects a tool from the list
-- Collect required parameters using dynamic UI forms
-- User submits a query, and the system processes the tool invocation
-- Show results or tool responses inline within the chat interface
+**Service Loading:**
+- Load connected MCP services on chat page load
+- Display available tools grouped by service
+- Dynamic tool selection interface
 
-### 7. Disconnect MCP
+**Query Processing:**
+- User selects tool from available list
+- Collect required parameters via dynamic forms
+- Submit query for tool invocation
+- Display results inline in chat interface
 
-- **User Initiation**
-  - User clicks **"Disconnect"** in the service configuration modal
-  - A confirmation dialog is shown to avoid accidental disconnections
-  - User confirms the disconnection
+### 7. Disconnect Workflow
 
-- **Frontend State Update**
-  - Show "Disconnecting..." loading state
-  - Disable disconnect button during the process
-  - Display visual feedback (spinner, progress bar, etc.)
+**User Interface:**
+- "Disconnect" button in service configuration modal
+- Confirmation dialog to prevent accidental disconnection
+- User confirmation required
 
-- **Backend API Call**
-  - Send a POST request to the backend with:
-    - User authentication
-    - Target service information
-  - Handle response or error from the API
+**State Updates:**
+- Display "Disconnecting..." loading state
+- Disable disconnect button during process
+- Show visual feedback (spinner, progress indicators)
 
+**Backend Communication:**
+- POST request to backend with:
+  - User authentication credentials
+  - Target service information
+- Handle API response or error states
+
+## Security Considerations
+
+- Token encryption at rest
+- Secure OAuth state validation
+- Protected API endpoints
+- User-specific data isolation
+
+## Supported Services
+
+- **Slack**: Channel management, messaging, user information
+- **GitHub**: Repository operations, issue tracking, pull requests
+- **Google Drive**: File management, content retrieval
+- **Gmail**: Email operations, label management
+- **Google Calendar**: Event management, calendar operations

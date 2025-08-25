@@ -1,0 +1,141 @@
+---
+title: "Get Started"
+---
+
+## Step 1: Choose Your Setup
+
+Pick the setup method that fits your needs:
+
+<CardGroup cols={2}>
+
+<Card
+  title="Local Setup (Development)"
+  icon="laptop"
+  href="/setup/choose-your-setup/local-setup"
+>
+  Run Weam AI on your local machine for development, testing, or evaluation.
+</Card>
+
+<Card
+  title="One-Click Cloud Deployment"
+  icon="cloud"
+  href="/setup/choose-your-setup/one-click-deployment"
+>
+  Deploy instantly on AWS or DigitalOcean with automated setup scripts.
+</Card>
+
+<Card
+  title="Self-Hosted Setup (Production)"
+  icon="server"
+  href="/setup/choose-your-setup/self-hosted"
+>
+  Deploy Weam AI on your own infrastructure with custom domain and SSL.
+</Card>
+
+</CardGroup>
+
+### Which Setup Should I Choose?
+
+| Setup Type | Best For | Requirements | Time |
+|------------|----------|--------------|------|
+| **Local Setup** | Development, testing | Docker, 8GB RAM | 10-15 min |
+| **One-Click Cloud** | Quick production deployment | Cloud account, optional domain | 5-30 min |
+| **Self-Hosted** | Custom infrastructure | Linux server, domain, SSL | 20-30 min |
+
+<Tip>
+**New to Weam AI?** 
+
+Start with **One-Click Cloud Deployment** for the fastest way to get a production-ready instance running with minimal configuration.
+</Tip>
+
+
+## Step 2: Complete Configuration
+
+After installation, follow these essential configuration steps:
+
+<Steps>
+
+<Step title="Configure Environment Variables">
+Set up database connections, security keys, and service endpoints.
+
+<Card
+  title="Environment Variables Guide"
+  icon="gear"
+  href="/setup/after-setup-complete/environment-variables"
+>
+  Complete reference for all configuration options
+</Card>
+</Step>
+
+<Step title="Add Your Credentials">
+Connect to model providers like OpenAI, Anthropic, and Google.
+
+<Card
+  title="Credential Setup Guide"
+  icon="key"
+  href="/setup/after-setup-complete/credential-setup"
+>
+  Step-by-step credential generation and configuration
+</Card>
+</Step>
+
+<Step title="Launch and Verify">
+Start services and confirm everything works correctly.
+
+<Card
+  title="Launch & Verify Guide"
+  icon="check"
+  href="/setup/after-setup-complete/launch-verify"
+>
+  Verify installation and test core functionality
+</Card>
+</Step>
+
+</Steps>
+
+## What Happens Next?
+
+Once setup is complete, you'll have:
+
+- A running Weam AI instance accessible via web browser
+- Connected model providers for chat functionality
+- User registration and login working
+- Core features like Brains, Prompts, and Agents ready to use
+
+## Time Estimates
+
+| Setup Phase | Estimated Time |
+|-------------|----------------|
+| Local Installation | 10-15 minutes |
+| Self-Hosted Installation | 20-30 minutes |
+| Environment Configuration | 10-15 minutes |
+| Credential Setup | 15-20 minutes |
+| **Total Setup Time** | **30-60 minutes** |
+
+<Note>
+One-Click Cloud deployment includes automated infrastructure provisioning, making it faster overall despite the longer total time.
+</Note>
+
+## Need Help?
+
+<AccordionGroup>
+
+<Accordion title="Installation Issues">
+- Check that Docker is running and has enough memory allocated
+- Ensure all required ports are available
+- Verify your system meets minimum requirements (8GB RAM, 4 CPU cores)
+</Accordion>
+
+<Accordion title="Configuration Problems">
+- Double-check environment variable syntax
+- Confirm API keys are valid and have proper permissions
+- Check database and Redis connections
+</Accordion>
+
+<Accordion title="Access Issues">
+- Verify firewall settings allow required ports
+- Check DNS configuration for self-hosted setups
+- Confirm SSL certificates are properly installed
+</Accordion>
+
+</AccordionGroup>
