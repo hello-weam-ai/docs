@@ -1,115 +1,88 @@
 ---
 title: "RAG Chat Architecture"
-description: "Understand the Python API flow for Retrieval-Augmented Generation (RAG) when handling file-based queries."
 ---
 
+Python API flow for Retrieval-Augmented Generation handling file-based queries with FastAPI and Qdrant.
+
 <Info>
-  **RAG Chat integrates document understanding with conversational AI**:
-  - Files are chunked, embedded, and stored in a vector database
-  - Query responses are augmented by retrieved context for high relevance
+RAG Chat integrates document understanding with conversational AI through chunked files, embeddings, and vector database storage for high-relevance responses.
 </Info>
 
-This guide walks through the RAG-based query resolution pipeline using FastAPI and Qdrant.
+## Processing Pipeline
 
-<Steps>
+### 1. File Upload and Preprocessing
+1. User uploads file through frontend interface
+2. Backend reads content and splits into chunks
+3. Each chunk embedded using embedding model for similarity search
 
-<Step title="File Upload and Preprocessing">
+**Technical Notes:**
+- Text chunking uses tokenizer-aware splitter (recursive chunker or NLTK-based)
+- Embedding model must match between indexing and querying (OpenAI, HuggingFace, etc.)
 
-1. User uploads a file through the frontend interface.
-2. The backend reads the file content and **splits it into chunks**.
-3. Each chunk is **embedded using an embedding model** to enable similarity search.
+### 2. Storage and Retrieval
+- **Storage**: Embedded chunks stored in Qdrant vector database
+- **Retrieval**: Similar chunks retrieved based on semantic similarity
 
-**Developer Note**:
-- Text chunking uses a tokenizer-aware splitter (e.g., recursive chunker or NLTK-based).
-- Embedding model can be OpenAI, HuggingFace, etc. (must match with query-time embedding).
+**Implementation:**
+- Embeddings stored using `collection_name` in Qdrant
+- Queries perform `top_k` similarity search with optional metadata filtering
 
-</Step>
+### 3. Model Selection and Initialization
+1. Service Controller determines model based on user selection
+2. Appropriate LLM service initialized for contextual processing
 
-<Step title="Storage and Retrieval">
+**Technical Notes:**
+- Controller routes to LLMs (GPT-4, Claude, etc.)
+- Model dynamically bound with Retrieval Chain post-initialization
 
-- The **embedded chunks are stored in Qdrant**, a high-performance vector database.
-- Upon receiving a query, **similar chunks** are retrieved based on **semantic similarity**.
-
-**Developer Note**:
-- Embeddings are stored using `collection_name` in Qdrant.
-- Queries perform a `top_k` similarity search with optional filtering (e.g., by file tag or metadata).
-
-</Step>
-
-<Step title="Model Selection and Initialization">
-
-1. The **Service Controller** determines the model to use based on user selection.
-2. Initializes the **appropriate LLM service**, ready to process contextual input.
-
-**Developer Note**:
-- Controller handles routing to LLMs like GPT-4, Claude, etc.
-- The model is dynamically bound with the Retrieval Chain post-initialization.
-
-</Step>
-
-<Step title="Chat History and Retrieval Chain">
-
-- The **Chat Repository** fetches previous messages using the provided chat ID.
-- A **retrieval chain** is constructed, combining:
+### 4. Context Construction
+- **Chat Repository** fetches previous messages using chat ID
+- **Retrieval Chain** combines:
   - Retrieved document chunks
   - Chat history
-  - The current user query
-- This composite input serves as the prompt to the LLM.
+  - Current user query
 
-**Developer Note**:
-- Retrieval Chain wraps logic for context enrichment.
-- Prompts are generated using templates, formatted in a "history + context + question" order.
+**Prompt Structure:** History + Context + Question format using templates
 
-</Step>
+### 5. Response Generation
+1. LLM generates response streamed live to frontend
+2. System logging via MongoDB Handler:
+   - Generated response
+   - Token-based cost (Cost Callback)
+   - Analytics and audit data
 
-<Step title="Response Streaming and Storage">
+**Cost Calculation:** Post-inference using prompt + completion token lengths
 
-1. The LLM generates a response, which is **streamed live to the frontend**.
-2. The system logs:
-   - The **generated response**
-   - The **token-based cost**, using the **Cost Callback**
-   - All data is stored via the **MongoDB Handler**
+## Architecture
 
-**Developer Note**:
-- Token cost calculation is triggered post-inference using prompt + completion lengths.
-- MongoDB entries are structured for analytics, traceability, and auditing.
+<Frame caption="RAG Chat Processing Flow">
+  <img
+    src="https://weam.ai/app/uploads/2025/07/RAG-Chat.png"
+    alt="RAG Chat Architecture Diagram"
+    style={{ height: '700px', objectFit: 'contain' }}
+  />
+</Frame>
 
-</Step>
+## Key Components
 
-<Step title="Architecture Diagram">
-
-<img
-  src="https://weam.ai/app/uploads/2025/07/RAG-Chat.png"
-  alt="LLM Query Flow Diagram"
-  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
-/>
-
-</Step>
-
-</Steps>
+- **Qdrant**: High-performance vector database for embeddings
+- **Retrieval Chain**: Context enrichment logic wrapper
+- **Chat Repository**: Message history management
+- **Service Controller**: Model routing and initialization
+- **Cost Callback**: Token usage and pricing tracking
 
 <Note>
-  Make sure your Qdrant service is running and configured correctly. Embedding models should match those used during both indexing and querying to ensure vector similarity functions accurately.
+Ensure Qdrant service is running and configured correctly. Embedding models must match between indexing and querying for accurate vector similarity.
 </Note>
 
 ## Troubleshooting
 
-<AccordionGroup>
+### Chunks Not Retrieved from Qdrant
+- Verify embeddings are correctly generated and stored
+- Check Qdrant connection status and schema consistency
+- Validate similarity threshold and filtering logic
 
-<Accordion title="Chunks not retrieved from Qdrant">
-
-- Ensure embeddings are correctly generated and stored.
-- Check Qdrant connection status and schema consistency.
-- Validate the similarity threshold and filtering logic.
-
-</Accordion>
-
-<Accordion title="Streaming is slow or fails">
-
-- Monitor token usage and LLM latency.
-- Validate if streaming infrastructure (WebSocket/EventStream) is active.
-- Check for large document sizes causing delayed chunk retrieval.
-
-</Accordion>
-
-</AccordionGroup>
+### Streaming Performance Issues
+- Monitor token usage and LLM latency
+- Validate streaming infrastructure (WebSocket/EventStream) status
+- Check for large document sizes causing retrieval delays

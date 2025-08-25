@@ -1,0 +1,149 @@
+---
+title: "Generating an OpenAI API Key"
+description: "Complete guide to creating and securing OpenAI API keys for GPT-5, GPT-4, and other OpenAI models in 2025"
+---
+
+## Step-by-Step Guide
+
+**Step 1:** Navigate to OpenAI Platform
+
+Go to [https://platform.openai.com](https://platform.openai.com) in your web browser.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/OpenAI-07-23-2025_04_50_PM.png"
+  alt="OpenAI Platform Homepage"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 2: Sign Up or Log In
+
+**New User:**
+- Click **"Sign up"** to create an account
+- Use email or sign up with Google/Microsoft
+- Complete email or phone verification when prompted
+
+**Existing User:**
+- Click **"Log in"**
+- Enter your credentials
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/API-Platform-OpenAI-07-24-2025_10_59_AM.png"
+  alt="OpenAI Sign Up Page"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/Login-OpenAI-07-24-2025_11_16_AM.png"
+  alt="OpenAI Login Page"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 3: Access Your Dashboard
+
+Once logged in, you'll see the **OpenAI Platform dashboard** with your account overview.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/Overview-OpenAI-API-07-24-2025_11_00_AM.png"
+  alt="OpenAI Dashboard"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 4: Create a Project
+
+Click the **"Start building"** button in the top-right corner to create a new project.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/Start-building-OpenAI-API-07-24-2025_11_18_AM.png"
+  alt="Start Building Button"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 5: Name Your API Key
+
+Give your API key a descriptive name to identify its purpose:
+
+**Good Examples:**
+- `Weam Integration`
+- `Production Chatbot`
+- `Development Testing`
+- `Analytics Dashboard`
+
+Then click **"Create secret key"**.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/Start-building-OpenAI-API-07-24-2025_11_19_AM.png"
+  alt="Name Your API Key"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 6: Copy and Secure Your Key
+
+**Critical Security Step:**
+
+- **Copy the key immediately** – this is the only time you'll see it
+- **Store it securely** in a password manager or secure environment
+- **Never share publicly** or commit to version control
+- **Revoke and regenerate** if accidentally exposed
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/Start-building-OpenAI-API-07-24-2025_11_20_AM.png"
+  alt="Copy API Key"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 7: Set Up Billing (If Required)
+
+**Free Credits:**
+- OpenAI provides **$5 in free credits** for new users
+- Perfect for testing and initial development
+
+**Add Billing Method:**
+- Navigate to **Billing** section in your dashboard
+- Add credit card or payment method for continued usage
+- Set usage limits to control costs
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/API-keys-OpenAI-API-07-24-2025_11_21_AM.png"
+  alt="Billing Setup"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Step 8: Add to Weam
+
+Now integrate your OpenAI API key with Weam:
+
+1. Open Weam and go to **Settings** → **Configurations**
+2. Select **OpenAI** as your provider
+3. Paste your API key in the configuration field
+4. Save and test the connection
+
+## API Key Types and Permissions
+
+Understanding different API key types ensures proper security and functionality.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/Admin-keys-OpenAI-API-07-24-2025_11_24_AM.png"
+  alt="Admin API Keys"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+### Normal API Keys vs Admin API Keys
+
+| Feature | **Normal API Keys (Project Keys)** | **Admin API Keys** |
+|---------|-------------------------------------|-------------------|
+| **Purpose** | Access AI models (GPT, DALL-E) | Manage organization admin tasks |
+| **Use Cases** | Build apps, generate content, chat interfaces | Manage users, billing, org settings |
+| **Scope** | Project-specific access | Organization-wide access |
+| **Who Creates** | Project members with permissions | Organization owners only |
+| **Security Level** | Medium risk | High risk |
+| **For Weam** | ✅ **Recommended** | ❌ Not needed |
+
+### Permission Levels
+
+| Permission | Access Rights | Best For | Risk Level |
+|------------|---------------|----------|------------|
+| **All Permissions** | Full API access, all models | Production apps, Weam integration | High |
+| **Restricted** | Limited endpoints, custom scope | Testing, third-party tools | Medium |
+| **Read Only** | View-only, no modifications | Analytics, monitoring | Low |
+
+---

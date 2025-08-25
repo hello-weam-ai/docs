@@ -2,11 +2,11 @@
 title : "Slack"
 ---
 
-# OAuth Configuration and Integration for Slack 
+Connect and interact with Slack workspaces through OAuth integration.
 
-Enable your AI to interact with Slack workspaces programmatically using the following capabilities:
+## Available Functions
 
-### Manage Channels and Users
+### Channel Management
 - `slack_list_channels`
 - `slack_create_channel`
 - `slack_archive_channel`
@@ -14,66 +14,56 @@ Enable your AI to interact with Slack workspaces programmatically using the foll
 - `slack_kick_user_from_channel`
 - `slack_set_channel_topic`
 - `slack_set_channel_purpose`
-- `slack_list_users`
 
-### Messaging and Threads
+### Messaging
 - `slack_send_message`
 - `slack_get_messages`
 - `slack_reply_to_thread`
 - `slack_get_thread_replies`
 - `slack_start_thread`
-- `slack_reply_to_thread_with_broadcast`
-- `slack_get_thread_info`
-- `slack_find_threads_in_channel`
-
-### Direct & Ephemeral Messaging
 - `slack_open_dm`
 - `slack_send_dm`
 - `slack_send_ephemeral_message`
 
 ### User Information
+- `slack_list_users`
 - `slack_get_user_info`
 - `slack_get_user_profile`
 - `slack_get_channel_members`
 
-These functions allow **Weam AI** to automate workflows, retrieve Slack data, and facilitate streamlined communication directly from your AI interface.
+## OAuth Setup
 
----
+### 1. Create Slack App
+1. Visit [api.slack.com/apps](https://api.slack.com/apps)
+2. Click **"Create New App"** → **"From scratch"**
+3. Enter app name and select workspace
 
-## Slack MCP OAuth Configuration Setup
-
-### 1. Create a Slack App
-1. Visit [https://api.slack.com/apps](https://api.slack.com/apps)
-2. Click **"Create New App"**
-3. Choose **"From scratch"**
-4. Enter an app name and select your workspace
-
-### 2. Configure OAuth Settings
+### 2. Configure OAuth
 1. Go to **OAuth & Permissions**
-2. Add the following redirect URL:
+2. Add redirect URL:
    ```
    https://your-domain.com/api/slack/oauth/callback
    ```
-3. Add these scopes:
+3. Add required scopes:
    - `chat:write`
    - `channels:read`
    - `channels:history`
    - `users:read`
    - `users:read.email`
 
-### 3. Install the App
-1. Go to **Install App** in the sidebar
+### 3. Install App
+1. Go to **Install App**
 2. Click **"Install to Workspace"**
-3. Authorize access when prompted
+3. Authorize access
 
 ### 4. Environment Variables
-Obtain your **Client ID** and **Client Secret** from the **Basic Information** section and add to your `.env`:
+Add to your `.env` file:
 
 ```env
 SLACK_CLIENT_ID=your-client-id
 SLACK_CLIENT_SECRET=your-client-secret
 ```
 
-<Note>
-To configure Slack OAuth successfully, you must use a secure HTTPS URL for the redirect; HTTP is not supported.
-</Note>
+<Warning>
+HTTPS URLs are required for OAuth redirects. HTTP is not supported.
+</Warning>

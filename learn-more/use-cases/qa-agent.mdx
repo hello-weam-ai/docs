@@ -1,122 +1,297 @@
 ---
-title : "QA Agent"
+title: "QA Agent"
 ---
-Automate website quality assurance and bug detection using **Weam's AI-powered analysis workflow**.
 
-Marketing agencies are flooded with website projects and face pressure to deliver market-competitive quality. Quality analysts follow extensive checklists covering functionality and UI, but manually reviewing entire websites for anomalies is time-consuming and exhausting. The QA Agent automates this process, helping teams identify issues quickly and maintain consistent quality standards.
+Automate website quality assurance and bug detection through AI-powered analysis. 
 
-## What It Does
+Comprehensive website auditing that combines automated crawling, performance testing, and intelligent issue detection.
 
-- Crawl and analyze website URLs automatically  
-- Detect bugs, errors, and quality issues across multiple dimensions  
-- Generate detailed reports with actionable recommendations  
-- Evaluate SEO, accessibility, security, and performance metrics  
-- Provide insights for both functionality and UI improvements  
+## Features
+
+- **Automated Website Crawling**: Systematic analysis of HTML, CSS, JavaScript, and PHP files
+- **Multi-dimensional Quality Checks**: SEO, accessibility, security, performance, and UI evaluation
+- **Performance Analysis**: Integration with Google PageSpeed Insights for mobile and desktop metrics
+- **Detailed Reporting**: Generates structured reports with actionable recommendations
+- **Real-time Processing**: Live streaming of analysis results with progress tracking
 
 ## How It Works
 
-1. **Input** – Submit website URL for analysis  
-2. **Crawling Process** – Agent systematically reviews all website elements  
-3. **Analysis Engine** – Evaluates against comprehensive quality checklist  
-4. **Output** – Delivers detailed report covering SEO best practices, accessibility, code quality, security, content quality, and performance analytics  
+The QA Agent processes websites through a comprehensive analysis pipeline:
 
-## Why This Agent?
-
-- Eliminates repetitive manual QA processes  
-- Ensures consistent quality standards across projects  
-- Reduces time from hours to minutes for website analysis  
-- Provides comprehensive coverage beyond human capacity  
-- Helps beginners learn QA best practices  
-
-## Built for Agencies – Adaptable for Any Web Team
-
-Although designed for marketing agencies, this agent can be tailored for:
-
-- **Development Teams** – Pre-launch quality checks  
-- **E-commerce** – Ensure optimal user experience  
-- **Enterprise IT** – Maintain corporate website standards  
-- **Freelancers** – Deliver professional-grade QA without a team  
-
-
-## Overview
-
-* **Goal**: Automate website QA with AI + PageSpeed + scraping.
-* **Input**: Website URL
-* **Output**:
-
-  * QA Checklist JSON
-  * PageSpeed Analysis JSON
-  * Styled Excel Report (via AWS S3)
-  * Token usage and cost breakdown
-
-## Developer Guide : 
-
-## AI (Python) — Execution Flow
-
-```text
-AI Execution Steps:
-
-1.  Initialize LLM
-2.  Initialize Checklist & PageSpeed Queues
-3.  Scrape the URL → Extract all code files (PHP, HTML, JS, CSS)
-4.  Clean & Filter Unnecessary Code Lines
-5.  Call PageSpeed API:
-      ├─ Mobile Analysis
-      └─ Desktop Analysis
-6.  Count Tokens in Scraped Content
-7.  Initialize LLM Memory & History
-8.  Create LLM Chains:
-      ├─ Scraped Content Analysis Chain
-      └─ PageSpeed Checklist Analysis Chain
-9.  Batch Checklist Items (10 per call)
-10. Batch PageSpeed Results
-11. Add Prompt Templates
-12. Call LLM for Checklist Analysis (batch-wise)
-      → Stream JSON Results into Checklist Queue
-13. On Checklist Completion:
-      → Start PageSpeed Analysis
-      → Stream JSON Results into PageSpeed Queue
-14. Parse PageSpeed JSON (Mobile & Desktop)
-      → Format into UI-ready table structure
-15. Combine All Results
-      → Generate Final Excel Report
-16. Upload Excel Report to AWS S3
-17. Return Final API Response:
-      ├─ PageSpeed JSON  
-      ├─ Excel S3 Filename  
-      └─ Token Usage & Cost Breakdown
-18. Persist Results (Include in `additional_kwargs`)
+```
+URL Input → Content Scraping → Code Analysis → Performance Testing → Report Generation
 ```
 
-## AI (Python) — Core Components
+## Architecture Overview
 
-| 🔧 Component              | 💬 Description                                                 |
-| ------------------------- | -------------------------------------------------------------- |
-| `scrape_url_content`      | Scrapes all HTML, PHP, CSS, JS files from the provided URL     |
-| `filter_code_lines`       | Cleans up unnecessary or duplicate lines for better analysis   |
-| `pagespeed_api_call`      | Calls Google PageSpeed API (Mobile + Desktop)                  |
-| `count_tokens`            | Ensures token-safe LLM execution                               |
-| `initialize_llm_chain`    | Prepares LLM chain for checklist and performance evaluation    |
-| `batch_checklist_items`   | Groups checklist items in chunks of 10                         |
-| `stream_to_queue`         | Streams intermediate results into Redis Queue for real-time UI |
-| `parse_pagespeed_metrics` | Extracts useful metrics from PageSpeed JSON                    |
-| `create_excel_report`     | Builds styled Excel report using all collected data            |
-| `upload_to_s3`            | Uploads the Excel file to AWS and returns the S3 path          |
-| `calculate_cost`          | Calculates and logs token usage + pricing                      |
-| `store_response`          | Saves all results in DB for auditing or analytics              |
+### Processing Pipeline
 
+1. **Content Extraction**: Scrapes and parses all website resources
+2. **Code Analysis**: LLM-powered evaluation against quality checklists
+3. **Performance Testing**: Google PageSpeed API integration for speed metrics
+4. **Report Generation**: Combines findings into structured Excel reports
+5. **Storage & Delivery**: Uploads reports to S3 and provides download links
 
-## Next.js — Execution Flow
+### Core Components
 
-```text
-Node Execution Flow:
+| Component | Purpose |
+|-----------|---------|
+| Web Scraper | Extracts HTML, CSS, JS, and PHP files |
+| Content Filter | Cleans and optimizes code for analysis |
+| LLM Chain | Processes content against quality checklists |
+| PageSpeed API | Retrieves performance metrics |
+| Report Generator | Creates structured Excel reports |
+| Queue Manager | Handles real-time result streaming |
 
-1  User selects "QA Specialist" agent from UI
-2  Frontend Form Input → Sends Website URL to backend
-3  Backend triggers Python pipeline via `proagent code`
-4  Calls `getAIProAgentChatResponse()` to stream result
-5  LLM streams results:
-       └─ Live checklist items in frontend UI
-6  Post-processing:
-       ├─ QA Checklist rendered in Chat Window
-       └─ Downloadable Excel link shown
+## Implementation
+
+### Analysis Workflow
+
+```python
+def analyze_website(url):
+    # 1. Initialize components
+    llm = initialize_llm()
+    queues = setup_analysis_queues()
+    
+    # 2. Extract website content
+    scraped_content = scrape_url_content(url)
+    filtered_content = filter_code_lines(scraped_content)
+    
+    # 3. Performance analysis
+    pagespeed_results = pagespeed_api_call(url, ['mobile', 'desktop'])
+    
+    # 4. Content analysis
+    token_count = count_tokens(filtered_content)
+    analysis_chain = initialize_llm_chain(llm)
+    
+    # 5. Batch processing
+    checklist_batches = batch_checklist_items(filtered_content, batch_size=10)
+    
+    # 6. Execute analysis
+    for batch in checklist_batches:
+        results = analysis_chain.process(batch)
+        stream_to_queue(results, queues['checklist'])
+    
+    # 7. Generate report
+    excel_report = create_excel_report(checklist_results, pagespeed_results)
+    s3_url = upload_to_s3(excel_report)
+    
+    # 8. Return results
+    return {
+        'pagespeed_data': pagespeed_results,
+        'report_url': s3_url,
+        'token_usage': calculate_cost(token_count),
+        'processing_time': elapsed_time
+    }
+```
+
+### Key Functions
+
+| Function | Purpose |
+|----------|---------|
+| `scrape_url_content()` | Extracts all website files and resources |
+| `pagespeed_api_call()` | Retrieves Google PageSpeed metrics |
+| `batch_checklist_items()` | Organizes analysis tasks into processable chunks |
+| `stream_to_queue()` | Provides real-time progress updates |
+| `create_excel_report()` | Generates formatted analysis reports |
+
+## API Reference
+
+### Analysis Endpoint
+
+```
+POST /api/qa-analysis
+```
+
+**Request Body**
+```json
+{
+  "url": "https://example.com",
+  "analysisType": "comprehensive",
+  "options": {
+    "includeMobile": true,
+    "includeDesktop": true,
+    "generateReport": true
+  }
+}
+```
+
+**Response Format**
+```json
+{
+  "analysisId": "qa_12345",
+  "status": "completed",
+  "results": {
+    "seoScore": 85,
+    "performanceScore": 78,
+    "accessibilityScore": 92,
+    "bestPracticesScore": 88
+  },
+  "reports": {
+    "excelUrl": "https://s3.amazonaws.com/reports/qa_12345.xlsx",
+    "jsonData": { ... }
+  },
+  "metrics": {
+    "tokenUsage": 2500,
+    "processingTime": "45s",
+    "pagesAnalyzed": 12
+  }
+}
+```
+
+### Streaming Analysis
+
+```
+GET /api/qa-analysis/{analysisId}/stream
+```
+
+Returns Server-Sent Events for real-time progress updates:
+
+```
+data: {"type": "progress", "step": "scraping", "completion": 25}
+data: {"type": "result", "category": "seo", "issues": [...]}
+data: {"type": "complete", "reportUrl": "https://..."}
+```
+
+## Configuration
+
+### Analysis Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `batchSize` | integer | 10 | Checklist items per LLM call |
+| `maxPages` | integer | 50 | Maximum pages to analyze |
+| `includeSubdomains` | boolean | false | Analyze subdomain pages |
+| `performanceThreshold` | integer | 70 | Minimum acceptable performance score |
+
+### Supported Check Categories
+
+- **SEO Analysis**: Meta tags, structured data, URL structure
+- **Performance**: Load times, resource optimization, Core Web Vitals
+- **Accessibility**: WCAG compliance, keyboard navigation, screen reader support
+- **Security**: HTTPS usage, security headers, vulnerability scanning
+- **Code Quality**: HTML validation, CSS optimization, JavaScript errors
+
+## Usage Examples
+
+### Basic Website Analysis
+
+```bash
+curl -X POST /api/qa-analysis \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "url": "https://example.com",
+    "analysisType": "comprehensive"
+  }'
+```
+
+### Custom Analysis with Options
+
+```bash
+curl -X POST /api/qa-analysis \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "analysisType": "performance",
+    "options": {
+      "includeMobile": true,
+      "includeDesktop": false,
+      "maxPages": 25
+    }
+  }'
+```
+
+### Python Implementation
+
+```python
+import requests
+
+response = requests.post('/api/qa-analysis', json={
+    'url': 'https://example.com',
+    'analysisType': 'comprehensive',
+    'options': {
+        'generateReport': True,
+        'includeSubdomains': False
+    }
+})
+
+analysis = response.json()
+print(f"Analysis ID: {analysis['analysisId']}")
+print(f"Report URL: {analysis['reports']['excelUrl']}")
+```
+
+## Performance & Limits
+
+### Processing Metrics
+- **Average Analysis Time**: 30-90 seconds per website
+- **Concurrent Analyses**: Up to 5 websites simultaneously
+- **Page Limit**: 50 pages per analysis (configurable)
+
+### Rate Limits
+- **API Requests**: 50 analyses per hour per API key
+- **Concurrent Jobs**: 5 active analyses
+- **Token Usage**: Tracked and reported per analysis
+
+### File Constraints
+- **Website Size**: No explicit limit (processed page by page)
+- **Analysis Depth**: Configurable crawl depth (default: 3 levels)
+- **Report Size**: Excel reports typically 1-5MB
+
+## Error Handling
+
+### Common Error Responses
+
+| Status Code | Error Type | Description | Solution |
+|-------------|------------|-------------|----------|
+| `400` | `INVALID_URL` | URL format invalid or unreachable | Verify URL format and accessibility |
+| `429` | `RATE_LIMIT_EXCEEDED` | Too many concurrent analyses | Wait before starting new analysis |
+| `500` | `SCRAPING_FAILED` | Unable to extract website content | Check website accessibility and robots.txt |
+| `503` | `PAGESPEED_UNAVAILABLE` | Google PageSpeed API error | Retry analysis or skip performance metrics |
+
+### Error Response Format
+
+```json
+{
+  "error": {
+    "code": "SCRAPING_FAILED",
+    "message": "Unable to access website content",
+    "details": {
+      "url": "https://example.com",
+      "httpStatus": 403,
+      "reason": "Access forbidden by robots.txt"
+    }
+  }
+}
+```
+
+## Integration Guide
+
+### Authentication
+
+All API requests require Bearer token authentication:
+
+```bash
+curl -H "Authorization: Bearer your-api-key" \
+     -H "Content-Type: application/json"
+```
+
+### Webhook Notifications
+
+Configure webhooks for analysis completion:
+
+```json
+{
+  "webhookUrl": "https://your-app.com/qa-complete",
+  "events": ["analysis.completed", "analysis.failed"]
+}
+```
+
+### Report Processing
+
+Excel reports include multiple worksheets:
+- **Summary**: Overall scores and key findings
+- **SEO Issues**: Detailed SEO recommendations
+- **Performance**: PageSpeed metrics and optimization suggestions
+- **Accessibility**: WCAG compliance issues
+- **Security**: Security headers and vulnerability findings

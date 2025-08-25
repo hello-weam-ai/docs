@@ -1,31 +1,23 @@
 ---
 title: 'Database Functions'
-description: 'Utility functions for accessing MongoDB data in Weam AI repositories'
 ---
 
-## Overview
+MongoDB repository classes for structured data access in the Weam AI system.
 
-This document outlines repository classes used to fetch data from MongoDB in a structured and consistent manner.
+## Usage Pattern
 
-Each class method follows a standard pattern — first call `initialization()` with required arguments, then invoke the respective `_fetch_...` method.
+All repository classes follow the same pattern:
+1. Call `initialization()` with required parameters
+2. Invoke the respective `_fetch_...` method
 
-<Tip>
-These repository classes are part of the internal infrastructure and are meant for low-level data access within the Weam AI system.
-</Tip>
+## Repository Classes
 
----
+### CompanyRepository
 
-## CompanyRepository
+#### `_fetch_company_data`
+Retrieves company metadata from MongoDB using `_id`.
 
-### `_fetch_company_data`
-
-**Description:**  
-This function retrieves a company's core metadata from MongoDB using its `_id`.
-
-#### Usage
-
-Call the `initialization()` method with:
-
+**Parameters:**
 - `company_id: str`
 - `collection_name: str`
 
@@ -35,17 +27,12 @@ repo.initialization(company_id="123456", collection_name="companies")
 company_data = repo._fetch_company_data()
 ```
 
----
+### ChatSessionRepository
 
-## ChatSessionRepository
+#### `_fetch_chat_session_model_data`
+Retrieves chat session data from MongoDB using `_id`.
 
-### `_fetch_chat_session_model_data`
-
-**Description:**  
-Retrieves a Chat session's data from MongoDB using `_id`.
-
-#### Usage
-
+**Parameters:**
 - `company_id: str`
 - `collection_name: str`
 
@@ -55,17 +42,12 @@ repo.initialization(company_id="123456", collection_name="chatsessions")
 session_data = repo._fetch_chat_session_model_data()
 ```
 
----
+### LLMModelRepository
 
-## LLMModelRepository
+#### `_fetch_company_model_data`
+Retrieves LLM configuration data using API key identifier.
 
-### `_fetch_company_model_data`
-
-**Description:**  
-Retrieves company model data using an API key identifier. It's a core method for accessing LLM configurations across the codebase.
-
-#### Usage
-
+**Parameters:**
 - `api_key_id: str`
 - `collection_name: str`
 
@@ -75,17 +57,12 @@ repo.initialization(api_key_id="apikey-abc", collection_name="llm-models")
 llm_config = repo._fetch_company_model_data()
 ```
 
----
+### EmbeddingModelRepository
 
-## EmbeddingModelRepository
+#### `_fetch_company_model_data`
+Fetches embedding model configurations and vector settings.
 
-### `_fetch_company_model_data`
-
-**Description:**  
-Fetches embedding model configurations including model dimensions and other vector settings from MongoDB.
-
-#### Usage
-
+**Parameters:**
 - `api_key_id: str`
 - `collection_name: str`
 
@@ -95,17 +72,12 @@ repo.initialization(api_key_id="apikey-abc", collection_name="embedding-models")
 embedding_config = repo._fetch_company_model_data()
 ```
 
----
+### FileRepository
 
-## FileRepository
+#### `_fetch_file_model_data`
+Retrieves file metadata for user or system files.
 
-### `_fetch_file_model_data`
-
-**Description:**  
-Retrieves file-related metadata from MongoDB, used throughout the application for handling user or system files.
-
-#### Usage
-
+**Parameters:**
 - `file_id: str`
 - `collection_name: str`
 
@@ -115,17 +87,12 @@ repo.initialization(file_id="file-123", collection_name="files")
 file_data = repo._fetch_file_model_data()
 ```
 
----
+### ChatMemberRepository
 
-## ChatMemberRepository
+#### `_fetch_chat_member_model_data`
+Fetches chat participant data for session management.
 
-### `_fetch_chat_member_model_data`
-
-**Description:**  
-Fetches chat participant data used to manage individual members of a chat session.
-
-#### Usage
-
+**Parameters:**
 - `chat_session_id: str`
 - `collection_name: str`
 
@@ -135,14 +102,13 @@ repo.initialization(chat_session_id="chat-789", collection_name="chat-members")
 member_data = repo._fetch_chat_member_model_data()
 ```
 
----
+## Implementation Notes
 
-## Developer Notes
-
-- All `_fetch_...` functions follow the same convention: call `initialization()` first, then call the method.
-- Errors are not automatically handled — consider wrapping calls in try/except blocks.
-- Data is returned in native Python dictionary format, directly from MongoDB.
+- Always call `initialization()` before using `_fetch_...` methods
+- Methods return native Python dictionaries from MongoDB
+- Error handling should be implemented in calling code
+- These are low-level data access methods for internal use
 
 <Note>
-This document is intended for backend developers working with internal data repositories. For abstraction-layer APIs or services, refer to the [API reference](/api-reference/introduction).
+For higher-level APIs, refer to the [API reference](/api-reference/python).
 </Note>

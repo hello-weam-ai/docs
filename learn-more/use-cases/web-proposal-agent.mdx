@@ -1,0 +1,379 @@
+---
+title: "Web Proposal Agent"
+---
+
+Automate business proposal creation with AI-powered content generation and structured document assembly. Transform client requirements into professional proposals with customized pricing, timelines, and deliverables.
+
+## Features
+
+- **Automated Content Analysis**: Website scraping and business context extraction
+- **Template-based Generation**: DOCX template system with placeholder mapping
+- **Structured Data Extraction**: JSON-formatted requirements, pricing, and timelines
+- **Multi-format Output**: Generated proposals delivered via secure S3 links
+- **Real-time Processing**: Live streaming of proposal creation progress
+
+## Architecture Overview
+
+The proposal generation process combines content analysis, AI generation, and document assembly:
+
+```
+Client Data → Website Analysis → Proposal Generation → Template Assembly → Document Delivery
+```
+
+## Processing Pipeline
+
+1. **Template Initialization**: Load base DOCX template with placeholders
+2. **Content Extraction**: Scrape and analyze client website for business context
+3. **Proposal Generation**: AI-powered creation of proposal sections
+4. **Data Structuring**: Extract requirements, timelines, and pricing as JSON
+5. **Document Assembly**: Map structured data to template placeholders
+6. **Delivery**: Upload final document to S3 and provide download link
+
+## Implementation
+
+### Proposal Generation Workflow
+
+```python
+def generate_business_proposal(client_data, website_url):
+    # 1. Initialize components
+    template = load_docx_template("proposal_template.docx")
+    llm = initialize_llm(model="gpt-4")
+    
+    # 2. Extract website context
+    scraped_content = scrape_url_content(website_url)
+    business_summary = llm_generate_summary(scraped_content)
+    
+    # 3. Initialize session context
+    memory = initialize_memory_history(client_data)
+    
+    # 4. Generate proposal content
+    proposal_sections = generate_proposal_data(
+        client_info=client_data,
+        business_context=business_summary,
+        llm=llm
+    )
+    
+    # 5. Extract structured data
+    structured_data = generate_requirements_json(
+        proposal_content=proposal_sections,
+        llm=llm
+    )
+    
+    # 6. Assemble final document
+    final_document = map_json_to_template(
+        template=template,
+        structured_data=structured_data,
+        proposal_content=proposal_sections
+    )
+    
+    # 7. Upload and deliver
+    s3_url = upload_to_s3(final_document)
+    
+    return {
+        'status': 'completed',
+        'document_url': s3_url,
+        'proposal_data': structured_data
+    }
+```
+
+### Template Processing
+
+```python
+def map_json_to_template(template, structured_data, proposal_content):
+    # Replace placeholders with extracted data
+    replacements = {
+        '{{CLIENT_NAME}}': structured_data['client']['name'],
+        '{{PROJECT_SCOPE}}': structured_data['project']['scope'],
+        '{{TIMELINE}}': structured_data['timeline']['duration'],
+        '{{TOTAL_COST}}': structured_data['pricing']['total'],
+        '{{INTRODUCTION}}': proposal_content['introduction'],
+        '{{OBJECTIVES}}': proposal_content['objectives'],
+        '{{APPROACH}}': proposal_content['technical_approach'],
+        '{{DELIVERABLES}}': proposal_content['deliverables']
+    }
+    
+    return apply_template_replacements(template, replacements)
+```
+
+## API Reference
+
+### Proposal Generation Endpoint
+
+```
+POST /api/generate-proposal
+```
+
+**Request Body**
+```json
+{
+  "clientName": "Acme Corporation",
+  "projectName": "E-commerce Platform Redesign",
+  "projectDescription": "Complete redesign of existing e-commerce platform with modern UI/UX",
+  "websiteUrl": "https://acmecorp.com",
+  "contactInfo": {
+    "submittedBy": "John Smith",
+    "designation": "Sales Manager",
+    "companyName": "Digital Solutions Inc",
+    "email": "john.smith@digitalsolutions.com",
+    "phone": "+1-555-0123",
+    "location": "New York, NY"
+  },
+  "projectDetails": {
+    "discussionDate": "2024-01-15",
+    "submissionDate": "2024-01-20",
+    "urgency": "standard"
+  }
+}
+```
+
+**Response Format**
+```json
+{
+  "proposalId": "prop_12345",
+  "status": "completed",
+  "document": {
+    "downloadUrl": "https://s3.amazonaws.com/proposals/prop_12345.docx",
+    "fileName": "Acme_Corporation_Proposal.docx",
+    "fileSize": "245KB"
+  },
+  "proposalData": {
+    "client": {
+      "name": "Acme Corporation",
+      "industry": "E-commerce",
+      "businessFocus": "Online retail and distribution"
+    },
+    "project": {
+      "scope": "Platform redesign with mobile optimization",
+      "complexity": "medium",
+      "estimatedHours": 320
+    },
+    "timeline": {
+      "duration": "12-16 weeks",
+      "phases": [
+        "Discovery & Planning (2 weeks)",
+        "Design & Prototyping (4 weeks)",
+        "Development (8 weeks)",
+        "Testing & Launch (2 weeks)"
+      ]
+    },
+    "pricing": {
+      "basePrice": 48000,
+      "additionalServices": 8000,
+      "total": 56000,
+      "currency": "USD"
+    }
+  },
+  "metadata": {
+    "processingTime": "45s",
+    "tokenUsage": 3200,
+    "generatedSections": 6
+  }
+}
+```
+
+### Streaming Progress Endpoint
+
+```
+GET /api/generate-proposal/{proposalId}/stream
+```
+
+Returns Server-Sent Events for real-time progress:
+
+```
+data: {"type": "progress", "step": "website_analysis", "completion": 20}
+data: {"type": "content", "section": "introduction", "content": "..."}
+data: {"type": "progress", "step": "document_assembly", "completion": 80}
+data: {"type": "complete", "downloadUrl": "https://s3..."}
+```
+
+## Core Components
+
+| Component | Purpose |
+|-----------|---------|
+| Template Engine | DOCX template loading and placeholder management |
+| Web Scraper | Client website content extraction and analysis |
+| LLM Pipeline | Proposal content generation and data structuring |
+| Document Assembler | Template population and formatting |
+| S3 Storage | Secure document upload and delivery |
+| Progress Tracker | Real-time generation status updates |
+
+## Configuration
+
+### Template Settings
+
+```json
+{
+  "template": {
+    "basePath": "/templates/proposal_base.docx",
+    "placeholders": {
+      "client": ["{{CLIENT_NAME}}", "{{CLIENT_INDUSTRY}}"],
+      "project": ["{{PROJECT_SCOPE}}", "{{TIMELINE}}"],
+      "pricing": ["{{TOTAL_COST}}", "{{PAYMENT_TERMS}}"]
+    },
+    "sections": [
+      "introduction",
+      "objectives", 
+      "technical_approach",
+      "deliverables",
+      "timeline",
+      "pricing"
+    ]
+  }
+}
+```
+
+### Generation Parameters
+
+```json
+{
+  "generation": {
+    "model": "gpt-4",
+    "maxTokens": 4000,
+    "temperature": 0.7,
+    "sections": {
+      "introduction": {"maxLength": 500, "tone": "professional"},
+      "objectives": {"maxLength": 400, "format": "bullet_points"},
+      "timeline": {"format": "phases", "includeBuffer": true}
+    }
+  }
+}
+```
+
+## Usage Examples
+
+### Basic Proposal Generation
+
+```bash
+curl -X POST /api/generate-proposal \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "clientName": "Tech Startup Inc",
+    "projectName": "Mobile App Development",
+    "projectDescription": "iOS and Android app for task management",
+    "websiteUrl": "https://techstartup.com",
+    "contactInfo": {
+      "submittedBy": "Jane Doe",
+      "email": "jane@agency.com"
+    }
+  }'
+```
+
+### Custom Template Usage
+
+```bash
+curl -X POST /api/generate-proposal \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clientName": "Enterprise Corp",
+    "projectName": "System Integration",
+    "templateId": "enterprise_template",
+    "customSections": ["security_assessment", "compliance_review"]
+  }'
+```
+
+### Python Implementation
+
+```python
+import requests
+
+response = requests.post('/api/generate-proposal', json={
+    'clientName': 'Digital Marketing Co',
+    'projectName': 'Website Redesign',
+    'projectDescription': 'Complete brand refresh with new website',
+    'websiteUrl': 'https://digitalmarketing.com',
+    'contactInfo': {
+        'submittedBy': 'Alex Johnson',
+        'designation': 'Account Manager',
+        'email': 'alex@agency.com'
+    }
+})
+
+proposal = response.json()
+print(f"Proposal ID: {proposal['proposalId']}")
+print(f"Download URL: {proposal['document']['downloadUrl']}")
+print(f"Estimated Cost: ${proposal['proposalData']['pricing']['total']}")
+```
+
+## Performance & Limits
+
+### Processing Metrics
+- **Average Generation Time**: 30-60 seconds per proposal
+- **Document Size**: Typically 3-8 pages (200-500KB)
+- **Concurrent Processing**: Up to 5 proposals simultaneously
+
+### Rate Limits
+- **API Requests**: 50 proposals per hour per API key
+- **Template Usage**: 100 template processes per day
+- **S3 Storage**: 1GB total storage per account
+
+### File Constraints
+- **Template Size**: Maximum 5MB DOCX files
+- **Generated Documents**: Typically 200KB-2MB output
+- **Retention Period**: S3 links active for 30 days
+
+## Error Handling
+
+### Common Error Responses
+
+| Status Code | Error Type | Description | Solution |
+|-------------|------------|-------------|----------|
+| `400` | `INVALID_WEBSITE_URL` | Website URL is inaccessible | Verify URL is public and correctly formatted |
+| `422` | `TEMPLATE_PROCESSING_ERROR` | Template placeholder mapping failed | Check template format and placeholder syntax |
+| `429` | `RATE_LIMIT_EXCEEDED` | Too many concurrent requests | Implement request throttling |
+| `500` | `GENERATION_FAILED` | LLM content generation error | Retry with simplified project description |
+
+### Error Response Format
+
+```json
+{
+  "error": {
+    "code": "TEMPLATE_PROCESSING_ERROR",
+    "message": "Failed to populate template placeholders",
+    "details": {
+      "templateId": "proposal_base.docx",
+      "missingPlaceholders": ["{{TIMELINE}}", "{{DELIVERABLES}}"],
+      "suggestion": "Ensure all required fields are provided in the request"
+    }
+  }
+}
+```
+
+## Integration Guide
+
+### Authentication
+
+All requests require Bearer token authentication:
+```bash
+curl -H "Authorization: Bearer your-api-key"
+```
+
+### Webhook Configuration
+
+Configure webhooks for proposal completion:
+```json
+{
+  "webhookUrl": "https://your-app.com/proposal-complete",
+  "events": ["proposal.completed", "proposal.failed", "document.uploaded"]
+}
+```
+
+### Template Customization
+
+Upload custom DOCX templates:
+```bash
+curl -X POST /api/templates \
+  -F "template=@custom_proposal.docx" \
+  -F "templateId=custom_enterprise" \
+  -H "Authorization: Bearer your-api-key"
+```
+
+### Document Management
+
+Generated proposals include:
+- **Header Section**: Client name, project title, submission date
+- **Executive Summary**: AI-generated project overview
+- **Technical Approach**: Methodology and implementation plan
+- **Timeline & Milestones**: Phase-based project schedule
+- **Pricing Structure**: Detailed cost breakdown
+- **Terms & Conditions**: Standard service agreements

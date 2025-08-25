@@ -7,85 +7,137 @@
     "light": "#7E22CE",
     "dark": "#7E22CE"
   },
- "favicon": "/fav.png",
+  "favicon": "/fav.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Welcome to Your AI Adoption Journey",
+            "group": "Overview",
             "pages": [
-              "index",
-              {
-                "group": "Features",
-                "pages": [
-                  "essentials/feature/overview",
-                  "essentials/feature/multi-llm",
-                  "essentials/feature/workspaces",
-                  "essentials/feature/brains",
-                  "essentials/feature/chats",
-                  "essentials/feature/prompts",
-                  "essentials/feature/agents",
-                  "essentials/feature/docs",
-                  "essentials/feature/connections"
-                                ]
-              }, 
-              "local-setup",
-              "self-hosted",
-              "development",
-              "environment-variables",
-              "credentialsetup"
+              "overview/Introduction",
+              "overview/get-started",
+              "overview/contribution"
             ]
           },
           {
-            "group": "Developer Guide",
+            "group": "Setup",
             "pages": [
-              "essentials/system-design",
               {
-                "group": "Common Functions",
+                "group": "Choose Your Setup",
                 "pages": [
-                  "essentials/common-functions/database-functions",
-                  "essentials/common-functions/python-functions",
-                  "essentials/common-functions/node-next-functions"
-                ]
-              }, 
-
-              {
-                "group": "Workflows",
-                "pages": [
-                  "essentials/workflows/llm-query",
-                  "essentials/workflows/simple-chat",
-                  "essentials/workflows/rag-chat",
-                  "essentials/workflows/agent",
-                  "essentials/workflows/model",
-                  "essentials/workflows/langchain",
-                  "essentials/workflows/mcp-workflow"
+                  "setup/choose-your-setup/local-setup",
+                  "setup/choose-your-setup/self-hosted",
+                  "setup/choose-your-setup/one-click-deployment"
                 ]
               },
-               "essentials/contribution"
-            ]
-          },
-          {
-            "group": "Learn More",
-            "pages": [
-              "learn-more/learn-weam",
               {
-                "group": "Pro Agents",
+                "group": "After Setup Complete",
                 "pages": [
-                  "learn-more/use-cases/video-agent",
-                  "learn-more/use-cases/qa-agent",
-                  "learn-more/use-cases/sales-call",
-                  "learn-more/use-cases/web-project",
-                  "learn-more/use-cases/seo-article-writer-agent"
+                  "setup/after-setup-complete/environment-variables",
+                  "setup/after-setup-complete/credential-setup",
+                  "setup/after-setup-complete/launch-verify"
+                ]
+              },
+              {
+                "group": "First Steps in Dashboard",
+                "pages": [
+                  "setup/first-steps/create-brain",
+                  "setup/first-steps/upload-documents",
+                  "setup/first-steps/try-prompts",
+                  "setup/first-steps/invite-teammates"
                 ]
               }
             ]
-          }, 
+          },
+          {
+            "group": "Your Account",
+            "pages": [
+              {
+                "group": "Profile & Security",
+                "pages": [
+                  "account/profile-settings",
+                  "account/roles-permissions"
+                ]
+              },
+              {
+                "group": "Team Management",
+                "pages": [
+                  "account/invite-members",
+                  "account/reports"
+                ]
+              },
+              {
+                "group": "Integrations & Data",
+                "pages": [
+                  "account/connections",
+                  "account/data-controls",
+                  "account/storage-credit-control"
+                ]
+              },
+              {
+                "group": "Library",
+                "pages": [
+                  "account/library/agents",
+                  "account/library/prompts"
+                ]
+              },
+              "account/notifications"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/workspaces",
+              "features/brains",
+              "features/chats",
+              "features/prompts",
+              "features/agents",
+              "features/documents",
+              "features/multi-llm"
+            ]
+          },
+          {
+            "group": "Pro Agents",
+                "pages": [
+                  "learn-more/use-cases/sales-video-call-analyzer",
+                  "learn-more/use-cases/qa-agent",
+                  "learn-more/use-cases/sales-audio-call-analyzer",
+                  "learn-more/use-cases/web-proposal-agent",
+                  "learn-more/use-cases/seo-article-writer-agent"
+                ]
+          },
           {
             "group": "Policies",
             "pages": [
               "policies/license"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developer Guide",
+        "pages": [
+          "essentials/system-design",
+          {
+            "group": "Common Functions",
+            "pages": [
+              "essentials/common-functions/database-functions",
+              "essentials/common-functions/python-functions",
+              "essentials/common-functions/node-next-functions"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "pages": [
+              "essentials/workflows/llm-query",
+              "essentials/workflows/simple-chat",
+              "essentials/workflows/rag-chat",
+              "essentials/workflows/agent",
+              "essentials/workflows/model",
+              "essentials/workflows/langchain",
+              "essentials/workflows/mcp-workflow"
             ]
           }
         ]
@@ -105,54 +157,52 @@
                   "connections/google/gmail",
                   "connections/google/google-drive",
                   "connections/google/google-calendar"
-                                ]
+                ]
               }
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "API Documentation",
             "pages": [
-              "api-reference/introduction",
+              "api-reference/python",
               "api-reference/node"
             ]
           }
         ]
       },
       {
-        "tab": "FAQs",
+        "tab": "Knowledge Base",
         "groups": [
           {
-            "group": "FAQs",
+            "group": "Generating API Key",
             "pages": [
-              "faq/credit-calculation",
-              "faq/chat-history",
-              "faq/socket-scale",
-               "essentials/role",
-               "faq/how-to-add-api"
+              "knowledgebase/openai-api",
+              "knowledgebase/anthropic-api",
+              "knowledgebase/gemini-api",
+              "knowledgebase/hugging-face-api",
+              "knowledgebase/openrouter-api"
+            ]
+          },
+          {
+            "group": "General",
+            "pages": [
+              "knowledgebase/credit-calculation",
+              "knowledgebase/socket-scale"
             ]
           }
         ]
       },
       {
-        "tab": "Extended Reading",
-        "groups": [
-          {
-            "group": "Extended Reading",
+            "tab": "FAQ",
             "pages": [
-              "extended-reading/openai-api",
-              "extended-reading/anthropic-api",
-              "extended-reading/gemini-api",
-              "extended-reading/hugging-face-api",
-              "extended-reading/openrouter-api"
+              "faq/faqs"
             ]
           }
-        ]
-      }
     ],
     "global": {
       "anchors": [
@@ -177,14 +227,14 @@
     "primary": {
       "type": "button",
       "label": "Github",
-      "href": "https://github.com/weam-ai/weam"
+      "href": "https://github.com/Weam AI-ai/Weam AI"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/TheWeamAI",
-      "github": "https://github.com/weam-ai/weam",
-      "linkedin": "https://www.linkedin.com/company/the-weam-ai"
+      "x": "https://x.com/TheWeam AIAI",
+      "github": "https://github.com/Weam AI-ai/Weam AI",
+      "linkedin": "https://www.linkedin.com/company/the-Weam AI-ai"
     }
   },
   "seo": {
@@ -192,18 +242,18 @@
       "robots": "index, follow",
       "charset": "UTF-8",
       "viewport": "width=device-width, initial-scale=1.0",
-      "description": "Complete documentation for weam.ai - the open source collaborative AI platform. Setup guides, API docs, integrations, and best practices for teams",
-      "keywords": "weam.ai documentation, open source AI platform, collaborative AI, team AI tools, AI adoption guide, API documentation, self-hosted AI, AI collaboration platform, digital agency AI, developer docs, AI integration guide, team productivity AI",
+      "description": "Complete documentation for Weam AI - the open source collaborative platform. Setup guides, feature documentation, integrations, and best practices for teams",
+      "keywords": "Weam AI documentation, open source platform, collaborative tools, team productivity, setup guides, feature documentation, integration guide, developer docs, team collaboration platform, digital agency tools, self-hosted platform",
       "author": "Weam AI",
       "googlebot": "index, follow",
       "google": "notranslate",
       "language": "en",
       "reply-to": "hello@weam.ai"
-  }
-},
-"integrations": {
-    "ga4": {
-        "measurementId": "G-7YBCYDSTXE"
     }
-}
+  },
+  "integrations": {
+    "ga4": {
+      "measurementId": "G-7YBCYDSTXE"
+    }
+  }
 }

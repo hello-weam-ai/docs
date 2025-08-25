@@ -1,37 +1,35 @@
 ---
 title: 'Node.js API'
-description: 'Quick access to Postman tools for exploring and testing Node.js API endpoints.'
 ---
 
 <Note>
   This section provides quick access to essential tools for testing and exploring the Node.js API. Remove this section if you are not maintaining API reference documentation.
 </Note>
 
-## Welcome to the Node.js API Suite
+Testing and exploration tools for the Node.js API endpoints.
 
-Our Node.js API is built for performance, scalability, and developer-friendliness. You can use the tools below to explore and interact with the available endpoints effortlessly.
-
----
-
-## API Explorer Tool
+## API Documentation
 
 <Card
   title="Postman Collection"
   icon="terminal"
   href="https://documenter.getpostman.com/view/38692508/2sB34cpiC7"
 >
-  Use this ready-to-go Postman Collection to test all Node.js API endpoints directly.
+  Complete collection for testing all Node.js API endpoints.
 </Card>
-
----
 
 ## Authentication
 
-If the Node.js API requires authentication, ensure you're using a valid Bearer Token in the headers of each request.
+Requests require Bearer Token authentication:
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+curl -H "Authorization: Bearer your-token" \
+     -H "Content-Type: application/json" \
+     http://localhost:4050/napi/endpoint
+```
+
+## Base URL
+
+```
+http://localhost:4050/napi
+```

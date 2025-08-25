@@ -1,0 +1,126 @@
+---
+title: "Socket Scaling"
+---
+
+Scale your Socket.IO applications to handle thousands of concurrent connections with Redis-based horizontal scaling.
+
+## Why Socket Scaling Matters
+
+### Single Server Limitations
+
+**Connection Limits**
+- Single Node.js + Socket.IO instance handles ~10K–30K concurrent connections
+- Beyond this limit: event-loop delays, memory pressure, and OS file-descriptor limits cause performance issues
+
+**Communication Silos**
+- Events emitted on Server A don't reach clients connected to Server B
+- Users miss messages when distributed across multiple instances
+- No cross-server synchronization by default
+
+**Availability Concerns**
+- Single point of failure
+- No load distribution
+- Poor resilience under heavy traffic
+
+## Solution: Redis Pub/Sub Scaling
+
+### Architecture Overview
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Client A  │    │   Client B  │    │   Client C  │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+┌──────▼──────┐    ┌──────▼──────┐    ┌──────▼──────┐
+│   Server 1  │    │   Server 2  │    │   Server 3  │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+       └──────────────────┼──────────────────┘
+                          │
+                    ┌─────▼─────┐
+                    │   Redis   │
+                    │  Pub/Sub  │
+                    └───────────┘
+```
+
+### Implementation Steps
+
+#### 1. Deploy Multiple Server Instances
+
+**Option A: Node.js Cluster**
+```javascript
+const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
+
+if (cluster.isMaster) {
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+} else {
+  // Your Socket.IO server code
+}
+```
+
+**Option B: Load Balancer with Sticky Sessions**
+- Deploy separate Socket.IO processes
+- Configure load balancer (nginx, HAProxy) with sticky sessions
+- Ensure client connections remain on same server
+
+#### 2. Configure Redis Adapter
+
+**Install Dependencies**
+```bash
+npm install @socket.io/redis-adapter redis
+```
+
+**Setup Redis Adapter**
+```javascript
+const { Server } = require('socket.io');
+const { createAdapter } = require('@socket.io/redis-adapter');
+const { createClient } = require('redis');
+
+const io = new Server(server);
+
+const pubClient = createClient({ url: 'redis://localhost:6379' });
+const subClient = pubClient.duplicate();
+
+Promise.all([
+  pubClient.connect(),
+  subClient.connect()
+]).then(() => {
+  io.adapter(createAdapter(pubClient, subClient));
+  console.log('Redis adapter configured');
+});
+```
+
+#### 3. Message Flow Process
+
+**Event Broadcasting**
+1. **Server A** receives message from Client A
+2. **Local Broadcast**: Server A emits to its connected clients
+3. **Redis Publish**: Server A publishes event to Redis channel
+4. **Cross-Server Delivery**: Redis delivers to Server B and Server C
+5. **Remote Broadcast**: Other servers emit to their local clients
+
+**Code Example**
+```javascript
+// This automatically works across all servers
+io.to('room1').emit('message', {
+  user: 'Alice',
+  text: 'Hello everyone!'
+});
+
+// All clients in 'room1' receive the message,
+// regardless of which server they're connected to
+```
+
+## Further Reading
+
+- [Socket.IO Redis Adapter Documentation](https://socket.io/docs/v4/redis-adapter/) - Official implementation guide
+- [Socket.IO Scaling Tutorial](https://socket.io/docs/v4/tutorial/step-9) - Step-by-step scaling walkthrough  
+- [Production Scaling Guide](https://ably.com/topic/scaling-socketio) - Real-world scaling considerations
+- [Redis Pub/Sub Deep Dive](https://dev.to/codexam/scaling-real-time-communication-with-redis-pubsub-and-socketio-3p56) - Technical implementation details
+
+---
+
+Start with a 2-server Redis setup and gradually increase based on your traffic patterns and performance requirements.

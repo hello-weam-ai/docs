@@ -1,136 +1,94 @@
 ---
 title: "Simple Chat - Architecture and Flow"
-description: "Understand the pipeline and execution model for Simple Chat integrating MCP tools and LangGraph-based control flow."
 ---
 
-<Info>
-  **Simple Chat now uses LangGraph and MCP integration for enhanced tool handling and modular flow**:
-  - Dynamically pulls tools from MCP server
-  - Builds a state machine using LangGraph to control execution between tools and chatbot
-  - Supports new integrations: Slack, GitHub, Google Drive, Gmail, Google Calendar
-</Info>
-
-<Steps>
-
-<Step title="User Query Flow">
-
-1. User sends a query from the frontend UI.
-2. The Python API receives the request and passes it to the **Service Controller**.
-3. Controller uses the selected model (from dropdown) to decide which **Model Service** to initialize.
-4. The selected LLM is initialized.
-5. Simultaneously, a **MultiServerClient** fetches all available tools from the **MCP server**.
-
-</Step>
-
-<Step title="Tool Registration and Filtering">
-
-- Tools received from MCP include:
-  - Slack
-  - GitHub
-  - Google Drive
-  - Google Calendar
-  - Gmail
-- These tools are matched against the current query.
-- **Unnecessary tools are filtered out** before being **bound** with the LLM.
-
-</Step>
-
-<Step title="LangGraph StateGraph Construction">
-
-- With tools filtered and bound, a **LangGraph StateGraph** is created:
-  - Contains a `ToolNode` for tool execution.
-  - Contains a `ChatbotNode` for normal LLM-based responses.
-
-</Step>
-
-<Step title="Chat History Initialization">
-
-- In parallel, the **Chat Repository** is initialized using the provided `chat_id`.
-- Full chat history is retrieved.
-- History is used to **create memory** for the conversation flow.
-
-</Step>
-
-<Step title="StateGraph Execution">
-
-- The LangGraph `StateGraph` is invoked.
-- Based on the query and history:
-  - If tool usage is detected → `ToolNode` is called
-  - Else → `ChatbotNode` is used to generate a natural LLM response
-- The combined context (query + history) is passed to the chatbot.
-
-</Step>
-
-<Step title="Tool Invocation Rules">
+Pipeline and execution model for Simple Chat with LangGraph state management and MCP tool integration.
 
 <Info>
-  **Tool Activation Based on Model Selection**
+Simple Chat uses LangGraph and MCP integration for enhanced tool handling with support for Slack, GitHub, Google Drive, Gmail, and Google Calendar.
 </Info>
 
-| Tool                 | Condition                                           |
-|----------------------|-----------------------------------------------------|
-| `Web Search Tool`    | Only used if **GPT-4.1-search** model is selected   |
-| `Image Generation`   | Only used for **GET-based GPT models**             |
-| `MCP Tools` (Slack, GitHub, etc.) | Dynamically fetched and filtered per query |
+## Processing Flow
 
-</Step>
+### 1. Query Processing
+1. User sends query from frontend
+2. Python API forwards to Service Controller
+3. Controller selects Model Service based on chosen model
+4. LLM is initialized
+5. MultiServerClient fetches available tools from MCP server
 
-<Step title="Streaming the Response">
+### 2. Tool Management
+- **Available Tools**: Slack, GitHub, Google Drive, Google Calendar, Gmail
+- Tools are matched against current query
+- Unnecessary tools filtered out before LLM binding
 
-1. The selected tool (if needed) is invoked.
-2. The tool may internally call the LLM to complete its task.
-3. The final response is streamed back to the **frontend in real-time**.
+### 3. StateGraph Construction
+LangGraph StateGraph created with:
+- **ToolNode** - Tool execution
+- **ChatbotNode** - Standard LLM responses
 
-</Step>
+### 4. Context Initialization
+- Chat Repository initialized with `chat_id`
+- Chat history retrieved and converted to memory
+- Context prepared for conversation flow
 
-<Step title="Logging and Cost Management">
+### 5. Execution Logic
+StateGraph determines response path:
+- **Tool usage detected** → ToolNode execution
+- **Standard query** → ChatbotNode response
+- Combined context (query + history) passed to selected node
 
-- LLM token cost is calculated using input/output lengths.
-- This cost is written to the DB using the **Cost Callback**.
-- The **MongoDB Handler** logs:
-  - Final response
-  - Token usage
-  - Tool activations
-  - Total cost breakdown
+## Tool Activation Rules
 
-</Step>
+| Tool | Activation Condition |
+|------|---------------------|
+| Web Search | GPT-4.1-search model only |
+| Image Generation | GPT-based models only |
+| MCP Tools | Dynamically filtered per query |
 
-<Step title="Architecture Overview">
+## Response Processing
 
-<img
-  src="https://weam.ai/app/uploads/2025/07/simplechat.png"
-  alt="LLM Query Flow Diagram"
-  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
-/>
+1. **Tool Invocation** - Selected tool executed if needed
+2. **LLM Integration** - Tool may call LLM internally
+3. **Streaming** - Response streamed to frontend in real-time
 
-</Step>
+## Cost and Logging
 
-</Steps>
+**MongoDB Handler logs:**
+- Final response content
+- Token usage metrics
+- Tool activation records
+- Cost breakdown
+
+**Cost Calculation:**
+- Input/output token lengths measured
+- Cost written via Cost Callback
+- Total breakdown stored in database
+
+## Architecture
+
+<Frame caption="Simple Chat Architecture Flow">
+  <img
+    src="https://weam.ai/app/uploads/2025/07/simplechat.png"
+    alt="Simple Chat Architecture Diagram"
+    style={{ height: '700px', objectFit: 'contain' }}
+  />
+</Frame>
 
 <Note>
-  Web Search and Image Generation are **still model-gated** — verify model-specific logic before invoking or binding such tools. For deeper logic, inspect the Service Controller and LangGraph Node implementations.
+Web Search and Image Generation are model-gated. Verify model compatibility before tool invocation.
 </Note>
 
 ## Troubleshooting
 
-<AccordionGroup>
+### Tool Not Triggering
+- Check tool compatibility with selected model
+- Verify MultiServerClient pulled latest tools from MCP
+- Review filtering logic for tool exclusion
+- Validate LangGraph ChatbotNode → ToolNode transition
 
-<Accordion title="Tool does not trigger">
-
-- Ensure the tool is compatible with the selected model.
-- Verify MultiServerClient has pulled the latest tools from MCP.
-- Check filtering logic — the tool might have been excluded during matching.
-- Review LangGraph transition from ChatbotNode → ToolNode.
-
-</Accordion>
-
-<Accordion title="No streaming or delay in response">
-
-- Confirm the frontend WebSocket/SSE connections are intact.
-- Validate LangGraph state execution (especially transitions).
-- Check if tool execution has bottlenecks or is calling LLM internally.
-- Monitor MongoDB logs for signs of latency or cost overages.
-
-</Accordion>
-
-</AccordionGroup>
+### Streaming Issues
+- Confirm frontend WebSocket/SSE connections
+- Validate LangGraph state execution and transitions
+- Check for tool execution bottlenecks
+- Monitor MongoDB logs for latency indicators

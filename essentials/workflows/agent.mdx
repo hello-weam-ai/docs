@@ -1,145 +1,129 @@
 ---
 title: "Agents: Working and Implementation"
-description: "Understand how agents operate in the Python API to support both Simple and RAG-style interactions."
 ---
 
-<Info>
-  **Agents allow enhanced chat experiences using custom prompts and contextual documents**:
-  - Automatically selects between Simple Chat and RAG Chat
-  - Dynamically assembles tools based on agent settings and selected model
-</Info>
-
-This guide outlines the complete flow from agent selection to response generation and cost tracking.
-
-<Steps>
-
-<Step title="Flow Overview">
-
-1. User submits a query along with a selected agent.
-2. Python API routes the request to the **Service Controller**.
-3. The Service Controller selects the **appropriate model service** based on user input.
-
-**Developer Tip**:
-- The agent ID and configuration are critical at this point.
-- Ensure agent metadata (tools, prompt, doc presence) is fully loaded.
-
-</Step>
-
-<Step title="Agent Document Check">
+Python API implementation for agents supporting both Simple Chat and RAG-style interactions with custom prompts and contextual documents.
 
 <Info>
-  The system checks whether the selected agent has any uploaded documents.
+Agents provide enhanced chat experiences by automatically selecting between Simple Chat and RAG Chat based on document availability and dynamically assembling tools.
 </Info>
 
-- **If documents exist**: A **RAG Chat** is triggered using:
-  - Agent’s custom prompt
-  - Toolset:
-    - RAG Tool
-    - Web Analysis Tool
-    - Image Generation Tool *(if GPT model selected)*
-    - Web Search Tool *(if GPT-4.1 search selected)*
+## Processing Flow
 
-- **If no documents**: Falls back to a **Simple Chat** using:
-  - Agent’s prompt
-  - Toolset:
-    - Simple Chat
-    - Image Generation Tool *(if GPT model selected)*
-    - Web Analysis Tool
-    - Web Search Tool *(if GPT-4.1 search selected)*
+### 1. Agent Selection and Routing
+1. User submits query with selected agent
+2. Python API routes request to Service Controller
+3. Service Controller selects appropriate model service
 
-**Developer Tip**:
-- Path selection logic is handled inside the Agent Routing Layer.
-- Make sure document presence is reflected in `agent.doc_ids` or a similar flag.
+**Critical Requirements:**
+- Agent ID and configuration must be fully loaded
+- Agent metadata (tools, prompt, document presence) verified
 
-</Step>
+### 2. Document-Based Path Selection
 
-<Step title="Context Construction">
+**With Documents (RAG Chat):**
+- Agent's custom prompt
+- RAG Tool
+- Web Analysis Tool
+- Image Generation Tool (GPT models only)
+- Web Search Tool (GPT-4.1 search only)
 
-The following elements are combined into a single context prompt:
-- Chat History  
-- Agent Prompt  
-- User Query  
+**Without Documents (Simple Chat):**
+- Agent's prompt
+- Simple Chat Tool
+- Image Generation Tool (GPT models only)
+- Web Analysis Tool
+- Web Search Tool (GPT-4.1 search only)
 
-This compiled context is passed to the **LLM Chain** for response generation.
+**Implementation Notes:**
+- Path selection handled by Agent Routing Layer
+- Document presence tracked via `agent.doc_ids` or similar flag
 
-**Developer Tip**:
-- Prompt templates typically follow:  
-  `"You are a helpful assistant. {agent_prompt}\n\n{chat_history}\n\nUser: {query}"`
-- Token overflow is trimmed or batched using a rolling window strategy.
+### 3. Context Construction
 
-</Step>
+Combined context elements:
+- **Chat History** - Previous conversation messages
+- **Agent Prompt** - Custom agent instructions
+- **User Query** - Current user input
 
-<Step title="Response Streaming and Storage">
+**Prompt Template Structure:**
+```
+"You are a helpful assistant. {agent_prompt}\n\n{chat_history}\n\nUser: {query}"
+```
 
-1. The LLM generates a response, which is **streamed live to the user**.
-2. System stores:
-   - The **LLM response** in MongoDB
-   - The **token cost** using a **Cost Callback** tracker
+**Token Management:**
+- Overflow handled using rolling window strategy
+- Context trimmed or batched as needed
 
-**Developer Tip**:
-- MongoDB schema should track agent ID, query, response, and model metadata.
-- Cost calculation is triggered after the LLM returns, and stored with token usage.
+### 4. Response Generation and Storage
 
-</Step>
+**Processing:**
+1. LLM generates response streamed live to user
+2. MongoDB storage via Cost Callback tracker
 
-<Step title="RAG with Agent (when docs exist)">
+**Data Stored:**
+- LLM response content
+- Agent ID and query metadata
+- Token cost and usage metrics
+- Model configuration details
 
-<Info>
-  RAG chat allows file-based augmentation when the agent has documents uploaded.
-</Info>
+### 5. RAG Implementation (Document-Based Agents)
 
-1. Uploaded documents are:
-   - Text-extracted
-   - Split into chunks
-   - Embedded using an embedding model
+**Document Processing:**
+1. Text extraction from uploaded files
+2. Content split into chunks
+3. Embedding generation using embedding model
+4. Storage in Qdrant (or Pinecone)
 
-2. Embeddings are stored in **Qdrant** (or Pinecone)
+**Inference Process:**
+1. RAG Tool queries Qdrant for similar chunks
+2. Retrieved chunks used as LLM context
+3. Enhanced responses based on document content
 
-3. During inference:
-   - RAG Tool queries Qdrant for similar chunks
-   - Retrieved chunks are used as **context** for the LLM to enhance answers
+**Technical Requirements:**
+- Consistent embedding model for upload and retrieval
+- Top-k vector search with agent-level metadata filtering
 
-**Developer Tip**:
-- Ensure embeddings use the same model at upload and retrieval time.
-- Retrieval uses Top-k vector search. Use agent-level metadata for filtering.
+## Architecture
 
-</Step>
+<Frame caption="Agent Processing Architecture">
+  <img
+    src="https://weam.ai/app/uploads/2025/07/Agent.png"
+    alt="Agent Architecture Diagram"
+    style={{ height: '700px', objectFit: 'contain' }}
+  />
+</Frame>
 
-<Step title="Architecture Diagram">
+## Tool Activation Matrix
 
+| Tool | Simple Chat | RAG Chat | Model Requirement |
+|------|-------------|----------|-------------------|
+| RAG Tool | ❌ | ✅ | Any |
+| Simple Chat Tool | ✅ | ❌ | Any |
+| Web Analysis Tool | ✅ | ✅ | Any |
+| Image Generation | ✅ | ✅ | GPT models only |
+| Web Search | ✅ | ✅ | GPT-4.1 search only |
 
-<img
-  src="https://weam.ai/app/uploads/2025/07/Agent.png"
-  alt="LLM Query Flow Diagram"
-  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
-/>
+## Key Components
 
-</Step>
-
-</Steps>
+- **Agent Routing Layer**: Path selection logic
+- **Service Controller**: Model service management
+- **RAG Tool**: Document-based context retrieval
+- **LLM Chain**: Response generation pipeline
+- **Cost Callback**: Token usage and pricing tracking
 
 <Note>
-  Tool activation depends on both the selected agent and the model. Be sure to validate tool permissions and document presence during implementation and testing.
+Tool activation depends on both selected agent and model. Validate tool permissions and document presence during implementation.
 </Note>
 
 ## Troubleshooting
 
-<AccordionGroup>
+### Agent RAG Not Triggering
+- Confirm agent has active documents linked in backend
+- Verify embeddings generated and stored correctly in Qdrant
+- Check model selection supports required tools
 
-<Accordion title="Agent RAG not triggering as expected">
-
-- Confirm the agent has active documents linked in the backend.
-- Check if embeddings were correctly generated and stored in Qdrant.
-- Ensure model selected is GPT-based (for tools like image generation).
-
-</Accordion>
-
-<Accordion title="Agent prompt not applied or missing in context">
-
-- Review agent metadata and prompt formatting.
-- Verify that the context builder includes agent prompt and history before LLM call.
-- Logs in the LLM Chain handler can help diagnose prompt construction issues.
-
-</Accordion>
-
-</AccordionGroup>
+### Agent Prompt Issues
+- Review agent metadata and prompt formatting
+- Verify context builder includes agent prompt and history
+- Check LLM Chain handler logs for prompt construction issues

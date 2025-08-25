@@ -1,168 +1,170 @@
 ---
 title: "System Design"
-description: "A breakdown of the architecture, flow, and tooling across Python, Node.js, and Next.js for the WEAM platform."
 ---
 
-<Info>
-  This guide covers our full-stack system design across backend, frontend, infrastructure, and AI integration layers.
-</Info>
+Architecture overview for the Weam AI platform across Python backend, Node.js API, and Next.js frontend.
 
 ## Python Backend Architecture
 
 ### Core Application Stack
 
-| Component           | Tool / Technology         |
-|--------------------|---------------------------|
-| Backend Framework  | FastAPI                   |
-| Task Queue         | Celery                    |
-| Broker             | Redis                     |
-| DB                 | MongoDB                   |
-| Auth               | JWT + Middleware          |
-| Task Monitor       | Flower                    |
-| Streaming Response | FastAPI `StreamingResponse` |
+| Component | Technology |
+|-----------|------------|
+| Backend Framework | FastAPI |
+| Task Queue | Celery |
+| Broker | Redis |
+| Database | MongoDB |
+| Authentication | JWT + Middleware |
+| Task Monitor | Flower |
+| Streaming | FastAPI StreamingResponse |
 
 ### AI & Vector Layer
 
-| Component           | Stack                                  |
-|--------------------|----------------------------------------|
-| LLMs               | OpenAI, Gemini, Anthropic, HuggingFace |
-| Embeddings         | LangChain, Gemini, OpenAI              |
-| Vector DB          | Qdrant (Primary), Pinecone (Optional)  |
-| Scraping / Parsing | Playwright, BeautifulSoup, Crawler4AI  |
+| Component | Technology |
+|-----------|------------|
+| LLMs | OpenAI, Gemini, Anthropic, HuggingFace |
+| Embeddings | LangChain, Gemini, OpenAI |
+| Vector Database | Qdrant (Primary), Pinecone (Optional) |
+| Web Scraping | Playwright, BeautifulSoup, Crawler4AI |
 
 <Info>
-  Currently, we have integrated OpenAI, Anthropic, Gemini, and Hugging Face directly through their APIs. For models like LLaMA, DeepSeek, Grok, and Qwen, we use OpenRouter.
+Direct API integration for OpenAI, Anthropic, Gemini, and HuggingFace. OpenRouter used for LLaMA, DeepSeek, Grok, and Qwen models.
 </Info>
 
+### Security & Configuration
 
-<Note>
-  To see how LangChain streaming chat integration is implemented in our system, [refer to this link](https://docs.weam.ai/essentials/workflows/langchain).
-</Note>
-
-### Security Config
-
-- API Key encryption using internal crypto module
-- JWT tokens for access + refresh
-- `.env` based configuration separation for local/dev/prod
+- API key encryption with internal crypto module
+- JWT tokens for access and refresh authentication
+- Environment-based configuration (`.env` files)
+- Role-based access control
 
 ### Testing & Debugging
 
-| Tool             | Purpose                         |
-|------------------|----------------------------------|
-| Pytest           | Unit Testing                    |
-| Locust           | Load Testing                    |
-| WDB              | Visual Debugger (Web-based)     |
-| Docker Override  | `docker-compose-test.yml` setup |
+| Tool | Purpose |
+|------|---------|
+| Pytest | Unit testing |
+| Locust | Load testing |
+| WDB | Web-based visual debugger |
+| Docker Override | Test environment setup |
 
 ### Infrastructure
 
-| Tool / Layer       | Description                                |
-|-------------------|--------------------------------------------|
-| Docker            | Containerization of all services           |
-| Docker Compose    | Multi-env support for dev/test/local       |
-| GitHub Actions    | CI/CD pipeline (Optional: AWS CodePipeline)|
-| Prometheus        | Metrics & Monitoring                       |
-| Async Logger      | Custom logging library                     |
+| Component | Description |
+|-----------|-------------|
+| Docker | Service containerization |
+| Docker Compose | Multi-environment orchestration |
+| GitHub Actions | CI/CD pipeline |
+| Prometheus | Metrics and monitoring |
+| Async Logger | Custom logging implementation |
 
-<Divider />
-
-## Node.js API System Design
+## Node.js API Architecture
 
 ### Core Backend
 
-| Component         | Tool / Library           |
-|------------------|--------------------------|
-| Web Server       | Express.js               |
-| Task Queue       | Bull (via Redis)         |
-| Job Scheduler    | Agenda                   |
-| Auth             | JWT Middleware           |
-| ORM              | Mongoose (MongoDB)       |
-| Streaming        | Socket.IO                |
+| Component | Technology |
+|-----------|------------|
+| Web Server | Express.js |
+| Task Queue | Bull (Redis-based) |
+| Job Scheduler | Agenda |
+| Authentication | JWT Middleware |
+| Database ORM | Mongoose (MongoDB) |
+| Real-time | Socket.IO |
 
 ### Security & Middleware
 
-- Role-based Access Control via JWT
-- Rate-limiting using `express-rate-limit`
-- Encrypted API Keys + Custom middleware
-- `.env` config via `dotenv`
+- Role-based access control via JWT
+- Rate limiting with `express-rate-limit`
+- Encrypted API keys with custom middleware
+- Environment configuration via `dotenv`
 
-### Dev Tools
+### Development Tools
 
-- Winston + Morgan loggers (`logger.js`, `morgan.js`)
-- Debugging via Chrome DevTools or VSCode debugger
-- Live reload via `nodemon`
+- Winston + Morgan for logging
+- Chrome DevTools / VSCode debugging
+- Live reload with `nodemon`
 
 ### Real-time & Storage
 
-- Socket.IO for live chat + updates
+- Socket.IO for live updates
 - Redis Pub/Sub for socket scaling
-- Email via SMTP
-- MinIO / AWS S3 compatible file storage
+- SMTP email integration
+- MinIO / AWS S3 file storage
 
 <Note>
-  To learn how socket scaling is handled across multiple servers and load balancers using Redis Pub/Sub, [read this guide](https://docs.weam.ai/faq/socket-scale).
+Socket scaling across multiple servers uses Redis Pub/Sub. See [socket scaling guide](/knowledgebase/socket-scale) for implementation details.
 </Note>
 
+## Next.js Frontend Architecture
 
-<Divider />
+### Framework & UI
 
-## Next.js Frontend System
+| Component | Technology |
+|-----------|------------|
+| Frontend Framework | Next.js (App Router) |
+| Type System | TypeScript |
+| Styling | Tailwind CSS |
+| State Management | Redux Toolkit |
+| Forms | Formik + Custom Inputs |
+| Routing | Next.js File System |
+| Authentication | Firebase + IronSession |
 
-### Framework & UI Layer
+### Module Structure
 
-| Component              | Tool Used                       |
-|------------------------|----------------------------------|
-| Frontend Framework     | Next.js (App Router)            |
-| Type System            | TypeScript                      |
-| Styling                | Tailwind CSS                    |
-| State Management       | Redux Toolkit                   |
-| Forms                  | Formik + Custom Inputs          |
-| Routing                | Next.js File System Routing     |
-| Auth                   | Firebase + IronSession + Custom |
+| Module | Path |
+|--------|------|
+| Authentication | `src/app/(auth)` + `src/actions/auth.ts` |
+| Chat & Threads | `src/components/Chat` + `src/hooks/chat` |
+| Custom GPT | `src/components/CustomGpt` |
+| Workspace | `src/components/Workspace` + `src/hooks/workspace` |
+| File Uploads | `src/components/FileUpload*` + `src/hooks/storage` |
+| Reports | `src/app/(page)/settings/reports` |
 
-### Feature Modular Structure
+### AI Integration
 
-| Module                | Path / Directory                              |
-|----------------------|------------------------------------------------|
-| Auth                 | `src/app/(auth)` + `src/actions/auth.ts`       |
-| Chat + Threads       | `src/components/Chat` + `src/hooks/chat`       |
-| Custom GPT           | `src/components/CustomGpt`                     |
-| Workspace / Teams    | `src/components/Workspace`, `src/hooks/workspace` |
-| File Uploads         | `src/components/FileUpload*` + `src/hooks/storage` |
-| Reports              | `src/app/(page)/settings/reports`              |
+- Modular API clients in `/src/actions/`
+- LLM provider integration (OpenAI, Gemini, Anthropic)
+- Vector search via Qdrant/Pinecone
+- Asset serving through S3/MinIO
 
-### AI & Integration
+## Python API Request Lifecycle
 
-- Modular API Clients (`/src/actions/`)
-- Integrated LLM providers (OpenAI, Gemini, Anthropic)
-- Vector search via Qdrant or Pinecone
-- Asset serving via S3 or MinIO
-
-<Note>
-  All services are containerized and orchestrated via Docker Compose. Auth secrets, keys, and access configs are managed securely using `.env` and optional secret managers.
-</Note>
-
-## API Request Lifecycle (Python)
-
-```text
+```
 Client Request
-  ↓
-[gateway/] → Main entrypoint (FastAPI/Nginx)
-  ↓
-[middleware/] → Auth, Logging, Rate Limits
-  ↓
-[schema/] → Input/Output validation (Pydantic)
-  ↓
-[router/] → Endpoint routing (`/api/user` etc.)
-  ↓
-[controller/] → Request logic & response shaping
-  ↓
-[service/] → Business logic, API calls
-  ↓
-[models/] → DB interaction (MongoDB)
-  ↓
-[exceptions/] → Graceful error handling
-  ↓
-[utils/] → Shared helper methods
-  ↓
-Response → JSON or Streaming back to client
+    ↓
+[gateway/] → FastAPI/Nginx entrypoint
+    ↓
+[middleware/] → Auth, logging, rate limits
+    ↓
+[schema/] → Pydantic validation
+    ↓
+[router/] → Endpoint routing
+    ↓
+[controller/] → Request logic
+    ↓
+[service/] → Business logic
+    ↓
+[models/] → MongoDB interaction
+    ↓
+[exceptions/] → Error handling
+    ↓
+[utils/] → Helper methods
+    ↓
+Response → JSON/Streaming to client
+```
+
+## Service Communication
+
+- **Frontend ↔ Node.js**: REST API + Socket.IO
+- **Node.js ↔ Python**: HTTP API calls
+- **Backend ↔ Database**: MongoDB connections
+- **Task Processing**: Celery + Redis queues
+- **Real-time Updates**: Socket.IO + Redis Pub/Sub
+
+## Deployment Architecture
+
+All services are containerized using Docker and orchestrated with Docker Compose:
+
+- **Development**: Local Docker containers
+- **Production**: Multi-container deployment
+- **Secrets**: Environment variables and secret managers
+- **Monitoring**: Prometheus metrics collection

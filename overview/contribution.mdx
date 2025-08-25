@@ -1,0 +1,96 @@
+---
+title : "Contributions"
+---
+
+Community guidelines for contributing to Weam AI through bug reports, feature development, documentation, and community engagement.
+
+## Ways to Contribute
+
+### Development Contributions
+- **Bug Reports**: [Open an issue](https://github.com/weam-ai/weam/issues/new?template=bug_report.md)
+- **Feature Requests**: [Submit a feature request](https://github.com/weam-ai/weam/issues/new?template=feature_request.md)
+- **Issue Resolution**: Check [open issues](https://github.com/weam-ai/weam/issues) and submit fixes
+- **Code Improvements**: Optimize performance, refactor code, add tests
+
+### Documentation & Design
+- **Documentation**: Improve unclear or outdated documentation
+- **UI/UX**: Enhance user interface and experience design
+- **Translation**: Make Weam AI accessible in additional languages
+
+### Community Support
+- **Testing & Feedback**: Test new features and provide detailed feedback
+- **Community Help**: Assist other users in discussions and forums
+
+## Community Resources
+
+### Communication Channels
+- **GitHub Discussions**: [Project discussions](https://github.com/weam-ai/weam/discussions)
+- **Discord**: [Community chat](https://discord.gg/EyUbyUxf4n)
+- **Twitter**: [@weamai](https://x.com/TheWeamAI) for updates
+
+### Guidelines
+- **Code of Conduct**: [Community standards](https://github.com/weam-ai/weam?tab=coc-ov-file)
+- **Contribution Guidelines**: Follow project standards for pull requests
+- **Issue Templates**: Use provided templates for consistent reporting
+
+## Getting Started
+
+### For New Contributors
+
+1. **Read the Documentation**: Start with our [introduction](/introduction).
+2. **Set Up Development Environment**: Follow the [local setup guide](/setup/choose-your-setup/local-setup) for Docker-based development
+3. **Understand the Architecture**: Review [system design](/essentials/system-design) and [workflows](/essentials/workflows/llm-query)
+4. **Fork the Repository**: Create your own copy of the project
+5. **Choose an Issue**: Start with "good first issue" labels
+6. **Submit Pull Request**: Follow project guidelines for code contributions
+
+### Development Resources
+
+#### Technical Documentation
+- **[System Design](/essentials/system-design)**: Full-stack architecture overview
+- **[API Reference](/api-reference/python)**: Python and Node.js API documentation
+- **[Database Functions](/essentials/common-functions/database-functions)**: MongoDB repository patterns
+- **[Environment Setup](/setup/after-setup-complete/environment-variables)**: Complete environment variable reference
+
+#### Integration Guides
+- **[LLM Model Integration](/essentials/workflows/model)**: Add new language models
+- **[Agent Development](/essentials/workflows/agent)**: Build custom AI agents
+- **[MCP Connections](/essentials/workflows/mcp-workflow)**: Integrate third-party services
+
+#### Development Workflows
+- **[Simple Chat](/essentials/workflows/simple-chat)**: Basic chat implementation
+- **[RAG Chat](/essentials/workflows/rag-chat)**: Document-based conversations
+- **[LangChain Integration](/essentials/workflows/langchain)**: Streaming chat setup
+
+### Quick Start Commands
+
+```bash
+# Clone the repository
+git clone https://github.com/weam-ai/weam.git
+cd weam
+
+# Set up environment
+cp .env.example .env
+
+# Start development environment
+docker compose up --build
+
+# Access the application
+open http://localhost:3000
+```
+
+### Development Environment
+
+- **Frontend**: Next.js on port 3000
+- **Node.js API**: Express.js on port 4050
+- **Python API**: FastAPI on port 9089
+- **Development URLs**: See [development guide](/setup/after-setup-complete/launch-verify) for complete service URLs
+
+## Recognition
+
+Contributors are recognized through:
+- GitHub contributor listings
+- Community acknowledgments
+- Project documentation credits
+
+Thank you for being part of the Weam AI community! 💙

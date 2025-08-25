@@ -1,0 +1,305 @@
+---
+title: "Frequently Asked Questions"
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Get quick answers to the most common questions about Weam AI.
+
+---
+
+## API Issues
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I add API keys in Weam AI?</h2>}>
+
+- To add API keys in **Weam AI**, go to **Settings** → **Configurations**. 
+- From there, you can find the option to **Add API Keys**. Select the service you wish to connect.
+
+<img
+  src="https://weam.ai/app/uploads/2025/07/configuration.png"
+  alt="Add your API keys"
+  style={{ border: '1px solid #ccc', borderRadius: '8px', marginTop: '16px' }}
+/>
+
+**Currently Supported Providers:**
+
+**Directly integrated:**
+- OpenAI
+- Anthropic  
+- Gemini
+- Hugging Face
+
+**Via OpenRouter:**
+- DeepSeek
+- LLaMA
+- Qwen
+- Grok
+
+**Learn More:**
+- [How to add new models in Weam AI](https://docs.weam.ai/essentials/workflows/model)  
+- [How to create APIs for different LLM models](https://docs.weam.ai/extended-reading/openai-api)
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How are credits calculated in Weam AI?</h2>}>
+
+Credits in Weam AI are calculated based on your usage of different AI models. Each model has different credit costs depending on the complexity and resources required.
+
+**Credit Structure:**
+- **Input tokens**: Charged at a lower rate
+- **Output tokens**: Charged at a higher rate  
+- **Model complexity**: More advanced models cost more credits
+
+**Monitoring Usage:**
+- View credit consumption in **Settings** → **Reports**
+- Track usage by user and model type
+- Set up alerts for high usage periods
+- Monitor storage and credit allocation
+
+**Track your usage:** Go to Settings → Reports → Usage Analytics
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>Can I use Weam AI with localhost during development?</h2>}>
+
+**Yes!** Weam AI works perfectly with localhost development environments:
+
+- All features work on localhost
+- Import chats from other platforms
+- Upload documents and create agents
+- Team collaboration in local setup
+
+**Requirements:**
+- Internet connection for AI model access
+- Proper API keys configured
+- Local setup completed per our guides
+
+**Setup Guide:** [Local Development Setup](https://docs.weam.ai/setup/choose-your-setup/local-setup)
+
+</Card>
+
+---
+
+## Team & Collaboration
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I invite team members to Weam AI?</h2>}>
+
+Only **admins and managers** can invite team members:
+
+**Step-by-step process:**
+1. Go to **Settings** → **Members**
+2. Click the **"Invite"** button in the top-right
+3. Enter email addresses (multiple emails separated by spaces)
+4. Select appropriate role:
+   - **User**: Standard access to assigned Brains
+   - **Manager**: Can invite members, manage Brains
+   - **Company Admin**: Full workspace control including billing
+5. Click **"Send Invitations"**
+
+**Watch the tutorial:** [User Invitation Process](https://www.youtube.com/embed/RqsUXYjk32o)
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>What's the difference between Shared and Private Brains?</h2>}>
+
+**Shared Brains:**
+- Collaborative spaces for team projects
+- All Brain members can view and use all content
+- Perfect for cross-departmental initiatives
+- Everyone gets a "General Brain" by default
+
+**Private Brains:**
+- Personal workspace for individual use
+- Complete user control over content
+- Ideal for testing ideas before sharing
+- Everyone gets a "Default" private Brain
+
+**Admin Control:**
+- Admins can disable Private Brain access for team members
+- Forces collaboration in Shared Brains only
+- Ensures all AI interactions contribute to team knowledge
+
+**Learn more:** [Understanding Brains](https://docs.weam.ai/features/brains)
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I create and manage teams?</h2>}>
+
+*eam creation is available to **Admins** only:
+
+**Creating Teams:**
+1. Go to **Settings** → **Members** → **Teams** tab
+2. Click **"Create Team"**
+3. Add team name (e.g., "Marketing", "Sales", "Engineering")
+4. Add team members to the group
+
+**Benefits of Teams:**
+- **Bulk Brain Access**: Add entire teams to Brains instead of individual members
+- **Time Saving**: Streamlined permission management
+- **Scalable**: Easy to manage as your organization grows
+- **Organized**: Align teams with departments or projects
+
+</Card>
+
+---
+
+## Features & Functionality
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I import chats from ChatGPT or Claude?</h2>}>
+
+Weam AI makes transitioning from other AI platforms seamless with our **Chat Import Feature**.
+
+**Step-by-step process:**
+1. **Export** your chat history from OpenAI (ChatGPT) or Anthropic (Claude)
+2. You'll receive a ZIP file containing 'conversations.json'
+3. In Weam AI, go to the chat list page and click **'Import Chats'**
+4. **Upload** the ZIP file
+5. Select which Brain to import to
+6. Your conversations will appear organized and ready for reference
+
+**Supported Platforms:**
+- OpenAI (ChatGPT)
+- Anthropic (Claude)
+
+**Watch the demo:** [Chat Import Tutorial](https://www.youtube.com/embed/K-8RzGQnAO4)
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>What is Power Prompt and how does it work?</h2>}>
+
+**Power Prompt** is Weam AI's intelligent prompt enhancement tool that transforms basic instructions into detailed, effective queries.
+
+**How it works:**
+1. Enter your basic prompt in the chat
+2. Click the **Power Prompt** enhancement option
+3. The tool automatically enriches your prompt with:
+   - Relevant context and specifications
+   - Missing parameters and details
+   - Improved structure for better AI understanding
+
+**See it in action:** [Power Prompt Demo](https://www.youtube.com/embed/B_eenFMOZ1s)
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I create and use custom agents?</h2>}>
+
+**Agents** are specialized AI assistants customized for specific tasks and roles.
+
+**Creating Custom Agents:**
+1. Go to the **Agents** section in your Brain
+2. Click **"Create New Agent"**
+3. Configure your agent:
+   - Choose specific LLM model (GPT-4, Claude, etc.)
+   - Set up knowledge base with relevant documents
+   - Define agent instructions and behavior
+   - Set access permissions for team members
+
+**Using Agents:**
+1. Select your desired agent from the agent list
+2. Enter agent-specific conversation mode
+3. Receive specialized responses based on agent training
+4. Switch back to regular chat when finished
+
+**Pre-built Agent Library:**
+- **Sales Agents**: Proposals, lead screening, follow-ups
+- **Marketing Agents**: Campaign planning, social media, brand messaging
+- **Content Creation**: Blog posts, newsletters, content calendars
+- **SEO Agents**: Keyword research, optimization, competitor analysis
+- **Customer Success**: Onboarding, support responses, feedback forms
+
+**Agent Tutorial:** [How to Use Agents](https://www.youtube.com/embed/J5B2HS8mer8)
+
+</Card>
+
+---
+
+## Documents & Storage
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I upload and manage documents?</h2>}>
+
+**Documents serve as a centralized knowledge base** that AI can read and reference during conversations.
+
+**Upload Methods:**
+
+**Method 1: Direct Upload**
+1. Go to **Docs** section of your Brain
+2. Click **"Add a New Doc"**
+3. Select files (up to 10 files, 5MB each)
+
+**Method 2: During Chat**
+1. Click file attachment icon in chat
+2. Select documents and send
+3. Files automatically save to Brain's Docs section
+
+**Supported Files:**
+- PDFs, Word documents
+- Up to 10 files simultaneously  
+- 5MB maximum per file
+- Accessible to all Brain members
+
+**AI Integration:**
+- Ask questions about document content
+- Extract specific information or summaries
+- Compare information across multiple documents
+- Reference documents in prompts and agent conversations
+
+</Card>
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>How do I manage storage and request more space?</h2>}>
+
+**Storage Overview:**
+- Monitor usage in **Settings** → **Data Controls** → **Storage** tab
+- View total space, used space, and available capacity
+- See storage breakdown by user and file type
+
+**Current Storage Limits:**
+- Individual files: 5MB maximum
+- Simultaneous uploads: 10 files per session
+- Brain-level storage allocation varies by plan
+
+**Requesting More Storage:**
+1. Go to **Settings** → **Data Controls** → **Storage**
+2. Click **"Request For More Storage"**
+3. Provide justification for additional space
+4. Submit request for admin review
+5. Receive notification when approved
+
+**Storage Optimization:**
+- Regular cleanup of old documents
+- Archive unused Brains and Workspaces
+- Optimize file sizes before uploading
+
+</Card>
+
+---
+
+<Card title={<h2 style={{fontSize: '1.5rem', margin: '0 0 16px 0'}}>I can't see certain Brains or features. Why?</h2>}>
+
+**Access issues are usually related to permissions:**
+
+**Check Your Role:**
+- **User**: Access only to assigned Brains
+- **Manager**: Can access most features, create Brains
+- **Company Admin**: Full access to all features
+
+**Brain Access:**
+- You must be specifically added to Shared Brains
+- Private Brains are only visible to their creators
+- Admins may have disabled Private Brain access
+
+**Feature Restrictions:**
+- Some features are admin-only (Workspaces, billing)
+- Team management requires Manager or Admin role
+- API model configuration needs Admin permissions
+
+**Contact Your Admin:**
+- Request access to specific Brains
+- Ask for role upgrade if needed
+- Verify account is properly set up
+
+**Learn about roles:** [Roles and Permissions](https://docs.weam.ai/account/roles-permissions)
+
+</Card>
+---
+
+*Last updated: August 2025*

@@ -1,0 +1,589 @@
+---
+title: "One-Click Deployment"
+---
+
+<Tip>
+  **Minimum cloud configuration:** 
+  - **RAM:** 4 GB (8 GB recommended)
+  - **CPU:** 2 vCPUs (4+ vCPUs recommended)
+  - **Storage:** 50 GB SSD minimum (100 GB recommended)
+  - **OS:** Ubuntu 22.04 LTS
+  - **Network:** Public IP with ports 22, 80, 443 open
+
+**Cloud Providers Supported**
+
+- **AWS EC2** (t3.medium or better)
+- **DigitalOcean Droplets** (Basic plan or better)
+- **Other providers** with Ubuntu 22.04 support
+
+Based on our testing, these configurations provide optimal performance for WeamAI workloads.
+  
+**⚠️ Using lower specs may lead to build failures or performance issues.**
+
+**Domain Requirements:**
+- **Development:** No domain needed (uses IP address)
+- **Production:** Custom domain required for HTTPS/SSL
+</Tip>
+
+## Deployment Options
+
+<Tabs>
+<Tab title="AWS EC2">
+
+<Steps>
+
+<Step title="Launch EC2 Instance">
+Navigate to AWS Console and configure your instance:
+
+**Instance Configuration:**
+- **AMI:** Ubuntu Server 22.04 LTS
+- **Instance Type:** t3.medium or better
+- **Storage:** 50 GB GP2/GP3 SSD minimum
+- **Security Group:** Allow SSH (22), HTTP (80), HTTPS (443)
+
+<Warning>
+For testing, you can allow all inbound traffic, but configure proper security groups for production.
+</Warning>
+</Step>
+
+<Step title="Configure Key Pair">
+Create or select an existing key pair for SSH access. Download the `.pem` file and keep it secure.
+</Step>
+
+<Step title="Add User Data Script">
+In **Advanced Details → User Data**, paste the appropriate script:
+
+<Tabs>
+<Tab title="Development (No Domain)">
+
+```bash
+#!/bin/bash
+exec > /home/ubuntu/setup.log 2>&1
+set -xe
+
+# Update system and install dependencies
+sudo apt update -y
+sudo apt install -y git curl
+
+# Detect public IP
+PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || curl -s ifconfig.me || hostname -I | awk '{print $1}')
+echo "Detected Public IP: $PUBLIC_IP"
+
+# Clone and setup project
+sudo git clone https://github.com/weam-ai/weam.git /home/ubuntu/project
+cd /home/ubuntu/project
+sudo cp .env.example .env
+
+# Configure for development
+sed -i.bak 's|NEXT_PUBLIC_APP_ENVIRONMENT=production|NEXT_PUBLIC_APP_ENVIRONMENT=development|' .env
+sudo sed -i "s/localhost/$PUBLIC_IP/g" .env
+
+# Install Docker and Docker Compose
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update -y
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo chmod 666 /var/run/docker.sock
+
+echo "✅ Development setup completed successfully!"
+```
+
+</Tab>
+<Tab title="Production (Domain Required)">
+
+<Note>
+Replace `https://your-domain.com` with your actual domain before running this script.
+</Note>
+
+```bash
+#!/bin/bash
+exec > /home/ubuntu/setup.log 2>&1
+set -xe
+
+# Update system and install dependencies
+sudo apt update -y
+sudo apt install -y git nginx
+
+# Clone and setup project
+sudo git clone https://github.com/weam-ai/weam.git /home/ubuntu/project
+cd /home/ubuntu/project
+sudo cp .env.example .env
+
+# Configure domain (REPLACE WITH YOUR DOMAIN)
+CUSTOM_DOMAIN="https://your-domain.com"
+
+sed -i.bak "s|http://localhost:4050|$CUSTOM_DOMAIN|g" .env
+sed -i.bak "s|http://localhost:9089|$CUSTOM_DOMAIN|g" .env
+sed -i.bak "s|http://localhost:3000|$CUSTOM_DOMAIN|g" .env
+
+# Install Docker and Docker Compose
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update -y
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo chmod 666 /var/run/docker.sock
+
+# Configure Nginx and SSL
+sudo apt install -y certbot python3-certbot-nginx
+
+# Extract domain from URL for nginx configuration
+DOMAIN=$(echo "$CUSTOM_DOMAIN" | sed -E 's~^https?://~~')
+
+# Create Nginx configuration
+cat <<EOL | sudo tee /etc/nginx/sites-available/weam
+server {
+    listen 80;
+    server_name $DOMAIN;
+
+    # Frontend
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    # Node.js API
+    location /napi/ {
+        proxy_pass http://localhost:4050/napi/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+    }
+
+    # Python API
+    location /pyapi/ {
+        proxy_pass http://localhost:9089/pyapi/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
+
+    # MinIO Storage
+    location /minio/ {
+        proxy_pass http://localhost:9000/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
+}
+EOL
+
+# Enable the configuration
+sudo ln -sf /etc/nginx/sites-available/weam /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# Configure firewall
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+echo "✅ Production setup completed successfully!"
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step title="Launch Instance">
+Review your configuration and click **Launch Instance**. Wait 5-10 minutes for the initialization script to complete.
+</Step>
+
+<Step title="Connect and Deploy">
+Connect to your instance via SSH:
+
+```bash
+ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
+```
+
+Navigate to the project directory and start the build:
+
+```bash
+# Check setup completion
+tail -f /home/ubuntu/setup.log
+
+# Navigate to project directory
+cd /home/ubuntu/project
+
+# Build the application (15-20 minutes)
+bash build.sh
+
+# Deploy with Docker Compose
+docker compose up --build
+
+# For background deployment
+docker compose up -d
+```
+</Step>
+
+<Step title="Access Application">
+**Development Setup:**
+```
+http://<EC2_PUBLIC_IP>:3000/login
+```
+
+**Production Setup:**
+```
+https://your-domain.com/login
+```
+
+<Info>
+For production, ensure your domain's DNS A record points to your EC2 instance's public IP address.
+</Info>
+</Step>
+
+</Steps>
+
+</Tab>
+<Tab title="DigitalOcean">
+
+<Steps>
+
+<Step title="Create New Droplet">
+Log into DigitalOcean and configure your droplet:
+
+**Droplet Configuration:**
+- **Region:** Choose closest to your users
+- **Image:** Marketplace → Docker on Ubuntu 22.04
+- **Type:** Basic
+- **Size:** 2 vCPUs, 4 GB RAM, 50 GB SSD (minimum)
+
+<Tip>
+Using the Docker marketplace image provides one-click Docker setup and saves configuration time.
+</Tip>
+</Step>
+
+<Step title="Authentication Setup">
+Choose your preferred method:
+- **SSH Key** (recommended for security)
+- **Root Password** (simpler setup)
+</Step>
+
+<Step title="Add Initialization Script">
+Expand **Advanced Options → Add Initialization Script** and paste the appropriate script:
+
+<Tabs>
+<Tab title="Development (No Domain)">
+
+```bash
+#!/bin/bash
+exec > /root/setup.log 2>&1
+set -xe
+
+# Update system and install dependencies
+sudo apt update -y
+sudo apt install -y git
+git --version
+
+# Detect public IP (multi-cloud compatible)
+PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || curl -s ifconfig.me || hostname -I | awk '{print $1}')
+echo "Detected Public IP: $PUBLIC_IP"
+
+# Clone and setup project
+git clone https://github.com/weam-ai/weam.git /root/project
+cd /root/project
+cp .env.example .env
+
+# Configure for development mode (no HTTPS required)
+sed -i.bak 's|NEXT_PUBLIC_APP_ENVIRONMENT=production|NEXT_PUBLIC_APP_ENVIRONMENT=development|' .env
+sudo sed -i "s/localhost/$PUBLIC_IP/g" .env
+
+echo "✅ Development setup completed successfully!"
+```
+
+</Tab>
+<Tab title="Production (Domain Required)">
+
+<Note>
+Replace `https://your-domain.com` with your actual domain before using this script.
+</Note>
+
+```bash
+#!/bin/bash
+exec > /root/setup.log 2>&1
+set -xe
+
+# Update system and install dependencies
+sudo apt update -y
+sudo apt install -y git nginx
+git --version
+
+# Clone and setup project
+git clone https://github.com/weam-ai/weam.git /root/project
+cd /root/project
+cp .env.example .env
+
+# Configure your domain (REPLACE WITH YOUR ACTUAL DOMAIN)
+CUSTOM_DOMAIN="https://your-domain.com"
+
+# Update environment variables with custom domain
+sed -i.bak "s|http://localhost:4050|$CUSTOM_DOMAIN|g" .env
+sed -i.bak "s|http://localhost:9089|$CUSTOM_DOMAIN|g" .env
+sed -i.bak "s|http://localhost:3000|$CUSTOM_DOMAIN|g" .env
+
+# Install SSL certificate tools
+sudo apt install -y certbot python3-certbot-nginx
+
+# Extract domain name for nginx configuration
+DOMAIN=$(echo "$CUSTOM_DOMAIN" | sed -E 's~^https?://~~')
+
+# Create Nginx configuration for WeamAI
+cat <<EOL | sudo tee /etc/nginx/sites-available/weam
+server {
+    listen 80;
+    server_name $DOMAIN;
+
+    # Main application
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    # Node.js API endpoints
+    location /napi/ {
+        proxy_pass http://localhost:4050/napi/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+    }
+
+    # Python API endpoints
+    location /pyapi/ {
+        proxy_pass http://localhost:9089/pyapi/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
+
+    # MinIO object storage
+    location /minio/ {
+        proxy_pass http://localhost:9000/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
+}
+EOL
+
+# Enable the Nginx configuration
+sudo ln -sf /etc/nginx/sites-available/weam /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# Configure firewall for web traffic
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+echo "✅ Production setup completed successfully!"
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step title="Create Droplet">
+Click **Create Droplet** and wait 2-3 minutes for initialization, then 5-10 minutes for the setup script to complete.
+</Step>
+
+<Step title="Connect and Deploy">
+Connect to your droplet via SSH:
+
+```bash
+ssh root@<DROPLET_IP>
+```
+
+Navigate to the project directory and start the deployment:
+
+```bash
+# Check setup completion
+tail -f /root/setup.log
+
+# Navigate to project directory
+cd /root/project
+
+# Build the application (15-20 minutes)
+bash build.sh
+
+# Deploy with Docker Compose
+docker compose up --build
+
+# For background deployment
+docker compose up -d
+```
+</Step>
+
+<Step title="Access Application">
+**Development Setup:**
+```
+http://<DROPLET_IP>:3000/login
+```
+
+**Production Setup:**
+```
+https://your-domain.com/login
+```
+
+<Info>
+For production, ensure your domain's DNS A record points to your droplet's public IP address.
+</Info>
+</Step>
+
+</Steps>
+
+</Tab>
+</Tabs>
+
+## SSL Certificate Setup (Production Only)
+
+After your application is running and DNS is properly configured, enable free SSL certificates:
+
+```bash
+# Replace with your actual domain
+sudo certbot --nginx -d your-domain.com
+
+# Follow the interactive prompts to complete SSL setup
+```
+
+## Service Architecture
+
+| Service | Port | Internal URL | Description |
+|---------|------|--------------|-------------|
+| **Frontend (Next.js)** | 3000 | http://localhost:3000 | Main web interface |
+| **Backend (Node.js)** | 4050 | http://localhost:4050 | API server |
+| **Python API** | 9089 | http://localhost:9089 | AI/ML processing |
+| **MongoDB** | 27017 | Internal only | Database |
+| **Redis** | 6379 | Internal only | Cache/sessions |
+| **Qdrant** | 6333 | http://localhost:6333 | Vector database |
+| **MinIO** | 9000 | http://localhost:9000 | Object storage |
+
+## Troubleshooting
+
+<Tabs>
+<Tab title="AWS EC2">
+
+<AccordionGroup>
+
+<Accordion title="Instance Launch Issues">
+**Common problems:**
+- Insufficient instance limits in your AWS account
+- Security group not properly configured
+- Key pair permissions too open
+
+**Solutions:**
+- Request limit increase in AWS Console
+- Ensure security group allows SSH (22), HTTP (80), HTTPS (443)
+- Set key pair permissions: `chmod 400 your-key.pem`
+</Accordion>
+
+<Accordion title="SSH Connection Problems">
+**Connection failures:**
+- Wrong key file or path
+- Security group doesn't allow SSH
+- Instance not fully initialized
+
+**Solutions:**
+```bash
+# Correct SSH command format
+ssh -i /path/to/your-key.pem ubuntu@<PUBLIC_IP>
+
+# Check security group allows port 22 from your IP
+# Wait 5-10 minutes after launch for full initialization
+```
+</Accordion>
+
+<Accordion title="Application Access Issues">
+**Cannot reach application:**
+- Security group doesn't allow HTTP/HTTPS
+- Application not started
+- Wrong URL format
+
+**Solutions:**
+- Add inbound rules for ports 80, 443 (and 3000 for development)
+- Check application status: `docker ps`
+- Use correct URL format based on setup type
+</Accordion>
+
+</AccordionGroup>
+
+</Tab>
+<Tab title="DigitalOcean">
+
+<AccordionGroup>
+
+<Accordion title="Droplet Creation Issues">
+**Common problems:**
+- Account limits reached
+- Payment method issues
+- Region unavailability
+
+**Solutions:**
+- Check account limits in DigitalOcean console
+- Verify billing information is current
+- Try different region if current one is unavailable
+</Accordion>
+
+<Accordion title="Docker Issues">
+**If you selected plain Ubuntu instead of Docker image:**
+```bash
+# Install Docker manually
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Restart session or run:
+newgrp docker
+```
+</Accordion>
+
+<Accordion title="Firewall Problems">
+**Port access issues:**
+```bash
+# Check firewall status
+sudo ufw status
+
+# Allow required ports
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
+sudo ufw allow 3000/tcp # Development (if needed)
+```
+</Accordion>
+
+</AccordionGroup>
+
+</Tab>
+</Tabs>
+
+<Warning>
+**Important Notes:**
+
+- WeamAI requires HTTPS for production login
+- You must use a custom domain with SSL certificate for production
+- Development mode allows HTTP access via IP address
+- Build process takes 15-20 minutes on first deployment
+- Ensure adequate system resources to avoid build failures
+</Warning>
