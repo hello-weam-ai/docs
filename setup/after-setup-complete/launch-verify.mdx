@@ -17,7 +17,7 @@ Launch your Weam AI application services using Docker Compose.
 **Navigate to project directory and start services:**
 
 ```bash
-cd Weam AI
+cd weam
 
 # Start all services in detached mode
 docker compose up -d
@@ -73,18 +73,6 @@ docker stats
 docker compose logs frontend
 docker compose logs backend  
 docker compose logs python-api
-```
-
-### Expected Service Output
-
-When services start successfully, you should see these log messages:
-
-```
-Weam AI-frontend    | Ready - started server on 0.0.0.0:3000
-Weam AI-backend     | Server running on port 4050  
-Weam AI-python      | Application startup complete
-Weam AI-mongodb     | MongoDB ready
-Weam AI-redis       | Redis server ready
 ```
 
 ### Service Port Configuration
@@ -149,46 +137,6 @@ openssl s_client -connect your-domain.com:443 -servername your-domain.com
 - Domain name matches certificate
 - Certificate chain complete
 - HTTPS redirect working
-
-## Database Verification
-
-Verify database connectivity and data storage functionality.
-
-### MongoDB Connection Test
-
-Check MongoDB database is accessible and configured correctly:
-
-```bash
-# Connect to MongoDB container
-docker exec -it Weam AI-mongodb mongosh
-
-# List available databases
-show dbs
-
-# Switch to application database
-use Weam AIdb
-
-# Check collections exist
-show collections
-
-# Verify database indexes
-db.users.getIndexes()
-```
-
-### Redis Cache Test
-
-Verify Redis caching service is operational:
-
-```bash
-# Connect to Redis container
-docker exec -it Weam AI-redis redis-cli
-
-# Test Redis connection
-ping
-
-# Check Redis info
-info server
-```
 
 ### Vector Database Test
 

@@ -36,8 +36,8 @@ If you're experiencing performance issues, consider closing background apps or u
 Clone the project from GitHub and create your environment file:
 
 ```bash
-git clone https://github.com/Weam AI-ai/Weam AI.git
-cd Weam AI
+git clone https://github.com/weam-ai/weam.git
+cd weam
 cp .env.example .env
 ```
 </Step>
@@ -55,16 +55,6 @@ This will:
 - Start backend, frontend, and supporting services
 
 <Note>Ensure Docker and Docker Compose are installed before proceeding.</Note>
-</Step>
-
-<Step title="Verify Installation">
-The build process takes 5-10 minutes on the first run. Once complete, you should see:
-
-```
-Weam AI-frontend    | Ready - started server on 0.0.0.0:3000
-Weam AI-backend     | Server running on port 4050
-Weam AI-python      | Application startup complete
-```
 </Step>
 
 <Step title="Access Application">
@@ -118,8 +108,8 @@ This will:
 In **Ubuntu terminal**, clone the project:
 
 ```bash
-git clone https://github.com/Weam AI-ai/Weam AI.git
-cd Weam AI
+git clone https://github.com/weam-ai/weam.git
+cd weam
 cp .env.example .env
 ```
 
@@ -127,8 +117,6 @@ Navigate to your project directory:
 ```bash
 cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
 ```
-
-**Example:** `/mnt/c/Users/dhruvish/Documents/Weam AI-project`
 </Step>
 
 <Step title="Set Execute Permissions">
@@ -150,16 +138,6 @@ Start the environment:
 
 ```bash
 docker compose up --build
-```
-</Step>
-
-<Step title="Verify Installation">
-The build process takes 5-10 minutes on the first run. Once complete, you should see:
-
-```
-Weam AI-frontend    | Ready - started server on 0.0.0.0:3000
-Weam AI-backend     | Server running on port 4050
-Weam AI-python      | Application startup complete
 ```
 </Step>
 
@@ -252,12 +230,6 @@ Open your browser and navigate to:
 - Navigate using `/mnt/c/` paths for Windows drives
 - Set execute permissions: `chmod +x *.sh`
 - Ensure you're in the correct project directory
-
-**Example paths:**
-```bash
-# Windows path: C:\Users\username\Documents\Weam AI
-# WSL2 path: /mnt/c/Users/username/Documents/Weam AI
-```
 </Accordion>
 
 <Accordion title="Docker Desktop Problems">
