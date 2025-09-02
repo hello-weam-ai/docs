@@ -56,8 +56,8 @@ sudo chmod +x /usr/local/bin/docker-compose
 Clone the repository and set up environment:
 
 ```bash
-git clone https://github.com/Weam AI-ai/Weam AI.git
-cd Weam AI
+git clone https://github.com/weam-ai/weam.git
+cd weam
 cp .env.example .env
 ```
 
@@ -82,7 +82,7 @@ Replace `your-domain.com` with your actual domain name.
 Create NGINX configuration:
 
 ```bash
-sudo nano /etc/nginx/sites-available/Weam AI
+sudo nano /etc/nginx/sites-available/weamai
 ```
 
 Add this configuration (replace `your-domain.com`):
@@ -119,7 +119,7 @@ server {
 
 Enable the site:
 ```bash
-sudo ln -s /etc/nginx/sites-available/Weam AI /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/weamai /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
