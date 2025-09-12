@@ -1,0 +1,342 @@
+---
+title: "Integration Guide"
+description: "Technical guide for building and integrating custom applications into Weam AI"
+---
+
+This guide covers the technical requirements for building and integrating custom applications into the Weam AI platform.
+
+## Core Requirements
+
+Follow these 10 essential standards to ensure your application integrates properly with Weam AI.
+
+<CardGroup cols={2}>
+<Card title="Frontend Framework" icon="react">
+Use **Next.js** as the frontend framework for all applications.
+</Card>
+<Card title="Backend Framework" icon="server">
+If your application requires backend APIs, use **Node.js** or **Express.js**.
+</Card>
+</CardGroup>
+
+### Database Configuration
+
+<Warning>
+All applications use MongoDB with a specific collection naming convention to prevent conflicts.
+</Warning>
+
+**Collection Naming Pattern:**
+```
+app_{appName}_{tableName}
+```
+
+**Database Connection Setup:**
+
+<Tabs>
+<Tab title="Local Development">
+```javascript
+const mongoUri = process.env.MONGODB_URI;
+```
+</Tab>
+<Tab title="Cloud Deployment">
+```javascript
+const mongoUri = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}`;
+```
+</Tab>
+</Tabs>
+
+### Authentication Requirements
+
+<Info>
+Access to any application requires user authentication through Weam. Unauthenticated users must see a 404 page.
+</Info>
+
+<Steps>
+<Step title="Check User Login Status">
+Verify authentication before rendering any content.
+</Step>
+<Step title="Handle Unauthenticated Users">
+Return a 404 page if user is not logged in.
+</Step>
+<Step title="Use IronSession">
+Leverage the pre-configured ironSession package for session handling.
+</Step>
+</Steps>
+
+**Implementation Example:**
+
+<CodeGroup>
+```javascript Session Check
+import { getIronSession } from 'iron-session';
+import { sessionOptions } from '../lib/session';
+
+export async function getServerSideProps({ req, res }) {
+  const session = await getIronSession(req, res, sessionOptions);
+  
+  if (!session.user) {
+    return {
+      notFound: true, // Returns 404 for unauthenticated users
+    };
+  }
+  
+  return {
+    props: { user: session.user }
+  };
+}
+```
+</CodeGroup>
+
+### Data Storage Convention
+
+<Tip>
+Always include user context and company identification when storing data to maintain proper access controls.
+</Tip>
+
+**Required Data Structure:**
+```javascript
+{
+  "user": {
+    "id": session.user.id,
+    "email": session.user.email
+  },
+  "companyId": session.user.companyId,
+  // Your application-specific data
+  ...appData
+}
+```
+
+### Theming Integration
+
+<Note>
+Applications should match the existing Weam theme for consistent user experience. Use the same CSS variables and component patterns as the main platform.
+</Note>
+
+## Routing & Deployment
+
+### Base Path Configuration
+
+All applications run behind nginx and require proper path configuration:
+
+<AccordionGroup>
+<Accordion title="Environment Variables">
+```bash
+NEXT_PUBLIC_API_BASE_PATH="/your-app-name"
+```
+</Accordion>
+
+<Accordion title="Next.js Configuration">
+```javascript
+// next.config.js
+module.exports = {
+  basePath: process.env.NEXT_PUBLIC_API_BASE_PATH || '',
+  assetPrefix: process.env.NEXT_PUBLIC_API_BASE_PATH || '',
+}
+```
+</Accordion>
+</AccordionGroup>
+
+**URL Structure Examples:**
+
+| Route Type | Example URL |
+|------------|-------------|
+| **Page** | `example.com/your-app-name/dashboard` |
+| **API** | `example.com/your-app-name/api/message` |
+
+### Sidebar Integration
+
+<Check>
+Make your application discoverable by adding it to the sidebar navigation.
+</Check>
+
+**Configuration File:** `src/seeders/superSolution.json`
+
+Add a new object following the structure of existing applications. This ensures your application appears automatically in the sidebar navigation.
+
+## NGINX Setup Guide
+
+Complete server configuration for production deployment.
+
+<Steps>
+<Step title="Update and Install NGINX">
+```bash
+sudo apt update
+sudo apt install nginx -y
+```
+</Step>
+
+<Step title="Create NGINX Configuration">
+```bash
+sudo nano /etc/nginx/sites-available/weam
+```
+
+<Expandable title="Complete NGINX Configuration">
+```nginx
+server {
+    listen 80;
+    server_name os.weam.ai;
+    
+    # Main App
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # Node API
+    location /napi/ {
+        proxy_pass http://localhost:4050/napi/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+    }
+    
+    # Python API
+    location /pyapi/ {
+        proxy_pass http://localhost:9089/pyapi/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    # MinIO
+    location /minio/ {
+        proxy_pass http://localhost:9000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    # Followup App (port 4000)
+    location /followup/ {
+        proxy_pass http://localhost:4000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # ai-doc (port 3002)
+    location = /ai-doc {
+        proxy_pass http://localhost:3002/ai-doc;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    location /ai-doc/ {
+        proxy_pass http://localhost:3002/ai-doc/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # Your custom app configuration
+    location /your-app-name/ {
+        proxy_pass http://localhost:YOUR_PORT/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+</Expandable>
+</Step>
+
+<Step title="Enable Site and Test Configuration">
+```bash
+sudo ln -s /etc/nginx/sites-available/weam /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+</Step>
+
+<Step title="Install SSL Certificate Tools">
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+```
+</Step>
+
+<Step title="Generate SSL Certificate">
+```bash
+sudo certbot --nginx -d os.weam.ai
+```
+</Step>
+</Steps>
+
+**Final Access URL:**
+```
+https://example.yourdomain.com
+```
+
+## Development Workflow
+
+<Steps>
+<Step title="Project Setup">
+Create your Next.js application following the requirements above
+</Step>
+<Step title="Authentication Integration">
+Implement user authentication checks using ironSession
+</Step>
+<Step title="Database Configuration">
+Configure MongoDB with proper collection naming convention
+</Step>
+<Step title="Theme Application">
+Apply Weam's visual theme and component patterns
+</Step>
+<Step title="Routing Setup">
+Configure base path and API routes with proper prefixes
+</Step>
+<Step title="Sidebar Integration">
+Add application to sidebar configuration file
+</Step>
+<Step title="Production Deployment">
+Configure nginx proxy rules and SSL certificates
+</Step>
+</Steps>
+
+## Project Structure
+
+<Accordion title="Recommended File Structure">
+```
+your-app/
+├── pages/
+│   ├── api/
+│   │   └── message.js
+│   ├── _app.js
+│   └── dashboard.js
+├── lib/
+│   ├── mongodb.js
+│   └── session.js
+├── components/
+├── styles/
+└── next.config.js
+```
+</Accordion>
+
+## Environment Configuration
+
+<Tabs>
+<Tab title="Required Variables">
+```bash
+# Application Configuration
+NEXT_PUBLIC_API_BASE_PATH="/your-app-name"
+MONGODB_URI=your-mongodb-connection-string
+```
+</Tab>
+<Tab title="Development Setup">
+```bash
+# Development URLs
+DB_HOST=localhost
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
+```
+</Tab>
+</Tabs>
+
+<Note>
+This integration method ensures your custom applications work within Weam's existing architecture while maintaining security and consistency.
+</Note>
