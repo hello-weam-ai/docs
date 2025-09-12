@@ -129,6 +129,12 @@
             ]
           },
           {
+            "group": "App Development", 
+            "pages": [
+              "essentials/apps/integration-guide"
+            ]
+          },
+          {
             "group": "Workflows",
             "pages": [
               "essentials/workflows/llm-query",
