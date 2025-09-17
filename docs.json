@@ -28,8 +28,8 @@
                 "group": "Choose Your Setup",
                 "pages": [
                   "setup/choose-your-setup/local-setup",
-                  "setup/choose-your-setup/self-hosted",
-                  "setup/choose-your-setup/one-click-deployment"
+                  "setup/choose-your-setup/on-prem",
+                  "setup/choose-your-setup/deploy-on-cloud"
                 ]
               },
               {
