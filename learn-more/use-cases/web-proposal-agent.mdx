@@ -109,7 +109,7 @@ POST /api/generate-proposal
   "clientName": "Acme Corporation",
   "projectName": "E-commerce Platform Redesign",
   "projectDescription": "Complete redesign of existing e-commerce platform with modern UI/UX",
-  "websiteUrl": "https://acmecorp.com",
+  "websiteUrl": "https://example.com",
   "contactInfo": {
     "submittedBy": "John Smith",
     "designation": "Sales Manager",
@@ -353,7 +353,7 @@ curl -H "Authorization: Bearer your-api-key"
 Configure webhooks for proposal completion:
 ```json
 {
-  "webhookUrl": "https://your-app.com/proposal-complete",
+  "webhookUrl": "https://yourexampledomain.com/proposal-complete",
   "events": ["proposal.completed", "proposal.failed", "document.uploaded"]
 }
 ```

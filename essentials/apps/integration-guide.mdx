@@ -138,8 +138,8 @@ module.exports = {
 
 | Route Type | Example URL |
 |------------|-------------|
-| **Page** | `example.com/your-app-name/dashboard` |
-| **API** | `example.com/your-app-name/api/message` |
+| **Page** | `yourexampledomain.com/your-app-name/dashboard` |
+| **API** | `yourexampledomain.com/your-app-name/api/message` |
 
 ### Sidebar Integration
 
@@ -165,14 +165,14 @@ sudo apt install nginx -y
 
 <Step title="Create NGINX Configuration">
 ```bash
-sudo nano /etc/nginx/sites-available/weam
+sudo nano /etc/nginx/sites-available/yourapp
 ```
 
 <Expandable title="Complete NGINX Configuration">
 ```nginx
 server {
     listen 80;
-    server_name os.weam.ai;
+    server_name yourexampledomain.com;
     
     # Main App
     location / {
@@ -248,7 +248,7 @@ server {
 
 <Step title="Enable Site and Test Configuration">
 ```bash
-sudo ln -s /etc/nginx/sites-available/weam /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -262,14 +262,14 @@ sudo apt install certbot python3-certbot-nginx -y
 
 <Step title="Generate SSL Certificate">
 ```bash
-sudo certbot --nginx -d os.weam.ai
+sudo certbot --nginx -d yourexampledomain.com
 ```
 </Step>
 </Steps>
 
 **Final Access URL:**
 ```
-https://example.yourdomain.com
+https://yourexampledomain.com
 ```
 
 ## Development Workflow

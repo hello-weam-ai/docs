@@ -102,7 +102,7 @@ echo "✅ Development setup completed successfully!"
 <Tab title="Production (Domain Required)">
 
 <Note>
-Replace `https://your-domain.com` with your actual domain before running this script.
+Replace `https://yourexampledomain.com` with your actual domain before running this script.
 </Note>
 
 ```bash
@@ -120,7 +120,7 @@ cd /home/ubuntu/project
 sudo cp .env.example .env
 
 # Configure domain (REPLACE WITH YOUR DOMAIN)
-CUSTOM_DOMAIN="https://your-domain.com"
+CUSTOM_DOMAIN="https://yourexampledomain.com"
 
 sed -i.bak "s|http://localhost:4050|$CUSTOM_DOMAIN|g" .env
 sed -i.bak "s|http://localhost:9089|$CUSTOM_DOMAIN|g" .env
@@ -150,7 +150,7 @@ sudo apt install -y certbot python3-certbot-nginx
 DOMAIN=$(echo "$CUSTOM_DOMAIN" | sed -E 's~^https?://~~')
 
 # Create Nginx configuration
-cat <<EOL | sudo tee /etc/nginx/sites-available/weam
+cat <<EOL | sudo tee /etc/nginx/sites-available/yourapp
 server {
     listen 80;
     server_name $DOMAIN;
@@ -191,7 +191,7 @@ server {
 EOL
 
 # Enable the configuration
-sudo ln -sf /etc/nginx/sites-available/weam /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 
 # Configure firewall
@@ -245,7 +245,7 @@ http://<EC2_PUBLIC_IP>:3000/login
 
 **Production Setup:**
 ```
-https://your-domain.com/login
+https://yourexampledomain.com/login
 ```
 
 <Info>
@@ -316,7 +316,7 @@ echo "✅ Development setup completed successfully!"
 <Tab title="Production (Domain Required)">
 
 <Note>
-Replace `https://your-domain.com` with your actual domain before using this script.
+Replace `https://yourexampledomain.com` with your actual domain before using this script.
 </Note>
 
 ```bash
@@ -335,7 +335,7 @@ cd /root/project
 cp .env.example .env
 
 # Configure your domain (REPLACE WITH YOUR ACTUAL DOMAIN)
-CUSTOM_DOMAIN="https://your-domain.com"
+CUSTOM_DOMAIN="https://yourexampledomain.com"
 
 # Update environment variables with custom domain
 sed -i.bak "s|http://localhost:4050|$CUSTOM_DOMAIN|g" .env
@@ -348,8 +348,8 @@ sudo apt install -y certbot python3-certbot-nginx
 # Extract domain name for nginx configuration
 DOMAIN=$(echo "$CUSTOM_DOMAIN" | sed -E 's~^https?://~~')
 
-# Create Nginx configuration for WeamAI
-cat <<EOL | sudo tee /etc/nginx/sites-available/weam
+# Create Nginx configuration for your app
+cat <<EOL | sudo tee /etc/nginx/sites-available/yourapp
 server {
     listen 80;
     server_name $DOMAIN;
@@ -390,7 +390,7 @@ server {
 EOL
 
 # Enable the Nginx configuration
-sudo ln -sf /etc/nginx/sites-available/weam /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 
 # Configure firewall for web traffic
@@ -444,7 +444,7 @@ http://<DROPLET_IP>:3000/login
 
 **Production Setup:**
 ```
-https://your-domain.com/login
+https://yourexampledomain.com/login
 ```
 
 <Info>
@@ -463,7 +463,7 @@ After your application is running and DNS is properly configured, enable free SS
 
 ```bash
 # Replace with your actual domain
-sudo certbot --nginx -d your-domain.com
+sudo certbot --nginx -d yourexampledomain.com
 
 # Follow the interactive prompts to complete SSL setup
 ```
@@ -579,9 +579,30 @@ sudo ufw allow 3000/tcp # Development (if needed)
 </Tabs>
 
 <Warning>
+**⚠️ IMPORTANT DATABASE WARNING:**
+
+If you run the command `docker compose down -v`, your **DATABASE will be RESET** and all data will be permanently lost. 
+
+**Always take a backup of your database before running this command:**
+
+```bash
+# Create database backup first
+docker exec weam-mongodb mongodump --out /tmp/backup
+
+# Copy backup to host system
+docker cp weam-mongodb:/tmp/backup ./mongodb-backup
+
+# Only then run the reset command if needed
+docker compose down -v
+```
+
+The `-v` flag removes all volumes including your database data. Use this command only when you want a complete fresh start.
+</Warning>
+
+<Warning>
 **Important Notes:**
 
-- WeamAI requires HTTPS for production login
+- The application requires HTTPS for production login
 - You must use a custom domain with SSL certificate for production
 - Development mode allows HTTP access via IP address
 - Build process takes 15-20 minutes on first deployment
