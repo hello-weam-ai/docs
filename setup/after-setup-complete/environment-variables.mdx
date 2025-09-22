@@ -20,7 +20,7 @@ Complete environment variables for the Python FastAPI backend service:
 Weam AI_ENVIRONMENT=enterprise
 STACK_NAME=Weam AI-stack
 ENV_FILE=.env
-ENVIRONMENT_URL=https://dev.weam.ai
+ENVIRONMENT_URL=https://yourexampledomain.com
 GATEWAY_PORT=9089
 ```
 
@@ -40,7 +40,7 @@ AWS_REGION=us-east-1
 AWS_S3_BUCKET=Weam AI-media
 PROFILER_S3_BUCKET=Weam AI-profiler
 AWS_S3_URL=https://s3.amazonaws.com
-AWS_CDN_URL=https://cdn.weam.ai
+AWS_CDN_URL=https://yourexampledomain.com
 MINIO_PORT=9000
 MINIO_DASHBOARD_PORT=9001
 MINIO_ENDPOINT=http://minio
@@ -49,10 +49,10 @@ MINIO_ENDPOINT=http://minio
 ### Email Configuration
 ```env
 EMAIL_PROVIDER=SMTP
-AWS_SES_VERIFIED_MAIL=noreply@weam.ai
+AWS_SES_VERIFIED_MAIL=noreply@yourexampledomain.com
 SMTP_USER=user@example.com
 SMTP_PASSWORD=password123
-SMTP_SENDER_EMAIL=noreply@weam.ai
+SMTP_SENDER_EMAIL=noreply@yourexampledomain.com
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 ```
@@ -138,8 +138,8 @@ NEXT_PUBLIC_HTTPS_PROTOCOL=false
 
 ### Asset Configuration
 ```env
-NEXT_PUBLIC_AWS_S3_URL=https://cdn.weam.ai
-NEXT_PUBLIC_IMAGE_DOMAIN=cdn.weam.ai
+NEXT_PUBLIC_AWS_S3_URL=https://yourexampledomain.com
+NEXT_PUBLIC_IMAGE_DOMAIN=yourexampledomain.com
 ```
 
 ### WebSocket Settings
