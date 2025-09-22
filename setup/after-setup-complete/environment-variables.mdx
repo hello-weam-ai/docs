@@ -20,7 +20,7 @@ Complete environment variables for the Python FastAPI backend service:
 Weam AI_ENVIRONMENT=enterprise
 STACK_NAME=Weam AI-stack
 ENV_FILE=.env
-ENVIRONMENT_URL=https://yourexampledomain.com
+ENVIRONMENT_URL=https://dev.yourexampledomain.com
 GATEWAY_PORT=9089
 ```
 
@@ -37,10 +37,10 @@ BUCKET_TYPE=MINIO
 AWS_ACCESS_KEY_ID=your-key
 AWS_SECRET_ACCESS_KEY=your-secret
 AWS_REGION=us-east-1
-AWS_S3_BUCKET=Weam AI-media
-PROFILER_S3_BUCKET=Weam AI-profiler
+AWS_S3_BUCKET=yourcompany-media
+PROFILER_S3_BUCKET=yourcompany-profiler
 AWS_S3_URL=https://s3.amazonaws.com
-AWS_CDN_URL=https://yourexampledomain.com
+AWS_CDN_URL=https://cdn.yourexampledomain.com
 MINIO_PORT=9000
 MINIO_DASHBOARD_PORT=9001
 MINIO_ENDPOINT=http://minio
@@ -59,7 +59,7 @@ SMTP_PORT=587
 
 ### SEO Agent Settings
 ```env
-SEO_USER_ID=seo@weam.ai
+SEO_USER_ID=seo@yourexampledomain.com
 SEO_PASSWORD=securepassword
 ```
 
@@ -102,13 +102,13 @@ JWT_SECRET=access-secret
 JWT_REFRESH_SECRET=refresh-secret
 JWT_ACCESS_EXPIRE=1h
 JWT_REFRESH_EXPIRE=7d
-QR_NAME=Weam AI-app
+QR_NAME=YourApp-name
 ```
 
 ### Additional Settings
 ```env
 SECURITY_KEY=secure-key
-SIGNUP_INFO_EMAIL=welcome@weam.ai
+SIGNUP_INFO_EMAIL=welcome@yourexampledomain.com
 API_RATE_LIMIT=100
 SEED=42
 TZ=Asia/Kolkata
@@ -131,15 +131,15 @@ NEXT_PUBLIC_API_PREFIX=/v1
 ### Application Settings
 ```env
 NEXT_PUBLIC_APP_ENVIRONMENT=dev
-NEXT_PUBLIC_COOKIE_NAME=Weam AI-token
+NEXT_PUBLIC_COOKIE_NAME=yourapp-token
 NEXT_PUBLIC_COOKIE_PASSWORD=encrypt-me
 NEXT_PUBLIC_HTTPS_PROTOCOL=false
 ```
 
 ### Asset Configuration
 ```env
-NEXT_PUBLIC_AWS_S3_URL=https://yourexampledomain.com
-NEXT_PUBLIC_IMAGE_DOMAIN=yourexampledomain.com
+NEXT_PUBLIC_AWS_S3_URL=https://cdn.yourexampledomain.com
+NEXT_PUBLIC_IMAGE_DOMAIN=cdn.yourexampledomain.com
 ```
 
 ### WebSocket Settings
@@ -152,7 +152,7 @@ NEXT_PUBLIC_SOCKET_CONNECTION_URL=ws://localhost:3000
 NEXT_PUBLIC_SECURITY_KEY=secure-frontend-key
 NEXT_PUBLIC_MESSAGE_LIMIT=5
 NEXT_PUBLIC_FREE_TRIAL_DAYS=14
-NEW_RELIC_APPNAME=Weam AIFrontend
+NEW_RELIC_APPNAME=YourAppFrontend
 NEXT_PUBLIC_OPENAI_PLATFORM_URL=https://platform.openai.com
 ```
 
@@ -171,7 +171,7 @@ Configure MongoDB and Redis connections for data storage and caching:
 ```env
 # MongoDB Database
 MONOGODB_URI=mongodb://localhost:27017
-DB_DATABASE=Weam AIdb
+DB_DATABASE=yourappdb
 
 # Redis Cache and Queues
 REDIS_HOST=localhost
@@ -229,7 +229,7 @@ BUCKET_TYPE=MINIO
 MINIO_ENDPOINT=http://localhost:9000
 AWS_ACCESS_KEY_ID=minioadmin
 AWS_SECRET_ACCESS_KEY=minioadmin
-AWS_S3_BUCKET=Weam AI-media
+AWS_S3_BUCKET=yourapp-media
 ```
 
 **Benefits:**
@@ -281,7 +281,7 @@ SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
-SENDER_EMAIL=noreply@yourdomain.com
+SENDER_EMAIL=noreply@yourexampledomain.com
 ```
 
 **Popular SMTP providers:**
@@ -311,7 +311,7 @@ Enable Slack workspace integration for team collaboration.
 ```env
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
-GITHUB_REDIRECT_URI=https://your-domain.com/api/auth/github/callback
+GITHUB_REDIRECT_URI=https://yourexampledomain.com/api/auth/github/callback
 ```
 
 Connect GitHub repositories for code-based workflows.
@@ -366,11 +366,11 @@ NEXT_PUBLIC_PYTHON_API_URL=http://localhost:9089
 # Production Configuration
 NEXT_PUBLIC_APP_ENVIRONMENT=production
 NEXT_PUBLIC_HTTPS_PROTOCOL=true
-NEXT_PUBLIC_DOMAIN_URL=https://your-domain.com
+NEXT_PUBLIC_DOMAIN_URL=https://yourexampledomain.com
 
 # Production Service URLs
-NEXT_PUBLIC_BACKEND_API_URL=https://your-domain.com
-NEXT_PUBLIC_PYTHON_API_URL=https://your-domain.com
+NEXT_PUBLIC_BACKEND_API_URL=https://yourexampledomain.com
+NEXT_PUBLIC_PYTHON_API_URL=https://yourexampledomain.com
 ```
 
 ## Configuration Validation
@@ -385,7 +385,7 @@ grep -E "(JWT_SECRET|MONOGODB_URI|REDIS_HOST)" .env
 grep -E "(your-|placeholder|example)" .env
 
 # Test database connection
-docker exec Weam AI-mongodb mongosh --eval "db.runCommand('ping')"
+docker exec yourapp-mongodb mongosh --eval "db.runCommand('ping')"
 ```
 
 ## Next Steps

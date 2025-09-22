@@ -292,6 +292,27 @@ echo "✅ pybase_docker image built successfully."
 
 </AccordionGroup>
 
+<Warning>
+**⚠️ IMPORTANT DATABASE WARNING:**
+
+If you run the command `docker compose down -v`, your **DATABASE will be RESET** and all data will be permanently lost. 
+
+**Always take a backup of your database before running this command:**
+
+```bash
+# Create database backup first
+docker exec weam-mongodb mongodump --out /tmp/backup
+
+# Copy backup to host system
+docker cp weam-mongodb:/tmp/backup ./mongodb-backup
+
+# Only then run the reset command if needed
+docker compose down -v
+```
+
+The `-v` flag removes all volumes including your database data. Use this command only when you want a complete fresh start.
+</Warning>
+
 <Note>
   **Need help?** Reach out via the [GitHub issues](https://github.com/Weam-ai/Weam-ai/issues) or [Discord Community](https://discord.com) for faster response.
 </Note>

@@ -68,13 +68,13 @@ nano .env
 
 Update these critical values:
 ```env
-NEXT_PUBLIC_DOMAIN_URL=https://your-domain.com
-FRONT_URL=https://your-domain.com
+NEXT_PUBLIC_DOMAIN_URL=https://yourexampledomain.com
+FRONT_URL=https://yourexampledomain.com
 NEXT_PUBLIC_HTTPS_PROTOCOL=true
 ```
 
 <Warning>
-Replace `your-domain.com` with your actual domain name.
+Replace `yourexampledomain.com` with your actual domain name.
 </Warning>
 </Step>
 
@@ -82,15 +82,15 @@ Replace `your-domain.com` with your actual domain name.
 Create NGINX configuration:
 
 ```bash
-sudo nano /etc/nginx/sites-available/weamai
+sudo nano /etc/nginx/sites-available/yourapp
 ```
 
-Add this configuration (replace `your-domain.com`):
+Add this configuration (replace `yourexampledomain.com`):
 
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com;
+    server_name yourexampledomain.com;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -119,7 +119,7 @@ server {
 
 Enable the site:
 ```bash
-sudo ln -s /etc/nginx/sites-available/weamai /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -131,7 +131,7 @@ sudo systemctl reload nginx
 Generate Let's Encrypt certificate:
 
 ```bash
-sudo certbot --nginx -d your-domain.com
+sudo certbot --nginx -d yourexampledomain.com
 ```
 
 Follow the interactive prompts to complete SSL setup. Certbot will automatically modify your NGINX configuration.
@@ -163,7 +163,7 @@ docker compose ps
 ```
 
 Test access:
-- Visit **https://your-domain.com**
+- Visit **https://yourexampledomain.com**
 - Verify the SSL certificate is valid
 - Register a new account to test functionality
 
