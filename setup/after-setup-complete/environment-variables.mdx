@@ -4,66 +4,12 @@ description: "Complete environment variable configuration guide for Weam AI. Set
 ---
 
 <Info>
-This guide covers all environment variables for **Python backend**, **Node.js API**, and **Next.js frontend** components of Weam AI.
+This guide covers all environment variables for **Node.js API** and **Next.js frontend** components of Weam AI.
 </Info>
 
 ## Service-Specific Variables
 
 <AccordionGroup>
-
-<Accordion title="Python Backend (FastAPI) Variables">
-
-Complete environment variables for the Python FastAPI backend service:
-
-### Application Configuration
-```env
-Weam AI_ENVIRONMENT=enterprise
-STACK_NAME=Weam AI-stack
-ENV_FILE=.env
-ENVIRONMENT_URL=https://dev.yourexampledomain.com
-GATEWAY_PORT=9089
-```
-
-### Celery Task Queue
-```env
-CELERY_BROKEN_URL=redis://localhost:6379
-CELERY_RESULT_BACKEND=redis://localhost:6379
-DELETE_TASK_ON_SUCCESS=True
-```
-
-### Storage Settings
-```env
-BUCKET_TYPE=MINIO
-AWS_ACCESS_KEY_ID=your-key
-AWS_SECRET_ACCESS_KEY=your-secret
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=yourcompany-media
-PROFILER_S3_BUCKET=yourcompany-profiler
-AWS_S3_URL=https://s3.amazonaws.com
-AWS_CDN_URL=https://cdn.yourexampledomain.com
-MINIO_PORT=9000
-MINIO_DASHBOARD_PORT=9001
-MINIO_ENDPOINT=http://minio
-```
-
-### Email Configuration
-```env
-EMAIL_PROVIDER=SMTP
-AWS_SES_VERIFIED_MAIL=noreply@yourexampledomain.com
-SMTP_USER=user@example.com
-SMTP_PASSWORD=password123
-SMTP_SENDER_EMAIL=noreply@yourexampledomain.com
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-```
-
-### SEO Agent Settings
-```env
-SEO_USER_ID=seo@yourexampledomain.com
-SEO_PASSWORD=securepassword
-```
-
-</Accordion>
 
 <Accordion title="Node.js API Server Variables">
 
@@ -83,7 +29,6 @@ OPEN_AI_MODAL=gpt-4
 OPEN_AI_API_URL=https://api.openai.com
 GEMINI_API_URL=https://gemini.google.com
 ANTHROPIC_AI_API_URL=https://api.anthropic.com
-PYTHON_API_URL=http://localhost:9089
 ```
 
 ### Model Provider API Keys
@@ -105,6 +50,31 @@ JWT_REFRESH_EXPIRE=7d
 QR_NAME=YourApp-name
 ```
 
+### Storage Settings
+```env
+BUCKET_TYPE=MINIO
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=yourcompany-media
+AWS_S3_URL=https://s3.amazonaws.com
+AWS_CDN_URL=https://cdn.yourexampledomain.com
+MINIO_PORT=9000
+MINIO_DASHBOARD_PORT=9001
+MINIO_ENDPOINT=http://minio
+```
+
+### Email Configuration
+```env
+EMAIL_PROVIDER=SMTP
+AWS_SES_VERIFIED_MAIL=noreply@yourexampledomain.com
+SMTP_USER=user@example.com
+SMTP_PASSWORD=password123
+SMTP_SENDER_EMAIL=noreply@yourexampledomain.com
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+```
+
 ### Additional Settings
 ```env
 SECURITY_KEY=secure-key
@@ -112,6 +82,12 @@ SIGNUP_INFO_EMAIL=welcome@yourexampledomain.com
 API_RATE_LIMIT=100
 SEED=42
 TZ=Asia/Kolkata
+```
+
+### SEO Agent Settings
+```env
+SEO_USER_ID=seo@yourexampledomain.com
+SEO_PASSWORD=securepassword
 ```
 
 </Accordion>
@@ -123,7 +99,6 @@ Complete environment variables for the Next.js frontend application:
 ### API Endpoints
 ```env
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:4050
-NEXT_PUBLIC_PYTHON_API_URL=http://localhost:9089
 NEXT_PUBLIC_DOMAIN_URL=http://localhost:3000
 NEXT_PUBLIC_API_PREFIX=/v1
 ```
@@ -176,8 +151,6 @@ DB_DATABASE=yourappdb
 # Redis Cache and Queues
 REDIS_HOST=localhost
 REDIS_PORT=6379
-CELERY_BROKEN_URL=redis://localhost:6379
-CELERY_RESULT_BACKEND=redis://localhost:6379
 ```
 
 ### Security Configuration
@@ -196,10 +169,13 @@ CSRF_TOKEN_SECRET=your-csrf-token-secret
 
 **Generate secure keys:**
 ```bash
-# Linux/macOS
+# Using OpenSSL (recommended - available on all platforms)
 openssl rand -hex 32
 
-# Python
+# Alternative: Using Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Alternative: Using Python (if installed)
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
@@ -214,7 +190,6 @@ FRONT_URL=http://localhost:3000
 
 # Backend Services
 BASE_URL=http://localhost:4050
-PYTHON_API_URL=http://localhost:9089
 ```
 
 ### File Storage Configuration
@@ -329,20 +304,6 @@ Integrate Google Drive, Gmail, and Calendar services.
 </Tab>
 </Tabs>
 
-### Development Tools
-
-Configure debugging and development utilities:
-
-```env
-# Python Debugger
-WDB_SOCKET_SERVER=localhost
-WDB_PORT=1984
-WDB_NO_BROWSER_AUTO_OPEN=True
-
-# Environment Mode
-Weam AI_ENVIRONMENT=development
-```
-
 ## Environment-Specific Settings
 
 Configure different settings for development and production environments.
@@ -357,7 +318,6 @@ NEXT_PUBLIC_DOMAIN_URL=http://localhost:3000
 
 # Local Service URLs
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:4050
-NEXT_PUBLIC_PYTHON_API_URL=http://localhost:9089
 ```
 
 ### Production Deployment Environment
@@ -370,7 +330,6 @@ NEXT_PUBLIC_DOMAIN_URL=https://yourexampledomain.com
 
 # Production Service URLs
 NEXT_PUBLIC_BACKEND_API_URL=https://yourexampledomain.com
-NEXT_PUBLIC_PYTHON_API_URL=https://yourexampledomain.com
 ```
 
 ## Configuration Validation
@@ -395,7 +354,7 @@ docker exec yourapp-mongodb mongosh --eval "db.runCommand('ping')"
 <Card
   title="API Credential Setup"
   icon="key"
-  href="/credentialsetup"
+  href="/setup/after-setup-complete/credential-setup"
 >
   Configure model provider API keys and external integrations
 </Card>
@@ -403,7 +362,7 @@ docker exec yourapp-mongodb mongosh --eval "db.runCommand('ping')"
 <Card
   title="Launch & Verify"
   icon="check"
-  href="/launch-verify"
+  href="/setup/after-setup-complete/launch-verify"
 >
   Start services and verify your environment configuration
 </Card>

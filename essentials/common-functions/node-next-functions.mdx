@@ -1,28 +1,26 @@
 ---
 title: "AI Interaction Flow"
-description: "Detailed breakdown of client and server functions involved in sending prompts to AI models"
+description: "Detailed breakdown of client and server functions for sending prompts to AI models using LangGraph in Node.js"
 ---
 
 <Info>
-  This document gives a step-by-step breakdown of how prompts flow through the system:
-  - From frontend trigger to backend Python handlers
-  - Includes hooks, handlers, payload formats, and utility functions
-  - Ideal for developers working on prompt submission, socket handling, and agent-based AI routing
+This document covers the streamlined prompt flow through the system using LangGraph for intelligent backend routing:
+- From frontend trigger to Node.js LangGraph handlers
+- Single socket event for all operations
+- Backend-driven routing and decision making
+- Simplified frontend integration
 </Info>
 
 ## Core Functions
 
-### `handleAIApiType(fileMetadata)`
-Determines which backend API handles the request based on file metadata.
-
-**Returns:** String key (`doc`, `custom_gpt`, `canvas`) for backend routing
-
 ### `handleSubmitPrompt(refine = false)`
-Triggers the complete prompt submission lifecycle.
+Triggers the complete prompt submission lifecycle through single socket event.
 
 **Behavior:**
 - First message: Creates new chat and adds user as member
-- Always disables chat input until response received
+- All messages: Emits single socket event to backend
+- Disables chat input until response received
+- No frontend routing decisions required
 
 ### `enterNewPrompt()`
 Creates message entry in MongoDB before backend submission.
@@ -31,7 +29,7 @@ Creates message entry in MongoDB before backend submission.
 
 ## Payload Structure
 
-Standard payload format across all LLM APIs:
+Single payload format for all AI interactions:
 
 ```typescript
 {
@@ -40,92 +38,197 @@ Standard payload format across all LLM APIs:
   modelId: string,
   chatId: string,
   model_name: string,
-  msgCredit: number
+  msgCredit: number,
+  agentId?: string,        // Optional: if agent selected
+  documentIds?: string[],  // Optional: if documents attached
+  imageData?: string       // Optional: if image included
 }
 ```
 
-## Backend API Functions
+## Backend Processing
 
-### General Chat Functions
-- `getPerplexityResponse(payload)` - General LLM processing
-- `getAINormatChatResponse(payload)` - Image uploads or no prompt selected
-- `getAIDocResponse(payload)` - Document-based chats
-- `setChatTitleByAI(params)` - Auto-generate chat titles
+### Single Entry Point
 
-### Agent Functions
-- `getAICustomGPTResponse(payload)` - Custom GPT agents (uses `agent.model_name`)
-- `getAIProAgentChatResponse(payload)` - QA and Web Proposal agents
-- `getSalesCallResponse(payload)` - Sales call analysis
+All AI requests go through one unified endpoint:
 
-### Specialized Functions
-- `chatCanvasAiResponse(payload)` - Selection-based canvas responses
-- `getSeoKeyWords(payload)` - SEO keyword generation
+**Socket Event:** `ai-query`
+
+**Processing Flow:**
+1. Receive socket event with payload
+2. LangGraph analyzes request requirements
+3. Backend determines operation type:
+   - Normal chat
+   - Document-based query
+   - Agent interaction
+   - Agent + Document combination
+   - Tool requirements (search, image)
+4. Execute appropriate handler
+5. Stream response back via socket
+
+### Backend Operation Functions
+
+**Unified Handler:**
+- `processAIQuery(payload)` - Single entry point for all operations
+
+**Internal Routing (Backend Only):**
+- Simple chat processing
+- Document retrieval and RAG
+- Agent prompt integration
+- Tool activation (SearxNG, DALL·E)
+- Vision processing for images
+
+**No Separate Frontend Endpoints:**
+- Previous architecture had multiple client-side function calls
+- Current architecture: backend handles all routing via LangGraph
 
 ## React Hooks
 
 ### Core Hooks
-- `useConversation()` - Central conversation management, LLM streaming, prompt submission
+
+- `useConversation()` - Central conversation management with unified LLM streaming
 - `useThunderBoltPopup()` - File uploads, agent selection, prompt selection
-- `useMediaUpload()` - Media uploads for canvas responses
+- `useMediaUpload()` - Media uploads for conversations
 
 ### Data Hooks
+
 - `useCustomGpt()` - Fetch available custom GPT agents
 - `usePrompt()` - Retrieve saved prompts
 - `useBrainDocs()` - Load uploaded documents
 
 ### Utility Hooks
+
 - `useIntersectionObserver()` - Infinite scroll for lists
 - `useDebounce()` - Debounce user input
 - `useServerAction()` - Server-side actions in Next.js
 
-## Utility Functions
+## UI State Management
 
-### State Management
+### Unified State Updates
+
 - `handleModelSelectionUrl()` - Sync model state with URL
 - `handleProAgentUrlState()` - Sync Pro Agent state with URL
 - `handleNewChatClick()` - Start new chat session
 
-### UI Control
-- `blockProAgentAction()` - Disable input during Pro Agent response
+## Backend Intelligence
 
-### API Helpers
-- `commonApi()` - Generic client-side API calls
-- `serverApi()` - Server-specific API wrapper
-- `ValidationError` - Display Yup validation errors
+### LangGraph Decision Making
+
+Backend automatically handles:
+
+**Operation Detection:**
+- Query analysis for intent
+- Document requirement identification
+- Agent configuration loading
+- Tool necessity determination
+
+**Context Assembly:**
+- Chat history retrieval
+- Document vector search (if needed)
+- Agent prompt integration (if selected)
+- Tool setup (if required)
+
+**Response Generation:**
+- Single or dual LLM call based on tools
+- Streaming response to frontend
+- Cost tracking and logging
 
 ## UI Components
 
 ### Lists and Modals
+
 - `CommonList` - Combined private/shared document list
 - `RenderModalList` - Model selection dropdown
+- `AgentSelector` - Agent selection interface (no routing logic needed)
 
-## Common Parameters
+## Parameters
 
-### Standard Parameters
-- `custom_gpt_id` - Agent identifier
-- `companyId` - Company identifier  
-- `provider` - LLM provider
-- `code` - Model code
+All operations use the same parameter set:
 
-### Canvas-specific Parameters
-- `currentMessageId` - Message identifier
-- `startIndex` - Selection start
-- `endIndex` - Selection end
+```typescript
+{
+  query: string,
+  messageId: string,
+  modelId: string,
+  chatId: string,
+  model_name: string,
+  msgCredit: number,
+  agentId?: string,
+  documentIds?: string[],
+  imageData?: string
+}
+```
 
-### Agent-specific Parameters
-- `agent_extra_info` - Additional agent data
+### Backend-Only Parameters
+
+These are handled internally by backend:
+
+- Tool selection decisions
+- RAG vs Simple Chat routing
+- Context assembly strategies
+- LLM call optimization
+
+## Socket Communication
+
+### Frontend Socket Events
+
+**Emit Events:**
+- `ai-query` - Single event for all operations
+
+**Listen Events:**
+- `ai-response-stream` - Streamed response chunks
+- `ai-response-complete` - Final response signal
+- `ai-error` - Error notifications
+
+### Backend Socket Handling
+
+**Event Processing:**
+1. Receive `ai-query` event
+2. LangGraph processes request
+3. Stream response via `ai-response-stream`
+4. Emit `ai-response-complete` when done
+5. Handle errors via `ai-error`
 
 ## Troubleshooting
 
 ### Prompt Not Reaching Backend
-1. Verify `handleSubmitPrompt()` is triggered
-2. Ensure `enterNewPrompt()` runs before submission
-3. Check `handleAIApiType()` returns correct type
-4. Confirm socket connection is active
 
-### Custom GPT Issues
-- Verify `getAICustomGPTResponse()` uses `agent.model_name`
-- Check payload structure matches expected schema
+**Debug Steps:**
+1. Verify `handleSubmitPrompt()` triggered
+2. Check socket connection status
+3. Confirm `enterNewPrompt()` executed
+4. Review browser console for errors
+5. Validate payload structure
 
-### Pro Agent Input Issues
-- Ensure `blockProAgentAction()` is called before `getAIProAgentChatResponse()`
+**Common Issues:**
+- Socket disconnected
+- Payload validation failure
+- Network interruption
+- Backend service down
+
+### Response Not Displaying
+
+**Debug Steps:**
+1. Check socket event listeners active
+2. Verify `ai-response-stream` handler
+3. Review UI update logic
+4. Test with simplified query
+
+**Common Issues:**
+- Event listener not attached
+- UI state not updating
+- Response parsing error
+- Stream interruption
+
+### Agent or Document Issues
+
+**Debug Steps:**
+1. Verify agent/document IDs in payload
+2. Check backend logs for retrieval
+3. Validate database connections
+4. Test with simple queries first
+
+**Common Issues:**
+- Invalid agent/document ID
+- Database connection failure
+- Vector search timeout
+- Permission issues

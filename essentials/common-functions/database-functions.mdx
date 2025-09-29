@@ -2,113 +2,170 @@
 title: 'Database Functions'
 ---
 
-MongoDB repository classes for structured data access in the Weam AI system.
+MongoDB repository patterns and data access methods used in the Weam AI Node.js backend for structured data operations.
 
 ## Usage Pattern
 
-All repository classes follow the same pattern:
-1. Call `initialization()` with required parameters
-2. Invoke the respective `_fetch_...` method
+All repository methods follow consistent patterns:
+1. Import the required repository module
+2. Call the method with appropriate parameters
+3. Handle the returned data
 
-## Repository Classes
+## Repository Modules
 
 ### CompanyRepository
 
-#### `_fetch_company_data`
-Retrieves company metadata from MongoDB using `_id`.
+#### `fetchCompanyData(companyId)`
+Retrieves company metadata from MongoDB using company ID.
 
 **Parameters:**
-- `company_id: str`
-- `collection_name: str`
+- `companyId: string` - Unique company identifier
 
-```python
-repo = CompanyRepository()
-repo.initialization(company_id="123456", collection_name="companies")
-company_data = repo._fetch_company_data()
+```javascript
+const CompanyRepository = require('./repositories/CompanyRepository');
+
+const companyData = await CompanyRepository.fetchCompanyData('company123');
+console.log(companyData);
 ```
+
+**Returns:** Company document object with all metadata
 
 ### ChatSessionRepository
 
-#### `_fetch_chat_session_model_data`
-Retrieves chat session data from MongoDB using `_id`.
+#### `fetchChatSessionData(sessionId)`
+Retrieves chat session data from MongoDB using session ID.
 
 **Parameters:**
-- `company_id: str`
-- `collection_name: str`
+- `sessionId: string` - Unique chat session identifier
 
-```python
-repo = ChatSessionRepository()
-repo.initialization(company_id="123456", collection_name="chatsessions")
-session_data = repo._fetch_chat_session_model_data()
+```javascript
+const ChatSessionRepository = require('./repositories/ChatSessionRepository');
+
+const sessionData = await ChatSessionRepository.fetchChatSessionData('session456');
+console.log(sessionData);
 ```
+
+**Returns:** Chat session document with messages and metadata
 
 ### LLMModelRepository
 
-#### `_fetch_company_model_data`
+#### `fetchCompanyModelData(apiKeyId)`
 Retrieves LLM configuration data using API key identifier.
 
 **Parameters:**
-- `api_key_id: str`
-- `collection_name: str`
+- `apiKeyId: string` - API key identifier
 
-```python
-repo = LLMModelRepository()
-repo.initialization(api_key_id="apikey-abc", collection_name="llm-models")
-llm_config = repo._fetch_company_model_data()
+```javascript
+const LLMModelRepository = require('./repositories/LLMModelRepository');
+
+const llmConfig = await LLMModelRepository.fetchCompanyModelData('apikey-abc');
+console.log(llmConfig);
 ```
+
+**Returns:** Model configuration including API credentials and settings
 
 ### EmbeddingModelRepository
 
-#### `_fetch_company_model_data`
+#### `fetchEmbeddingModelData(apiKeyId)`
 Fetches embedding model configurations and vector settings.
 
 **Parameters:**
-- `api_key_id: str`
-- `collection_name: str`
+- `apiKeyId: string` - API key identifier
 
-```python
-repo = EmbeddingModelRepository()
-repo.initialization(api_key_id="apikey-abc", collection_name="embedding-models")
-embedding_config = repo._fetch_company_model_data()
+```javascript
+const EmbeddingModelRepository = require('./repositories/EmbeddingModelRepository');
+
+const embeddingConfig = await EmbeddingModelRepository.fetchEmbeddingModelData('apikey-abc');
+console.log(embeddingConfig);
 ```
+
+**Returns:** Embedding model configuration with dimension and provider details
 
 ### FileRepository
 
-#### `_fetch_file_model_data`
+#### `fetchFileData(fileId)`
 Retrieves file metadata for user or system files.
 
 **Parameters:**
-- `file_id: str`
-- `collection_name: str`
+- `fileId: string` - Unique file identifier
 
-```python
-repo = FileRepository()
-repo.initialization(file_id="file-123", collection_name="files")
-file_data = repo._fetch_file_model_data()
+```javascript
+const FileRepository = require('./repositories/FileRepository');
+
+const fileData = await FileRepository.fetchFileData('file-123');
+console.log(fileData);
 ```
+
+**Returns:** File metadata including storage location and processing status
 
 ### ChatMemberRepository
 
-#### `_fetch_chat_member_model_data`
+#### `fetchChatMemberData(chatSessionId)`
 Fetches chat participant data for session management.
 
 **Parameters:**
-- `chat_session_id: str`
-- `collection_name: str`
+- `chatSessionId: string` - Chat session identifier
 
-```python
-repo = ChatMemberRepository()
-repo.initialization(chat_session_id="chat-789", collection_name="chat-members")
-member_data = repo._fetch_chat_member_model_data()
+```javascript
+const ChatMemberRepository = require('./repositories/ChatMemberRepository');
+
+const memberData = await ChatMemberRepository.fetchChatMemberData('chat-789');
+console.log(memberData);
 ```
 
-## Implementation Notes
+**Returns:** Array of chat members with roles and permissions
 
-- Always call `initialization()` before using `_fetch_...` methods
-- Methods return native Python dictionaries from MongoDB
-- Error handling should be implemented in calling code
-- These are low-level data access methods for internal use
+### AgentRepository
 
-<Note>
-For higher-level APIs, refer to the [API reference](/api-reference/python).
-</Note>
+#### `fetchAgentData(agentId)`
+Retrieves agent configuration including system prompts and settings.
+
+**Parameters:**
+- `agentId: string` - Agent identifier
+
+```javascript
+const AgentRepository = require('./repositories/AgentRepository');
+
+const agentData = await AgentRepository.fetchAgentData('agent-001');
+console.log(agentData);
+```
+
+**Returns:** Agent configuration with prompts, tools, and metadata
+
+### DocumentRepository
+
+#### `fetchDocumentData(documentId)`
+Retrieves document metadata and storage information.
+
+**Parameters:**
+- `documentId: string` - Document identifier
+
+```javascript
+const DocumentRepository = require('./repositories/DocumentRepository');
+
+const documentData = await DocumentRepository.fetchDocumentData('doc-123');
+console.log(documentData);
+```
+
+**Returns:** Document metadata including chunks and embedding status
+
+### VectorRepository
+
+#### `searchVectors(query, options)`
+Performs vector similarity search in Pinecone.
+
+**Parameters:**
+- `query: string` - Search query text
+- `options: object` - Search configuration
+
+```javascript
+const VectorRepository = require('./repositories/VectorRepository');
+
+const vectors = await VectorRepository.searchVectors('user query', {
+  topK: 5,
+  filter: { brainId: 'brain123' }
+});
+console.log(vectors);
+```
+
+**Returns:** Array of relevant document chunks with similarity scores

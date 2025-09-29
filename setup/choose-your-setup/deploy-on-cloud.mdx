@@ -123,7 +123,6 @@ sudo cp .env.example .env
 CUSTOM_DOMAIN="https://yourexampledomain.com"
 
 sed -i.bak "s|http://localhost:4050|$CUSTOM_DOMAIN|g" .env
-sed -i.bak "s|http://localhost:9089|$CUSTOM_DOMAIN|g" .env
 sed -i.bak "s|http://localhost:3000|$CUSTOM_DOMAIN|g" .env
 
 # Install Docker and Docker Compose
@@ -174,11 +173,233 @@ server {
         proxy_set_header Connection 'upgrade';
     }
 
-    # Python API
-    location /pyapi/ {
-        proxy_pass http://localhost:9089/pyapi/;
+    # MinIO object storage
+    location /minio/ {
+        proxy_pass http://localhost:9000/;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
+    }
+}
+EOL
+
+# Enable the Nginx configuration
+sudo ln -sf /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# Configure firewall for web traffic
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+echo "✅ Production setup completed successfully!"
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step title="Create Droplet">
+Click **Create Droplet** and wait 2-3 minutes for initialization, then 5-10 minutes for the setup script to complete.
+</Step>
+
+<Step title="Connect and Deploy">
+Connect to your droplet via SSH:
+
+```bash
+ssh root@<DROPLET_IP>
+```
+
+Navigate to the project directory and start the deployment:
+
+```bash
+# Check setup completion
+tail -f /root/setup.log
+
+# Navigate to project directory
+cd /root/project
+
+# Build the application (15-20 minutes)
+bash build.sh
+
+# Deploy with Docker Compose
+docker compose up --build
+
+# For background deployment
+docker compose up -d
+```
+</Step>
+
+<Step title="Access Application">
+**Development Setup:**
+```
+http://<DROPLET_IP>:3000/login
+```
+
+**Production Setup:**
+```
+https://yourexampledomain.com/login
+```
+
+<Info>
+For production, ensure your domain's DNS A record points to your droplet's public IP address.
+</Info>
+</Step>
+
+</Steps>
+
+</Tab>
+</Tabs>
+
+## SSL Certificate Setup (Production Only)
+
+After your application is running and DNS is properly configured, enable free SSL certificates:
+
+```bash
+# Replace with your actual domain
+sudo certbot --nginx -d yourexampledomain.com
+
+# Follow the interactive prompts to complete SSL setup
+```
+
+## Service Architecture
+
+| Service | Port | Internal URL | Description |
+|---------|------|--------------|-------------|
+| **Frontend (Next.js)** | 3000 | http://localhost:3000 | Main web interface |
+| **Backend (Node.js)** | 4050 | http://localhost:4050 | API server |
+| **MongoDB** | 27017 | Internal only | Database |
+| **Redis** | 6379 | Internal only | Cache/sessions |
+| **Qdrant** | 6333 | http://localhost:6333 | Vector database |
+| **MinIO** | 9000 | http://localhost:9000 | Object storage |
+
+## Troubleshooting
+
+<Tabs>
+<Tab title="AWS EC2">
+
+<AccordionGroup>
+
+<Accordion title="Instance Launch Issues">
+**Common problems:**
+- Insufficient instance limits in your AWS account
+- Security group not properly configured
+- Key pair permissions too open
+
+**Solutions:**
+- Request limit increase in AWS Console
+- Ensure security group allows SSH (22), HTTP (80), HTTPS (443)
+- Set key pair permissions: `chmod 400 your-key.pem`
+</Accordion>
+
+<Accordion title="SSH Connection Problems">
+**Connection failures:**
+- Wrong key file or path
+- Security group doesn't allow SSH
+- Instance not fully initialized
+
+**Solutions:**
+```bash
+# Correct SSH command format
+ssh -i /path/to/your-key.pem ubuntu@<PUBLIC_IP>
+
+# Check security group allows port 22 from your IP
+# Wait 5-10 minutes after launch for full initialization
+```
+</Accordion>
+
+<Accordion title="Application Access Issues">
+**Cannot reach application:**
+- Security group doesn't allow HTTP/HTTPS
+- Application not started
+- Wrong URL format
+
+**Solutions:**
+- Add inbound rules for ports 80, 443 (and 3000 for development)
+- Check application status: `docker ps`
+- Use correct URL format based on setup type
+</Accordion>
+
+</AccordionGroup>
+
+</Tab>
+<Tab title="DigitalOcean">
+
+<AccordionGroup>
+
+<Accordion title="Droplet Creation Issues">
+**Common problems:**
+- Account limits reached
+- Payment method issues
+- Region unavailability
+
+**Solutions:**
+- Check account limits in DigitalOcean console
+- Verify billing information is current
+- Try different region if current one is unavailable
+</Accordion>
+
+<Accordion title="Docker Issues">
+**If you selected plain Ubuntu instead of Docker image:**
+```bash
+# Install Docker manually
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Restart session or run:
+newgrp docker
+```
+</Accordion>
+
+<Accordion title="Firewall Problems">
+**Port access issues:**
+```bash
+# Check firewall status
+sudo ufw status
+
+# Allow required ports
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
+sudo ufw allow 3000/tcp # Development (if needed)
+```
+</Accordion>
+
+</AccordionGroup>
+
+</Tab>
+</Tabs>
+
+<Warning>
+**⚠️ IMPORTANT DATABASE WARNING:**
+
+If you run the command `docker compose down -v`, your **DATABASE will be RESET** and all data will be permanently lost. 
+
+**Always take a backup of your database before running this command:**
+
+```bash
+# Create database backup first
+docker exec weam-mongodb mongodump --out /tmp/backup
+
+# Copy backup to host system
+docker cp weam-mongodb:/tmp/backup ./mongodb-backup
+
+# Only then run the reset command if needed
+docker compose down -v
+```
+
+The `-v` flag removes all volumes including your database data. Use this command only when you want a complete fresh start.
+</Warning>
+
+<Warning>
+**Important Notes:**
+
+- The application requires HTTPS for production login
+- You must use a custom domain with SSL certificate for production
+- Development mode allows HTTP access via IP address
+- Build process takes 15-20 minutes on first deployment
+- Ensure adequate system resources to avoid build failures
+</Warning>';
     }
 
     # MinIO Storage
@@ -339,7 +560,6 @@ CUSTOM_DOMAIN="https://yourexampledomain.com"
 
 # Update environment variables with custom domain
 sed -i.bak "s|http://localhost:4050|$CUSTOM_DOMAIN|g" .env
-sed -i.bak "s|http://localhost:9089|$CUSTOM_DOMAIN|g" .env
 sed -i.bak "s|http://localhost:3000|$CUSTOM_DOMAIN|g" .env
 
 # Install SSL certificate tools
@@ -370,241 +590,4 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-    }
-
-    # Python API endpoints
-    location /pyapi/ {
-        proxy_pass http://localhost:9089/pyapi/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-    }
-
-    # MinIO object storage
-    location /minio/ {
-        proxy_pass http://localhost:9000/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-    }
-}
-EOL
-
-# Enable the Nginx configuration
-sudo ln -sf /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-
-# Configure firewall for web traffic
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-
-echo "✅ Production setup completed successfully!"
-```
-
-</Tab>
-</Tabs>
-
-</Step>
-
-<Step title="Create Droplet">
-Click **Create Droplet** and wait 2-3 minutes for initialization, then 5-10 minutes for the setup script to complete.
-</Step>
-
-<Step title="Connect and Deploy">
-Connect to your droplet via SSH:
-
-```bash
-ssh root@<DROPLET_IP>
-```
-
-Navigate to the project directory and start the deployment:
-
-```bash
-# Check setup completion
-tail -f /root/setup.log
-
-# Navigate to project directory
-cd /root/project
-
-# Build the application (15-20 minutes)
-bash build.sh
-
-# Deploy with Docker Compose
-docker compose up --build
-
-# For background deployment
-docker compose up -d
-```
-</Step>
-
-<Step title="Access Application">
-**Development Setup:**
-```
-http://<DROPLET_IP>:3000/login
-```
-
-**Production Setup:**
-```
-https://yourexampledomain.com/login
-```
-
-<Info>
-For production, ensure your domain's DNS A record points to your droplet's public IP address.
-</Info>
-</Step>
-
-</Steps>
-
-</Tab>
-</Tabs>
-
-## SSL Certificate Setup (Production Only)
-
-After your application is running and DNS is properly configured, enable free SSL certificates:
-
-```bash
-# Replace with your actual domain
-sudo certbot --nginx -d yourexampledomain.com
-
-# Follow the interactive prompts to complete SSL setup
-```
-
-## Service Architecture
-
-| Service | Port | Internal URL | Description |
-|---------|------|--------------|-------------|
-| **Frontend (Next.js)** | 3000 | http://localhost:3000 | Main web interface |
-| **Backend (Node.js)** | 4050 | http://localhost:4050 | API server |
-| **Python API** | 9089 | http://localhost:9089 | AI/ML processing |
-| **MongoDB** | 27017 | Internal only | Database |
-| **Redis** | 6379 | Internal only | Cache/sessions |
-| **Qdrant** | 6333 | http://localhost:6333 | Vector database |
-| **MinIO** | 9000 | http://localhost:9000 | Object storage |
-
-## Troubleshooting
-
-<Tabs>
-<Tab title="AWS EC2">
-
-<AccordionGroup>
-
-<Accordion title="Instance Launch Issues">
-**Common problems:**
-- Insufficient instance limits in your AWS account
-- Security group not properly configured
-- Key pair permissions too open
-
-**Solutions:**
-- Request limit increase in AWS Console
-- Ensure security group allows SSH (22), HTTP (80), HTTPS (443)
-- Set key pair permissions: `chmod 400 your-key.pem`
-</Accordion>
-
-<Accordion title="SSH Connection Problems">
-**Connection failures:**
-- Wrong key file or path
-- Security group doesn't allow SSH
-- Instance not fully initialized
-
-**Solutions:**
-```bash
-# Correct SSH command format
-ssh -i /path/to/your-key.pem ubuntu@<PUBLIC_IP>
-
-# Check security group allows port 22 from your IP
-# Wait 5-10 minutes after launch for full initialization
-```
-</Accordion>
-
-<Accordion title="Application Access Issues">
-**Cannot reach application:**
-- Security group doesn't allow HTTP/HTTPS
-- Application not started
-- Wrong URL format
-
-**Solutions:**
-- Add inbound rules for ports 80, 443 (and 3000 for development)
-- Check application status: `docker ps`
-- Use correct URL format based on setup type
-</Accordion>
-
-</AccordionGroup>
-
-</Tab>
-<Tab title="DigitalOcean">
-
-<AccordionGroup>
-
-<Accordion title="Droplet Creation Issues">
-**Common problems:**
-- Account limits reached
-- Payment method issues
-- Region unavailability
-
-**Solutions:**
-- Check account limits in DigitalOcean console
-- Verify billing information is current
-- Try different region if current one is unavailable
-</Accordion>
-
-<Accordion title="Docker Issues">
-**If you selected plain Ubuntu instead of Docker image:**
-```bash
-# Install Docker manually
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-sudo usermod -aG docker $USER
-
-# Restart session or run:
-newgrp docker
-```
-</Accordion>
-
-<Accordion title="Firewall Problems">
-**Port access issues:**
-```bash
-# Check firewall status
-sudo ufw status
-
-# Allow required ports
-sudo ufw allow 22/tcp   # SSH
-sudo ufw allow 80/tcp   # HTTP
-sudo ufw allow 443/tcp  # HTTPS
-sudo ufw allow 3000/tcp # Development (if needed)
-```
-</Accordion>
-
-</AccordionGroup>
-
-</Tab>
-</Tabs>
-
-<Warning>
-**⚠️ IMPORTANT DATABASE WARNING:**
-
-If you run the command `docker compose down -v`, your **DATABASE will be RESET** and all data will be permanently lost. 
-
-**Always take a backup of your database before running this command:**
-
-```bash
-# Create database backup first
-docker exec weam-mongodb mongodump --out /tmp/backup
-
-# Copy backup to host system
-docker cp weam-mongodb:/tmp/backup ./mongodb-backup
-
-# Only then run the reset command if needed
-docker compose down -v
-```
-
-The `-v` flag removes all volumes including your database data. Use this command only when you want a complete fresh start.
-</Warning>
-
-<Warning>
-**Important Notes:**
-
-- The application requires HTTPS for production login
-- You must use a custom domain with SSL certificate for production
-- Development mode allows HTTP access via IP address
-- Build process takes 15-20 minutes on first deployment
-- Ensure adequate system resources to avoid build failures
-</Warning>
+        proxy_set_header Connection 'upgrade

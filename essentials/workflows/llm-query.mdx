@@ -2,10 +2,10 @@
 title: "LLM Query Flow"
 ---
 
-Dual-service processing pipeline handling user queries through Python (LLM processing) and Node.js (chat management).
+Streamlined processing pipeline handling user queries through LangGraph-powered intelligent routing in Node.js.
 
 <Info>
-Architecture separates compute-heavy AI logic from chat state management for better scalability and performance.
+The architecture uses a single socket event for all AI operations, with backend intelligence determining the appropriate processing flow.
 </Info>
 
 <Frame caption="LLM Query Flow Architecture">
@@ -16,16 +16,153 @@ Architecture separates compute-heavy AI logic from chat state management for bet
   />
 </Frame>
 
-## Python Side: LLM Processing
+## Unified Processing Pipeline
 
-1. **Call Python API** - User query forwarded to FastAPI service
-2. **Python API Response** - FastAPI handles LLM invocation and prepares streaming
-3. **Streaming Response** - Chunks sent to client in real-time via `StreamingResponse`
-4. **Send to Frontend** - Response piped to frontend UI for display
+### Single Entry Point
 
-## Node.js Side: Chat Management
+1. **Socket Event Emission** - Frontend emits single event to Node.js server
+2. **LangGraph Router** - Backend analyzes request and determines operation type
+3. **Operation Execution** - Appropriate handler processes request
+4. **Response Streaming** - Real-time results streamed back via Socket.IO
+5. **Frontend Display** - UI updates with streamed response
 
-1. **Call NodeJS API Socket** - Parallel request stores chat state via Socket.IO
-2. **Store Question** - Message saved in MongoDB for chat history
-3. **Create Chat** - New chat thread created if needed
-4. **Add Member to Chat** - User registered in thread for continued interaction
+## Operation Types
+
+### 1. Normal Chat Flow
+
+**Process:**
+- Frontend emits socket event with user query
+- LangGraph analyzes query and calls appropriate LLM
+- Response streams back to frontend
+- **LLM Calls:** 1 call (no tools needed)
+
+**Tool Integration:**
+- **Web Search (SearxNG):** Automatically triggered for search queries
+- **Image Generation (DALL·E):** Activated for image requests
+- **Vision Processing:** Handles uploaded images with vision-enabled models
+
+**Model Support:**
+- Web search supported for all models except: GPT-4o latest, DeepSeek, Qwen
+- Image generation available for OpenAI models
+- Vision processing for compatible models
+
+### 2. Document Chat Flow
+
+**File Upload Process:**
+- Event streaming for optimized uploads to S3
+- Parallel processing (2 chunks at a time):
+  - Chunk 1: S3 upload
+  - Chunk 2: Vector embedding (Pinecone)
+- Significantly faster than sequential processing
+
+**Query Process:**
+- User asks document-related question
+- Relevant vectors fetched from Pinecone
+- Vectors sent to LLM as context
+- Response generated and streamed
+- **LLM Calls:** 1 call with document context
+
+### 3. Agent Chat Flow
+
+**Process:**
+- User selects agent from interface
+- Agent data fetched from database
+- Agent's system prompt included with user query
+- LLM generates response using agent context
+- **LLM Calls:** 1 call with agent prompt
+
+### 4. Agent + Document Flow
+
+**Combined Context:**
+- Agent data retrieved from database
+- Relevant document vectors fetched from Pinecone
+- Both contexts merged for LLM
+- Response incorporates both agent expertise and document knowledge
+- **LLM Calls:** 1 call with combined context
+
+## Intelligent Backend Routing
+
+### LangGraph Decision Making
+
+The backend automatically determines:
+- **Operation Type:** Chat, search, document, agent, or combination
+- **Tool Requirements:** Web search, image generation, vision processing
+- **Model Capabilities:** Ensures model supports requested features
+- **Context Assembly:** Combines appropriate data sources
+
+### Tool Activation Logic
+
+```
+Query Analysis
+    ↓
+Contains search intent? → Activate SearxNG
+Contains image request? → Activate DALL·E
+Has uploaded image? → Use vision model
+Has document context? → Fetch Pinecone vectors
+Has agent selected? → Load agent prompt
+    ↓
+Assemble final context → LLM call → Stream response
+```
+
+## Web Search Independence
+
+### SearxNG Integration
+
+- Self-hosted SearxNG metasearch engine
+- Works with all supported models (except GPT-4o latest, DeepSeek, Qwen)
+- Complete control over search configuration
+- Privacy-focused with no external dependencies
+
+## Frontend 
+    
+- Single socket event for all operations
+- Backend handles all decision-making
+- Simplified frontend code
+- Unified error handling
+
+## Response Streaming
+
+### Real-time Delivery
+
+```
+LLM Generation
+    ↓
+Token-by-token streaming
+    ↓
+Socket.IO transmission
+    ↓
+Frontend progressive rendering
+    ↓
+Immediate user feedback
+```
+
+## Error Handling
+
+### Unified Error Management
+
+| Error Type | Handling |
+|------------|----------|
+| Model Unavailable | Automatic fallback to alternative model |
+| Token Limit Exceeded | Context truncation with user notification |
+| Tool Failure | Graceful degradation, continue without tool |
+| Network Issues | Retry logic with exponential backoff |
+| Invalid Input | Validation at entry point with clear messaging |
+
+## Monitoring & Logging
+
+### Operation Tracking
+
+- Socket event logging
+- LangGraph decision logging
+- LLM call metrics
+- Response time tracking
+- Error rate monitoring
+- Token usage analytics
+
+### Performance Metrics
+
+- Average response time per operation type
+- Tool activation frequency
+- Model selection distribution
+- Error rates by category
+- User satisfaction indicators

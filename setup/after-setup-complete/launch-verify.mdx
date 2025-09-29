@@ -71,8 +71,7 @@ docker stats
 
 # View service logs
 docker compose logs frontend
-docker compose logs backend  
-docker compose logs python-api
+docker compose logs backend
 ```
 
 ### Service Port Configuration
@@ -83,7 +82,6 @@ Verify services are listening on correct ports:
 |---------|------|--------------|
 | **Frontend (Next.js)** | 3000 | `netstat -tlnp \| grep 3000` |
 | **Backend (Node.js)** | 4050 | `netstat -tlnp \| grep 4050` |
-| **Python API** | 9089 | `netstat -tlnp \| grep 9089` |
 | **MongoDB** | 27017 | Internal container network |
 | **Redis** | 6379 | Internal container network |
 | **Qdrant Vector DB** | 6333 | `curl http://localhost:6333` |
@@ -103,9 +101,6 @@ curl http://localhost:3000
 # Test backend API health
 curl http://localhost:4050/napi/health
 
-# Test Python API health  
-curl http://localhost:9089/pyapi/health
-
 # Test vector database
 curl http://localhost:6333/health
 ```
@@ -113,7 +108,6 @@ curl http://localhost:6333/health
 **Expected responses:**
 - Frontend: HTML page or redirect response
 - Backend API: JSON health status
-- Python API: Service health information
 - Vector DB: Qdrant status information
 
 ### Production Deployment Testing
@@ -126,7 +120,6 @@ curl -I https://your-domain.com
 
 # Test API endpoints through NGINX
 curl https://your-domain.com/napi/health
-curl https://your-domain.com/pyapi/health
 
 # Verify SSL certificate
 openssl s_client -connect your-domain.com:443 -servername your-domain.com
