@@ -252,6 +252,19 @@ Open your browser and navigate to:
 - Verify virtualization is enabled in BIOS
 </Accordion>
 
+<Accordion title="Pull access denied Error">
+
+**Error**
+- Error response from daemon: `pull access denied for <image-name>, repository does not exist or may require 'docker login'`
+
+**Solutions**
+- Clear Docker Build Cache and Rebuild
+- Remove all Docker build cache and images
+- Run the following command to clear all cached layers and build data: `docker builder prune -a -f`
+- This command removes all unused build cache and intermediate images, ensuring a clean environment.
+- Rebuild the application from scratch
+</Accordion>
+
 </AccordionGroup>
 
 </Tab>
