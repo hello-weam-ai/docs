@@ -33,66 +33,68 @@ Client Data → Website Analysis → Proposal Generation → Template Assembly �
 
 ### Proposal Generation Workflow
 
-```python
-def generate_business_proposal(client_data, website_url):
-    # 1. Initialize components
-    template = load_docx_template("proposal_template.docx")
-    llm = initialize_llm(model="gpt-4")
+```javascript
+async function generateBusinessProposal(clientData, websiteUrl) {
+    // 1. Initialize components
+    const template = await loadDocxTemplate("proposal_template.docx");
+    const llm = await initializeLLM({ model: "gpt-4" });
     
-    # 2. Extract website context
-    scraped_content = scrape_url_content(website_url)
-    business_summary = llm_generate_summary(scraped_content)
+    // 2. Extract website context
+    const scrapedContent = await scrapeUrlContent(websiteUrl);
+    const businessSummary = await llmGenerateSummary(scrapedContent);
     
-    # 3. Initialize session context
-    memory = initialize_memory_history(client_data)
+    // 3. Initialize session context
+    const memory = await initializeMemoryHistory(clientData);
     
-    # 4. Generate proposal content
-    proposal_sections = generate_proposal_data(
-        client_info=client_data,
-        business_context=business_summary,
-        llm=llm
-    )
+    // 4. Generate proposal content
+    const proposalSections = await generateProposalData({
+        clientInfo: clientData,
+        businessContext: businessSummary,
+        llm: llm
+    });
     
-    # 5. Extract structured data
-    structured_data = generate_requirements_json(
-        proposal_content=proposal_sections,
-        llm=llm
-    )
+    // 5. Extract structured data
+    const structuredData = await generateRequirementsJson({
+        proposalContent: proposalSections,
+        llm: llm
+    });
     
-    # 6. Assemble final document
-    final_document = map_json_to_template(
-        template=template,
-        structured_data=structured_data,
-        proposal_content=proposal_sections
-    )
+    // 6. Assemble final document
+    const finalDocument = await mapJsonToTemplate({
+        template: template,
+        structuredData: structuredData,
+        proposalContent: proposalSections
+    });
     
-    # 7. Upload and deliver
-    s3_url = upload_to_s3(final_document)
+    // 7. Upload and deliver
+    const s3Url = await uploadToS3(finalDocument);
     
     return {
-        'status': 'completed',
-        'document_url': s3_url,
-        'proposal_data': structured_data
-    }
+        status: 'completed',
+        documentUrl: s3Url,
+        proposalData: structuredData
+    };
+}
 ```
 
 ### Template Processing
 
-```python
-def map_json_to_template(template, structured_data, proposal_content):
-    # Replace placeholders with extracted data
-    replacements = {
-        '{{CLIENT_NAME}}': structured_data['client']['name'],
-        '{{PROJECT_SCOPE}}': structured_data['project']['scope'],
-        '{{TIMELINE}}': structured_data['timeline']['duration'],
-        '{{TOTAL_COST}}': structured_data['pricing']['total'],
-        '{{INTRODUCTION}}': proposal_content['introduction'],
-        '{{OBJECTIVES}}': proposal_content['objectives'],
-        '{{APPROACH}}': proposal_content['technical_approach'],
-        '{{DELIVERABLES}}': proposal_content['deliverables']
-    }
+```javascript
+function mapJsonToTemplate(template, structuredData, proposalContent) {
+    // Replace placeholders with extracted data
+    const replacements = {
+        '{{CLIENT_NAME}}': structuredData.client.name,
+        '{{PROJECT_SCOPE}}': structuredData.project.scope,
+        '{{TIMELINE}}': structuredData.timeline.duration,
+        '{{TOTAL_COST}}': structuredData.pricing.total,
+        '{{INTRODUCTION}}': proposalContent.introduction,
+        '{{OBJECTIVES}}': proposalContent.objectives,
+        '{{APPROACH}}': proposalContent.technical_approach,
+        '{{DELIVERABLES}}': proposalContent.deliverables
+    };
     
-    return apply_template_replacements(template, replacements)
+    return applyTemplateReplacements(template, replacements);
+}
 ```
 
 ## API Reference
@@ -272,27 +274,31 @@ curl -X POST /api/generate-proposal \
   }'
 ```
 
-### Python Implementation
+### Node.js Implementation
 
-```python
-import requests
+```javascript
+const axios = require('axios');
 
-response = requests.post('/api/generate-proposal', json={
-    'clientName': 'Digital Marketing Co',
-    'projectName': 'Website Redesign',
-    'projectDescription': 'Complete brand refresh with new website',
-    'websiteUrl': 'https://digitalmarketing.com',
-    'contactInfo': {
-        'submittedBy': 'Alex Johnson',
-        'designation': 'Account Manager',
-        'email': 'alex@agency.com'
-    }
-})
+async function generateProposal() {
+    const response = await axios.post('/api/generate-proposal', {
+        clientName: 'Digital Marketing Co',
+        projectName: 'Website Redesign',
+        projectDescription: 'Complete brand refresh with new website',
+        websiteUrl: 'https://digitalmarketing.com',
+        contactInfo: {
+            submittedBy: 'Alex Johnson',
+            designation: 'Account Manager',
+            email: 'alex@agency.com'
+        }
+    });
 
-proposal = response.json()
-print(f"Proposal ID: {proposal['proposalId']}")
-print(f"Download URL: {proposal['document']['downloadUrl']}")
-print(f"Estimated Cost: ${proposal['proposalData']['pricing']['total']}")
+    const proposal = response.data;
+    console.log(`Proposal ID: ${proposal.proposalId}`);
+    console.log(`Download URL: ${proposal.document.downloadUrl}`);
+    console.log(`Estimated Cost: $${proposal.proposalData.pricing.total}`);
+}
+
+generateProposal();
 ```
 
 ## Performance & Limits

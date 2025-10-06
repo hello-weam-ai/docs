@@ -2,87 +2,103 @@
 title: "Agents: Working and Implementation"
 ---
 
-Python API implementation for agents supporting both Simple Chat and RAG-style interactions with custom prompts and contextual documents.
+Node.js backend implementation for agents supporting both Simple Chat and RAG-style interactions with custom prompts and contextual documents.
 
 <Info>
-Agents provide enhanced chat experiences by automatically selecting between Simple Chat and RAG Chat based on document availability and dynamically assembling tools.
+Agents provide enhanced chat experiences by automatically selecting between Simple Chat and RAG Chat based on document availability, with all routing handled intelligently by LangGraph.
 </Info>
 
 ## Processing Flow
 
 ### 1. Agent Selection and Routing
-1. User submits query with selected agent
-2. Python API routes request to Service Controller
-3. Service Controller selects appropriate model service
 
-**Critical Requirements:**
-- Agent ID and configuration must be fully loaded
+1. User selects agent from interface
+2. Frontend emits single socket event with query and agent ID
+3. Node.js backend receives request
+4. LangGraph analyzes agent configuration and requirements
+5. Backend retrieves agent data from MongoDB
+
+**Requirements:**
+- Agent ID and configuration fully loaded
 - Agent metadata (tools, prompt, document presence) verified
+- Document availability automatically detected
 
-### 2. Document-Based Path Selection
+### 2. Document-Based Path Detection
 
 **With Documents (RAG Chat):**
-- Agent's custom prompt
-- RAG Tool
-- Web Analysis Tool
-- Image Generation Tool (GPT models only)
-- Web Search Tool (GPT-4.1 search only)
+- Agent's custom system prompt
+- Document retrieval from Pinecone
+- Web Analysis Tool (if supported)
+- Image Generation Tool (OpenAI models only)
+- Web Search Tool (SearxNG - not supported for GPT-4o latest, DeepSeek, Qwen)
 
 **Without Documents (Simple Chat):**
-- Agent's prompt
-- Simple Chat Tool
-- Image Generation Tool (GPT models only)
+- Agent's system prompt
+- Standard chat processing
+- Image Generation Tool (OpenAI models only)
 - Web Analysis Tool
-- Web Search Tool (GPT-4.1 search only)
+- Web Search Tool (SearxNG)
 
-**Implementation Notes:**
-- Path selection handled by Agent Routing Layer
-- Document presence tracked via `agent.doc_ids` or similar flag
+**Implementation:**
+- LangGraph automatically detects document presence
+- Backend determines appropriate processing path
+- No frontend decision logic required
 
-### 3. Context Construction
+### 3. Unified Context Assembly
 
-Combined context elements:
-- **Chat History** - Previous conversation messages
-- **Agent Prompt** - Custom agent instructions
-- **User Query** - Current user input
+**Combined Context Elements:**
+- **Agent Prompt**: Custom agent instructions
+- **Chat History**: Previous conversation messages
+- **User Query**: Current user input
+- **Documents** (if applicable): Retrieved vector chunks
 
-**Prompt Template Structure:**
+**Context Structure:**
 ```
-"You are a helpful assistant. {agent_prompt}\n\n{chat_history}\n\nUser: {query}"
+System: {agent_prompt}
+History: {chat_history}
+Documents: {retrieved_chunks} (if RAG mode)
+User: {query}
 ```
 
 **Token Management:**
 - Overflow handled using rolling window strategy
-- Context trimmed or batched as needed
+- Context trimmed automatically when limits approached
+- Priority given to recent messages and relevant documents
 
-### 4. Response Generation and Storage
+### 4. Single LLM Call Processing
 
-**Processing:**
-1. LLM generates response streamed live to user
-2. MongoDB storage via Cost Callback tracker
+**Execution:**
+1. LangGraph assembles complete context
+2. Single LLM call with all required information
+3. Response generated and streamed to frontend
+4. MongoDB storage via Cost Callback tracker
 
 **Data Stored:**
 - LLM response content
-- Agent ID and query metadata
+- Agent ID and configuration
 - Token cost and usage metrics
-- Model configuration details
+- Processing time and metadata
+- Tool activations (if any)
 
 ### 5. RAG Implementation (Document-Based Agents)
 
 **Document Processing:**
 1. Text extraction from uploaded files
-2. Content split into chunks
-3. Embedding generation using embedding model
-4. Storage in Qdrant (or Pinecone)
+2. Content split into optimized chunks
+3. Embedding generation using configured model
+4. Parallel storage in Pinecone and S3
 
-**Inference Process:**
-1. RAG Tool queries Qdrant for similar chunks
-2. Retrieved chunks used as LLM context
-3. Enhanced responses based on document content
+**Query Inference:**
+1. Query embedding generated
+2. Pinecone retrieves similar chunks
+3. Chunks combined with agent prompt
+4. Enhanced context sent to LLM
+5. **Total LLM Calls:** 1 call with all context
 
 **Technical Requirements:**
 - Consistent embedding model for upload and retrieval
 - Top-k vector search with agent-level metadata filtering
+- Automatic context size management
 
 ## Architecture
 
@@ -98,32 +114,97 @@ Combined context elements:
 
 | Tool | Simple Chat | RAG Chat | Model Requirement |
 |------|-------------|----------|-------------------|
-| RAG Tool | ❌ | ✅ | Any |
-| Simple Chat Tool | ✅ | ❌ | Any |
+| Document Retrieval | ❌ | ✅ | Any |
+| Web Search (SearxNG) | ✅ | ✅ | All except GPT-4o latest, DeepSeek, Qwen |
 | Web Analysis Tool | ✅ | ✅ | Any |
-| Image Generation | ✅ | ✅ | GPT models only |
-| Web Search | ✅ | ✅ | GPT-4.1 search only |
+| Image Generation | ✅ | ✅ | OpenAI models only |
 
 ## Key Components
 
-- **Agent Routing Layer**: Path selection logic
-- **Service Controller**: Model service management
-- **RAG Tool**: Document-based context retrieval
-- **LLM Chain**: Response generation pipeline
-- **Cost Callback**: Token usage and pricing tracking
+| Component | Purpose |
+|-----------|---------|
+| LangGraph Router | Automatic path selection and routing |
+| Agent Repository | Agent configuration and prompt retrieval |
+| Document Detector | Identifies RAG vs Simple Chat requirements |
+| Pinecone Client | Vector retrieval for document context |
+| Cost Tracker | Token usage and pricing tracking |
+| MongoDB Handler | Response and metrics persistence |
 
-<Note>
-Tool activation depends on both selected agent and model. Validate tool permissions and document presence during implementation.
-</Note>
+## Backend Intelligence
+
+### Automatic Detection
+
+LangGraph backend identifies:
+- **Agent Configuration**: Custom prompts and settings
+- **Document Availability**: RAG vs Simple Chat routing
+- **Tool Requirements**: Web search, image generation needs
+- **Model Capabilities**: Validates feature support
+
+### Decision Flow
+
+```
+Agent Query Received
+    ↓
+Load Agent Configuration
+    ↓
+Check Document Availability
+    ↓
+Documents Present?
+    ├─ Yes → RAG Mode
+    │   ├─ Retrieve Vectors (Pinecone)
+    │   ├─ Assemble Context (Agent + Docs + History)
+    │   └─ LLM Call (1 call)
+    │
+    └─ No → Simple Chat Mode
+        ├─ Assemble Context (Agent + History)
+        └─ LLM Call (1 call)
+    ↓
+Stream Response to Frontend
+```
+
+## Cost Optimization
+
+### Single Call Efficiency
+
+**Token Reduction:**
+- Previous: Multiple calls with repeated context
+- Current: Single call with optimized context
+- Savings: 40-60% reduction in token usage
+
+**Cost Tracking:**
+- Input tokens measured
+- Output tokens tracked
+- Cost calculated per interaction
+- Stored in MongoDB for reporting
+
+## Web Search Independence
+
+### SearxNG Integration
+
+**Benefits:**
+- No dependency on OpenAI search features
+- Works across multiple model providers
+- Self-hosted for privacy and control
+- Consistent search experience
+
+**Model Support:**
+- **Supported**: Most models including GPT-4, Claude, Gemini
+- **Not Supported**: GPT-4o latest, DeepSeek, Qwen
+
 
 ## Troubleshooting
 
 ### Agent RAG Not Triggering
-- Confirm agent has active documents linked in backend
-- Verify embeddings generated and stored correctly in Qdrant
-- Check model selection supports required tools
 
-### Agent Prompt Issues
-- Review agent metadata and prompt formatting
-- Verify context builder includes agent prompt and history
-- Check LLM Chain handler logs for prompt construction issues
+**Potential Issues:**
+- No documents linked to agent
+- Embeddings not properly generated
+- Pinecone index misconfigured
+- Document metadata filters incorrect
+
+**Debug Steps:**
+1. Verify agent has linked documents in database
+2. Check embedding generation logs
+3. Validate Pinecone connection and index
+4. Review metadata filtering logic
+5. Test document retrieval independently

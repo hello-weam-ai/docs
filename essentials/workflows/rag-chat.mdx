@@ -2,56 +2,80 @@
 title: "RAG Chat Architecture"
 ---
 
-Python API flow for Retrieval-Augmented Generation handling file-based queries with FastAPI and Qdrant.
+Node.js backend implementation for Retrieval-Augmented Generation handling file-based queries with LangGraph and Pinecone.
 
 <Info>
-RAG Chat integrates document understanding with conversational AI through chunked files, embeddings, and vector database storage for high-relevance responses.
+RAG Chat integrates document understanding with conversational AI through optimized file processing, embeddings, and vector database storage for high-relevance responses.
 </Info>
 
 ## Processing Pipeline
 
-### 1. File Upload and Preprocessing
+### 1. Optimized File Upload and Processing
+
 1. User uploads file through frontend interface
-2. Backend reads content and splits into chunks
-3. Each chunk embedded using embedding model for similarity search
+2. Backend receives file via event streaming
+3. **Parallel Processing** (2 chunks simultaneously):
+   - **Chunk 1**: Direct upload to S3 storage
+   - **Chunk 2**: Text extraction and embedding generation
+4. Vector embeddings stored in Pinecone
 
-**Technical Notes:**
-- Text chunking uses tokenizer-aware splitter (recursive chunker or NLTK-based)
-- Embedding model must match between indexing and querying (OpenAI, HuggingFace, etc.)
+**Technical Implementation:**
+- Event streaming for non-blocking uploads
+- Concurrent S3 upload and embedding generation
+- Significant performance improvement over sequential processing
+- Progress tracking for user feedback
 
-### 2. Storage and Retrieval
-- **Storage**: Embedded chunks stored in Qdrant vector database
-- **Retrieval**: Similar chunks retrieved based on semantic similarity
+### 2. Vector Storage and Retrieval
 
-**Implementation:**
-- Embeddings stored using `collection_name` in Qdrant
-- Queries perform `top_k` similarity search with optional metadata filtering
+- **Storage**: Embedded chunks stored in Pinecone vector database
+- **Retrieval**: Semantic similarity search returns relevant chunks
+- **Optimization**: Top-k similarity search with metadata filtering
 
-### 3. Model Selection and Initialization
-1. Service Controller determines model based on user selection
-2. Appropriate LLM service initialized for contextual processing
+**Implementation Details:**
+- Embeddings indexed by collection name
+- Query embeddings generated using same model as indexing
+- Metadata filters for user/session isolation
+- Configurable similarity thresholds
 
-**Technical Notes:**
-- Controller routes to LLMs (GPT-4, Claude, etc.)
-- Model dynamically bound with Retrieval Chain post-initialization
+### 3. Unified Request Processing
 
-### 4. Context Construction
-- **Chat Repository** fetches previous messages using chat ID
-- **Retrieval Chain** combines:
-  - Retrieved document chunks
-  - Chat history
-  - Current user query
+1. Frontend emits single socket event with query
+2. Node.js backend receives request
+3. LangGraph analyzes query and context requirements
+4. Backend determines document-based processing needed
 
-**Prompt Structure:** History + Context + Question format using templates
+**No Frontend Decision Logic:**
+- Backend automatically detects document context requirement
+- LangGraph routes to appropriate handler
+- Single entry point simplifies frontend code
+
+### 4. Context Assembly
+
+**Components Retrieved:**
+- **Relevant Chunks**: Pinecone similarity search results
+- **Chat History**: Previous messages from MongoDB
+- **User Query**: Current question or request
+
+**Context Structure:**
+```
+System: You are a helpful assistant with access to documents.
+History: [Previous conversation]
+Documents: [Retrieved relevant chunks]
+User: [Current query]
+```
 
 ### 5. Response Generation
-1. LLM generates response streamed live to frontend
-2. System logging via MongoDB Handler:
-   - Generated response
-   - Token-based cost (Cost Callback)
-   - Analytics and audit data
 
-**Cost Calculation:** Post-inference using prompt + completion token lengths
+1. LangGraph receives assembled context
+2. Single LLM call processes all information
+3. Response generated incorporating document knowledge
+4. Streamed back to frontend via Socket.IO
+5. **Total LLM Calls:** 1 call with document context
+
+**Logging and Analytics:**
+- MongoDB Handler tracks response
+- Token-based cost calculated via Cost Callback
+- Usage metrics stored for reporting
 
 ## Architecture
 
@@ -65,24 +89,103 @@ RAG Chat integrates document understanding with conversational AI through chunke
 
 ## Key Components
 
-- **Qdrant**: High-performance vector database for embeddings
-- **Retrieval Chain**: Context enrichment logic wrapper
-- **Chat Repository**: Message history management
-- **Service Controller**: Model routing and initialization
-- **Cost Callback**: Token usage and pricing tracking
+| Component | Purpose |
+|-----------|---------|
+| Event Streaming | Non-blocking file uploads |
+| S3 Storage | Persistent file storage |
+| Embedding Generator | Convert text to vector embeddings |
+| Pinecone | Vector similarity search |
+| LangGraph | Intelligent routing and context assembly |
+| Chat Repository | Conversation history management |
+| Cost Tracker | Token usage and pricing calculation |
 
-<Note>
-Ensure Qdrant service is running and configured correctly. Embedding models must match between indexing and querying for accurate vector similarity.
-</Note>
+## File Processing Optimization
+
+### Parallel Processing Architecture
+
+```
+File Upload Received
+    ↓
+Split into Chunks
+    ↓
+Parallel Processing (2 simultaneous operations):
+    ├─ Thread 1: Upload to S3
+    │   └─ Store file for retrieval
+    │
+    └─ Thread 2: Generate Embeddings
+        └─ Store vectors in Pinecone
+    ↓
+Processing Complete (Much Faster)
+```
+
+### Benefits
+
+- **Speed**: 2x faster than sequential processing
+- **User Experience**: Faster file availability
+- **Resource Efficiency**: Better CPU utilization
+- **Scalability**: Handles multiple uploads concurrently
+
+## Query Processing Flow
+
+### 1. Query Reception
+
+```
+Frontend Socket Event
+    ↓
+Node.js Backend Receives Query
+    ↓
+LangGraph Analyzes Requirements
+    ↓
+Document Context Detected
+```
+
+### 2. Vector Retrieval
+
+```
+Generate Query Embedding
+    ↓
+Search Pinecone (Top-K Similarity)
+    ↓
+Apply Metadata Filters
+    ↓
+Return Relevant Chunks
+```
+
+### 3. Context Assembly
+
+```
+Fetch Chat History (MongoDB)
+    ↓
+Combine: History + Retrieved Docs + Query
+    ↓
+Format Context for LLM
+```
+
+### 4. Response Generation
+
+```
+Send Context to LLM
+    ↓
+Generate Response
+    ↓
+Stream to Frontend
+    ↓
+Store in Database
+```
 
 ## Troubleshooting
 
-### Chunks Not Retrieved from Qdrant
-- Verify embeddings are correctly generated and stored
-- Check Qdrant connection status and schema consistency
-- Validate similarity threshold and filtering logic
+### Chunks Not Retrieved from Pinecone
 
-### Streaming Performance Issues
-- Monitor token usage and LLM latency
-- Validate streaming infrastructure (WebSocket/EventStream) status
-- Check for large document sizes causing retrieval delays
+**Potential Issues:**
+- Embeddings not properly generated
+- Embedding model mismatch
+- Incorrect Pinecone index name
+- Metadata filters too restrictive
+
+**Debug Steps:**
+1. Verify embeddings stored successfully
+2. Check embedding model consistency
+3. Validate Pinecone connection
+4. Review similarity threshold settings
+5. Test without metadata filters

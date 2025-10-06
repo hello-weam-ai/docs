@@ -2,30 +2,36 @@
 title: "System Design"
 ---
 
-Architecture overview for the Weam AI platform across Python backend, Node.js API, and Next.js frontend.
+Architecture overview for the Weam AI platform across Node.js backend and Next.js frontend.
 
-## Python Backend Architecture
+## Architecture Evolution
+
+Weam AI uses a streamlined architecture with Node.js handling all backend operations through LangGraph for intelligent AI orchestration.
+
+## Node.js Backend Architecture
 
 ### Core Application Stack
 
 | Component | Technology |
 |-----------|------------|
-| Backend Framework | FastAPI |
-| Task Queue | Celery |
-| Broker | Redis |
+| Backend Framework | Express.js |
+| AI Orchestration | LangGraph |
+| Task Queue | Bull (Redis-based) |
+| Job Scheduler | Agenda |
 | Database | MongoDB |
 | Authentication | JWT + Middleware |
-| Task Monitor | Flower |
-| Streaming | FastAPI StreamingResponse |
+| Streaming | Socket.IO |
 
 ### AI & Vector Layer
 
 | Component | Technology |
 |-----------|------------|
 | LLMs | OpenAI, Gemini, Anthropic, HuggingFace |
-| Embeddings | LangChain, Gemini, OpenAI |
-| Vector Database | Qdrant (Primary), Pinecone (Optional) |
-| Web Scraping | Playwright, BeautifulSoup, Crawler4AI |
+| AI Orchestration | LangGraph (intelligent routing) |
+| Embeddings | Gemini, OpenAI |
+| Vector Database | Pinecone (Primary), Qdrant (Optional) |
+| Web Search | SearxNG (self-hosted metasearch) |
+| Image Generation | OpenAI DALL·E |
 
 <Info>
 Direct API integration for OpenAI, Anthropic, Gemini, and HuggingFace. OpenRouter used for LLaMA, DeepSeek, Grok, and Qwen models.
@@ -38,57 +44,13 @@ Direct API integration for OpenAI, Anthropic, Gemini, and HuggingFace. OpenRoute
 - Environment-based configuration (`.env` files)
 - Role-based access control
 
-### Testing & Debugging
-
-| Tool | Purpose |
-|------|---------|
-| Pytest | Unit testing |
-| Locust | Load testing |
-| WDB | Web-based visual debugger |
-| Docker Override | Test environment setup |
-
-### Infrastructure
-
-| Component | Description |
-|-----------|-------------|
-| Docker | Service containerization |
-| Docker Compose | Multi-environment orchestration |
-| GitHub Actions | CI/CD pipeline |
-| Prometheus | Metrics and monitoring |
-| Async Logger | Custom logging implementation |
-
-## Node.js API Architecture
-
-### Core Backend
-
-| Component | Technology |
-|-----------|------------|
-| Web Server | Express.js |
-| Task Queue | Bull (Redis-based) |
-| Job Scheduler | Agenda |
-| Authentication | JWT Middleware |
-| Database ORM | Mongoose (MongoDB) |
-| Real-time | Socket.IO |
-
-### Security & Middleware
-
-- Role-based access control via JWT
-- Rate limiting with `express-rate-limit`
-- Encrypted API keys with custom middleware
-- Environment configuration via `dotenv`
-
-### Development Tools
-
-- Winston + Morgan for logging
-- Chrome DevTools / VSCode debugging
-- Live reload with `nodemon`
-
 ### Real-time & Storage
 
-- Socket.IO for live updates
+- Socket.IO for live updates and streaming responses
 - Redis Pub/Sub for socket scaling
 - SMTP email integration
-- MinIO / AWS S3 file storage
+- MinIO / AWS S3 file storage with parallel processing
+- Event streaming for optimized file uploads
 
 <Note>
 Socket scaling across multiple servers uses Redis Pub/Sub. See [socket scaling guide](/knowledgebase/socket-scale) for implementation details.
@@ -121,44 +83,91 @@ Socket scaling across multiple servers uses Redis Pub/Sub. See [socket scaling g
 
 ### AI Integration
 
-- Modular API clients in `/src/actions/`
-- LLM provider integration (OpenAI, Gemini, Anthropic)
-- Vector search via Qdrant/Pinecone
+- Socket.IO client for real-time AI responses
+- Single event emission for all AI operations
+- Backend-driven operation routing
 - Asset serving through S3/MinIO
 
-## Python API Request Lifecycle
+## Request Processing Architecture
 
 ```
-Client Request
+Client Request (Socket Event)
     ↓
-[gateway/] → FastAPI/Nginx entrypoint
+[Node.js Backend] → Single entry point
     ↓
-[middleware/] → Auth, logging, rate limits
+[LangGraph Router] → Intelligent operation detection
     ↓
-[schema/] → Pydantic validation
+[Operation Handler] → Execute appropriate flow:
+    • Normal Chat → LLM call
+    • Web Search → SearxNG + LLM
+    • Image Generation → DALL·E
+    • Document Chat → Pinecone + LLM
+    • Agent Chat → Agent prompt + LLM
+    • Agent + Document → Combined context + LLM
     ↓
-[router/] → Endpoint routing
+[Response Stream] → Socket.IO streaming to frontend
     ↓
-[controller/] → Request logic
-    ↓
-[service/] → Business logic
-    ↓
-[models/] → MongoDB interaction
-    ↓
-[exceptions/] → Error handling
-    ↓
-[utils/] → Helper methods
-    ↓
-Response → JSON/Streaming to client
+Response → Real-time display in UI
 ```
+
+## LangGraph Flow Management
+
+### Intelligent Backend Routing
+
+LangGraph handles all decision-making for operation types:
+
+**Single Call Operations:**
+- Normal chat queries
+- Document-based questions
+- Agent conversations
+- Combined agent + document queries
+
+**Two-Call Operations (when tools required):**
+- Web search integration
+- Image generation requests
+- Vision model processing
+
+### Operation Detection
+
+Backend automatically identifies:
+- Tool requirements (web search, image generation)
+- Document context needs
+- Agent selection
+- Model capabilities and limitations
 
 ## Service Communication
 
-- **Frontend ↔ Node.js**: REST API + Socket.IO
-- **Node.js ↔ Python**: HTTP API calls
+- **Frontend ↔ Node.js**: Single Socket.IO event for all operations
+- **Node.js ↔ LLMs**: Direct API calls through LangGraph
 - **Backend ↔ Database**: MongoDB connections
-- **Task Processing**: Celery + Redis queues
+- **Task Processing**: Bull + Redis queues
 - **Real-time Updates**: Socket.IO + Redis Pub/Sub
+- **File Processing**: Parallel S3 upload and vector embedding
+
+## File Upload Optimization
+
+### Parallel Processing Architecture
+
+```
+User Upload
+    ↓
+Event Streaming to Backend
+    ↓
+Parallel Processing (2 chunks at a time):
+    ├─ Chunk 1 → S3 Upload
+    └─ Chunk 2 → Vector Embedding (Pinecone)
+    ↓
+Optimized Speed & Performance
+```
+
+## Web Search Architecture
+
+### SearxNG Integration
+
+- **Independence**: No dependency on OpenAI's search features
+- **Self-hosted**: Complete control over search infrastructure
+- **Universal**: Works with all models except GPT-4o latest, DeepSeek, and Qwen
+- **Privacy**: No external search API dependencies
 
 ## Deployment Architecture
 
@@ -167,4 +176,4 @@ All services are containerized using Docker and orchestrated with Docker Compose
 - **Development**: Local Docker containers
 - **Production**: Multi-container deployment
 - **Secrets**: Environment variables and secret managers
-- **Monitoring**: Prometheus metrics collection
+- **Monitoring**: Socket.IO event tracking and logging

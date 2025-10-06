@@ -124,7 +124,6 @@
             "group": "Common Functions",
             "pages": [
               "essentials/common-functions/database-functions",
-              "essentials/common-functions/python-functions",
               "essentials/common-functions/node-next-functions"
             ]
           },
@@ -141,8 +140,7 @@
               "essentials/workflows/simple-chat",
               "essentials/workflows/rag-chat",
               "essentials/workflows/agent",
-              "essentials/workflows/model",
-              "essentials/workflows/langchain",
+              "essentials/workflows/langgraph",
               "essentials/workflows/mcp-workflow"
             ]
           }
@@ -175,7 +173,6 @@
           {
             "group": "API Documentation",
             "pages": [
-              "api-reference/python",
               "api-reference/node"
             ]
           }

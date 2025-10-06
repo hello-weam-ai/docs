@@ -40,83 +40,89 @@ Create comprehensive articles with proper SEO structure, internal linking, and c
 
 ### Business Summary Generation
 
-```python
-def generate_business_summary(website_url):
-    # 1. Validate URL accessibility
-    url_checker = URLCheckerService()
-    if not url_checker.is_reachable(website_url):
-        raise URLNotAccessibleError(website_url)
+```javascript
+async function generateBusinessSummary(websiteUrl) {
+    // 1. Validate URL accessibility
+    const urlChecker = new URLCheckerService();
+    if (!await urlChecker.isReachable(websiteUrl)) {
+        throw new URLNotAccessibleError(websiteUrl);
+    }
     
-    # 2. Extract website content
-    scraped_content = scrape_url_content(website_url)
+    // 2. Extract website content
+    const scrapedContent = await scrapeUrlContent(websiteUrl);
     
-    # 3. Initialize LLM for analysis
-    llm = initialize_llm(model="gpt-4")
+    // 3. Initialize LLM for analysis
+    const llm = await initializeLLM({ model: "gpt-4" });
     
-    # 4. Generate business summary
-    prompts = create_business_analysis_prompts()
-    chain = create_analysis_chain(llm, prompts)
+    // 4. Generate business summary
+    const prompts = createBusinessAnalysisPrompts();
+    const chain = createAnalysisChain(llm, prompts);
     
-    summary = chain.run(scraped_content)
-    return summary
+    const summary = await chain.run(scrapedContent);
+    return summary;
+}
 ```
 
 ### Keyword Research Workflow
 
-```python
-def research_keywords(domain, seed_keywords):
-    # 1. Initialize DataForSEO client
-    dataforseo_client = DataForSEOClient()
+```javascript
+async function researchKeywords(domain, seedKeywords) {
+    // 1. Initialize DataForSEO client
+    const dataforSeoClient = new DataForSEOClient();
     
-    # 2. Get keyword suggestions
-    keyword_suggestions = dataforseo_client.get_keyword_ideas(
-        keywords=seed_keywords,
-        location="United States",
-        language="en"
-    )
+    // 2. Get keyword suggestions
+    const keywordSuggestions = await dataforSeoClient.getKeywordIdeas({
+        keywords: seedKeywords,
+        location: "United States",
+        language: "en"
+    });
     
-    # 3. Analyze keyword metrics
-    keyword_data = []
-    for keyword in keyword_suggestions:
-        metrics = dataforseo_client.get_keyword_metrics(keyword)
-        keyword_data.append({
-            'keyword': keyword,
-            'search_volume': metrics['search_volume'],
-            'competition': metrics['competition_level'],
-            'cpc': metrics['cost_per_click'],
-            'difficulty': metrics['keyword_difficulty']
-        })
+    // 3. Analyze keyword metrics
+    const keywordData = [];
+    for (const keyword of keywordSuggestions) {
+        const metrics = await dataforSeoClient.getKeywordMetrics(keyword);
+        keywordData.push({
+            keyword: keyword,
+            searchVolume: metrics.search_volume,
+            competition: metrics.competition_level,
+            cpc: metrics.cost_per_click,
+            difficulty: metrics.keyword_difficulty
+        });
+    }
     
-    return sorted(keyword_data, key=lambda x: x['search_volume'], reverse=True)
+    return keywordData.sort((a, b) => b.searchVolume - a.searchVolume);
+}
 ```
 
 ### Article Generation Process
 
-```python
-def generate_seo_article(topic, keywords, business_context):
-    # 1. Research competitor content
-    competitor_articles = fetch_competitor_content(keywords)
+```javascript
+async function generateSeoArticle(topic, keywords, businessContext) {
+    // 1. Research competitor content
+    const competitorArticles = await fetchCompetitorContent(keywords);
     
-    # 2. Initialize content generation chain
-    llm = initialize_llm(model="gpt-4")
-    memory = initialize_memory()
+    // 2. Initialize content generation chain
+    const llm = await initializeLLM({ model: "gpt-4" });
+    const memory = await initializeMemory();
     
-    # 3. Create article generation prompts
-    prompts = create_article_prompts(
-        topic=topic,
-        target_keywords=keywords,
-        business_context=business_context,
-        competitor_insights=competitor_articles
-    )
+    // 3. Create article generation prompts
+    const prompts = createArticlePrompts({
+        topic: topic,
+        targetKeywords: keywords,
+        businessContext: businessContext,
+        competitorInsights: competitorArticles
+    });
     
-    # 4. Generate article sections
-    article_chain = create_content_chain(llm, prompts, memory)
+    // 4. Generate article sections
+    const articleChain = createContentChain(llm, prompts, memory);
     
-    # Stream article generation
-    for section in article_chain.stream():
-        yield section
+    // Stream article generation
+    for await (const section of articleChain.stream()) {
+        yield section;
+    }
     
-    return article_chain.get_final_output()
+    return articleChain.getFinalOutput();
+}
 ```
 
 ## API Reference
@@ -353,44 +359,51 @@ curl -X POST /pro-agent/article-generation \
   }'
 ```
 
-### Python Integration
+### Node.js Integration
 
-```python
-import requests
+```javascript
+const axios = require('axios');
 
-class SEOArticleGenerator:
-    def __init__(self, api_key):
-        self.api_key = api_key
-        self.base_url = "https://api.example.com"
+class SEOArticleGenerator {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.baseUrl = "https://api.example.com";
+    }
     
-    def generate_article(self, website_url, target_keyword):
-        # 1. Business analysis
-        business_data = self.analyze_business(website_url)
+    async generateArticle(websiteUrl, targetKeyword) {
+        // 1. Business analysis
+        const businessData = await this.analyzeBusiness(websiteUrl);
         
-        # 2. Keyword research
-        keywords = self.research_keywords(website_url, target_keyword)
+        // 2. Keyword research
+        const keywords = await this.researchKeywords(websiteUrl, targetKeyword);
         
-        # 3. Topic generation
-        topic = self.generate_topic(keywords[0], business_data)
+        // 3. Topic generation
+        const topic = await this.generateTopic(keywords[0], businessData);
         
-        # 4. Article creation
-        article = self.create_article(topic, keywords, business_data)
+        // 4. Article creation
+        const article = await this.createArticle(topic, keywords, businessData);
         
-        return article
+        return article;
+    }
     
-    def analyze_business(self, url):
-        response = requests.post(f"{self.base_url}/pro-agent/business-summary", 
-                               json={"websiteUrl": url})
-        return response.json()
+    async analyzeBusiness(url) {
+        const response = await axios.post(`${this.baseUrl}/pro-agent/business-summary`, 
+            { websiteUrl: url }
+        );
+        return response.data;
+    }
     
-    def research_keywords(self, domain, seed_keyword):
-        response = requests.get(f"{self.base_url}/pro-agent/keyword-research",
-                              params={"domain": domain, "seedKeywords": seed_keyword})
-        return response.json()["keywords"]
+    async researchKeywords(domain, seedKeyword) {
+        const response = await axios.get(`${this.baseUrl}/pro-agent/keyword-research`, {
+            params: { domain, seedKeywords: seedKeyword }
+        });
+        return response.data.keywords;
+    }
+}
 
-# Usage
-generator = SEOArticleGenerator("your-api-key")
-article = generator.generate_article("https://example.com", "inventory software")
+// Usage
+const generator = new SEOArticleGenerator("your-api-key");
+const article = await generator.generateArticle("https://example.com", "inventory software");
 ```
 
 ## Performance & Limits

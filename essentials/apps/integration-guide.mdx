@@ -193,13 +193,6 @@ server {
         proxy_set_header Connection 'upgrade';
     }
     
-    # Python API
-    location /pyapi/ {
-        proxy_pass http://localhost:9089/pyapi/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-    
     # MinIO
     location /minio/ {
         proxy_pass http://localhost:9000/;

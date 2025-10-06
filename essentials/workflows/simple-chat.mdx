@@ -2,67 +2,98 @@
 title: "Simple Chat - Architecture and Flow"
 ---
 
-Pipeline and execution model for Simple Chat with LangGraph state management and MCP tool integration.
+Streamlined chat pipeline using LangGraph for intelligent tool routing and response generation in Node.js backend.
 
 <Info>
-Simple Chat uses LangGraph and MCP integration for enhanced tool handling with support for Slack, GitHub, Google Drive, Gmail, and Google Calendar.
+Simple Chat uses LangGraph in Node.js for unified request handling with automatic tool selection and MCP integration support for Slack, GitHub, Google Drive, Gmail, and Google Calendar.
 </Info>
 
 ## Processing Flow
 
-### 1. Query Processing
-1. User sends query from frontend
-2. Python API forwards to Service Controller
-3. Controller selects Model Service based on chosen model
-4. LLM is initialized
-5. MultiServerClient fetches available tools from MCP server
+### 1. Unified Request Handling
 
-### 2. Tool Management
-- **Available Tools**: Slack, GitHub, Google Drive, Google Calendar, Gmail
-- Tools are matched against current query
-- Unnecessary tools filtered out before LLM binding
+1. Frontend emits single socket event with user query
+2. Node.js server receives request and invokes LangGraph
+3. LangGraph analyzes query requirements
+4. MultiServerClient fetches available MCP tools
+5. Backend determines optimal processing path
 
-### 3. StateGraph Construction
-LangGraph StateGraph created with:
-- **ToolNode** - Tool execution
-- **ChatbotNode** - Standard LLM responses
+### 2. Intelligent Tool Management
+
+- **Available MCP Tools**: Slack, GitHub, Google Drive, Google Calendar, Gmail
+- **Dynamic Filtering**: Unnecessary tools excluded based on query analysis
+- **Automatic Activation**: LangGraph decides tool usage without frontend input
+- **Context Assembly**: Tools and prompts combined before LLM invocation
+
+### 3. LangGraph State Management
+
+**Execution Nodes:**
+- **ToolNode**: Executes required tools when detected
+- **ChatbotNode**: Handles standard conversational responses
+
+**Flow Determination:**
+- Query analyzed for tool requirements
+- Appropriate node selected automatically
+- Context (query + history + tools) assembled
+- Response generated and streamed
 
 ### 4. Context Initialization
-- Chat Repository initialized with `chat_id`
-- Chat history retrieved and converted to memory
-- Context prepared for conversation flow
+
+- Chat repository initialized with session ID
+- Historical messages retrieved from database
+- Conversation memory prepared
+- Combined context ready for processing
 
 ### 5. Execution Logic
-StateGraph determines response path:
-- **Tool usage detected** → ToolNode execution
-- **Standard query** → ChatbotNode response
-- Combined context (query + history) passed to selected node
+
+LangGraph intelligently routes to appropriate handler:
+- **Tool Required** → ToolNode executes → Response generated
+- **Standard Query** → ChatbotNode responds directly
+- **Combined Context** → History + Current query processed together
 
 ## Tool Activation Rules
 
 | Tool | Activation Condition |
 |------|---------------------|
-| Web Search | GPT-4.1-search model only |
-| Image Generation | GPT-based models only |
+| Web Search (SearxNG) | All models except GPT-4o latest, DeepSeek, Qwen |
+| Image Generation | OpenAI models only |
 | MCP Tools | Dynamically filtered per query |
 
 ## Response Processing
 
-1. **Tool Invocation** - Selected tool executed if needed
-2. **LLM Integration** - Tool may call LLM internally
-3. **Streaming** - Response streamed to frontend in real-time
+### Flow Options
+
+**Without Tool Invocation:**
+1. Query received
+2. LangGraph routes to ChatbotNode
+3. LLM generates response
+4. Response streamed to frontend
+5. **Total LLM Calls:** 1
+
+**With Tool Invocation:**
+1. Query received
+2. LangGraph detects tool requirement
+3. ToolNode executes appropriate tool
+4. Tool output sent to LLM for processing
+5. LLM generates final response
+6. Response streamed to frontend
+7. **Total LLM Calls:** 2 (tool execution + final response)
 
 ## Cost and Logging
 
-**MongoDB Handler logs:**
+### MongoDB Handler Logging
+
+**Tracked Metrics:**
 - Final response content
-- Token usage metrics
+- Token usage (input + output)
 - Tool activation records
-- Cost breakdown
+- Processing time
+- Cost breakdown per call
 
 **Cost Calculation:**
-- Input/output token lengths measured
-- Cost written via Cost Callback
+- Input token count measured
+- Output token count tracked
+- Cost calculated via Cost Callback
 - Total breakdown stored in database
 
 ## Architecture
@@ -75,20 +106,53 @@ StateGraph determines response path:
   />
 </Frame>
 
-<Note>
-Web Search and Image Generation are model-gated. Verify model compatibility before tool invocation.
-</Note>
+## Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| LangGraph Router | Intelligent request analysis and routing |
+| ToolNode | Tool execution and result handling |
+| ChatbotNode | Standard conversational responses |
+| MultiServerClient | MCP tool discovery and management |
+| Cost Tracker | Token usage and pricing tracking |
+| MongoDB Handler | Response and metrics persistence |
+
+## Web Search Integration
+
+### SearxNG Implementation
+
+**Independence from OpenAI:**
+- Self-hosted metasearch engine
+- No dependency on OpenAI search features
+- Works across multiple model providers
+- Complete control over search behavior
+
+**Model Support:**
+- **Supported**: GPT-4, GPT-3.5, Claude, Gemini, most models
+- **Not Supported**: GPT-4o latest, DeepSeek, Qwen
+
+## Backend Intelligence
+
+### Automatic Detection
+
+LangGraph backend automatically identifies:
+- **Search Queries**: Activates SearxNG when needed
+- **Image Requests**: Triggers DALL·E for generation
+- **MCP Tools**: Selects appropriate integration tools
+- **Context Requirements**: Assembles chat history and user data
 
 ## Troubleshooting
 
 ### Tool Not Triggering
-- Check tool compatibility with selected model
-- Verify MultiServerClient pulled latest tools from MCP
-- Review filtering logic for tool exclusion
-- Validate LangGraph ChatbotNode → ToolNode transition
 
-### Streaming Issues
-- Confirm frontend WebSocket/SSE connections
-- Validate LangGraph state execution and transitions
-- Check for tool execution bottlenecks
-- Monitor MongoDB logs for latency indicators
+**Potential Issues:**
+- Model doesn't support requested feature
+- MCP tools not properly configured
+- Tool filtering logic excluding required tool
+- LangGraph not detecting tool requirement
+
+**Debug Steps:**
+1. Verify model supports feature (check compatibility matrix)
+2. Confirm MultiServerClient pulling latest MCP tools
+3. Review LangGraph analysis logs
+4. Check tool filtering configuration

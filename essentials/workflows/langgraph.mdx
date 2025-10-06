@@ -1,0 +1,206 @@
+---
+title: "LangGraph Streaming Chat Integration"
+---
+
+Node.js backend implementation using LangGraph for intelligent AI routing with token-by-token streaming via Socket.IO.
+
+## System Architecture
+
+```
+Frontend → Socket Event → Node.js LangGraph Handler → Streaming Response
+```
+
+**LangGraph Pipeline Components:**
+- LLM Integration (OpenAI, Anthropic, Gemini, etc.)
+- Intelligent Tool Routing
+- Dynamic Context Assembly
+- Conversation Memory Management
+
+## Socket.IO Endpoint
+
+```javascript
+io.on('connection', (socket) => {
+  socket.on('ai-query', async (payload) => {
+    const handler = new LangGraphHandler();
+    await handler.processQuery(payload, socket);
+  });
+});
+```
+
+## LangGraph Handler Flow
+
+### 1. Initialize Components
+
+```javascript
+async initializeLangGraph(payload) {
+  // Load LLM based on selected model
+  this.llm = await this.loadLLM(payload.model_name);
+  
+  // Fetch available tools
+  this.tools = await this.loadTools(payload);
+  
+  // Load conversation history
+  this.memory = await this.loadMemory(payload.chatId);
+  
+  // Prepare agent configuration
+  if (payload.agentId) {
+    this.agentConfig = await this.loadAgent(payload.agentId);
+  }
+}
+```
+
+### 2. Intelligent Routing
+
+```javascript
+async routeQuery(payload) {
+  const analysis = await this.analyzereQuery(payload);
+  
+  if (analysis.requiresDocuments) {
+    return await this.handleRAGQuery(payload);
+  }
+  
+  if (analysis.requiresTools) {
+    return await this.handleToolQuery(payload);
+  }
+  
+  return await this.handleSimpleQuery(payload);
+}
+```
+
+### 3. Context Assembly
+
+```javascript
+async assembleContext(payload) {
+  const context = {
+    system: this.agentConfig?.prompt || "You're a helpful assistant.",
+    history: await this.memory.getHistory(),
+    query: payload.query
+  };
+  
+  // Add document context if applicable
+  if (payload.documentIds?.length) {
+    context.documents = await this.retrieveDocuments(payload.documentIds, payload.query);
+  }
+  
+  return context;
+}
+```
+
+### 4. Streaming Execution
+
+```javascript
+async executeWithStreaming(context, socket) {
+  const stream = await this.llm.stream(context);
+  
+  for await (const chunk of stream) {
+    socket.emit('ai-response-stream', {
+      chunk: chunk.content,
+      done: false
+    });
+  }
+  
+  socket.emit('ai-response-complete', {
+    done: true,
+    metadata: this.getMetadata()
+  });
+}
+```
+
+## LangGraph Components
+
+### LLM Initialization
+
+```javascript
+async loadLLM(modelName) {
+  const config = {
+    modelName: modelName,
+    temperature: 0.7,
+    streaming: true,
+    maxTokens: 4000
+  };
+  
+  switch (this.getProvider(modelName)) {
+    case 'openai':
+      return new ChatOpenAI(config);
+    case 'anthropic':
+      return new ChatAnthropic(config);
+    case 'google':
+      return new ChatGoogleGenerativeAI(config);
+    default:
+      throw new Error('Unsupported model');
+  }
+}
+```
+
+### Tool Integration
+
+```javascript
+async loadTools(payload) {
+  const tools = [];
+  
+  // Web Search Tool (SearxNG)
+  if (this.supportsWebSearch(payload.model_name)) {
+    tools.push(await this.createWebSearchTool());
+  }
+  
+  // Image Generation Tool
+  if (this.supportsImageGen(payload.model_name)) {
+    tools.push(await this.createImageGenTool());
+  }
+  
+  // MCP Tools (Slack, GitHub, etc.)
+  if (payload.mcpEnabled) {
+    tools.push(...await this.loadMCPTools());
+  }
+  
+  return tools;
+}
+```
+
+### Memory Management
+
+```javascript
+async loadMemory(chatId) {
+  const history = await db.collection('messages')
+    .find({ chatId })
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .toArray();
+  
+  return {
+    messages: history,
+    getHistory: () => this.formatHistory(history)
+  };
+}
+```
+
+## LangGraph Concepts in Node.js
+
+| Component | Purpose |
+|-----------|---------|
+| **Graph State** | Manages conversation state and context |
+| **Nodes** | Processing units (ChatNode, ToolNode, etc.) |
+| **Edges** | Routing logic between nodes |
+| **Tools** | External capabilities (search, generation, MCP) |
+| **Memory** | Conversation history persistence |
+| **Streaming** | Real-time response delivery via Socket.IO |
+
+## Web Search Integration
+
+### SearxNG Setup
+
+```javascript
+async createWebSearchTool() {
+  return {
+    name: 'web_search',
+    description: 'Search the web for current information',
+    execute: async (query) => {
+      const response = await fetch('http://searxng:8080/search', {
+        method: 'POST',
+        body: JSON.stringify({ q: query })
+      });
+      return await response.json();
+    }
+  };
+}
+```
