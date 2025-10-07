@@ -99,16 +99,6 @@
             ]
           },
           {
-            "group": "Pro Agents",
-                "pages": [
-                  "learn-more/use-cases/sales-video-call-analyzer",
-                  "learn-more/use-cases/qa-agent",
-                  "learn-more/use-cases/sales-audio-call-analyzer",
-                  "learn-more/use-cases/web-proposal-agent",
-                  "learn-more/use-cases/seo-article-writer-agent"
-                ]
-          },
-          {
             "group": "Policies",
             "pages": [
               "policies/license"
