@@ -4,233 +4,254 @@ description: "Deploy Weam AI on your own infrastructure with proper domain, SSL 
 ---
 
 <Tip>
-**Server Requirements:**
-- Linux server** (Ubuntu 20.04+ recommended)
-- 8GB RAM minimum
-- 4 CPU cores minimum
-- 50GB free disk space
-- Root or sudo access
+  **Server Requirements:**
 
-**Domain & Network:**
-- Domain name with DNS control
-- Ports 80 and 443 open to the internet
-- SSH access to the server
+  - Linux server\*\* (Ubuntu 20.04+ recommended)
+  - 8GB RAM minimum
+  - 4 CPU cores minimum
+  - 50GB free disk space
+  - Root or sudo access
 
-**Software Requirements:**
-- Docker and Docker Compose
-- Git
-- NGINX
+  **Domain & Network:**
+
+  - Domain name with DNS control
+  - Ports 80 and 443 open to the internet
+  - SSH access to the server
+
+  **Software Requirements:**
+
+  - Docker and Docker Compose
+  - Git
+  - NGINX
 </Tip>
 
 ## Installation Steps
 
 <Steps>
+  <Step title="Server Preparation">
+    Update system packages and install required software:
 
-<Step title="Server Preparation">
-Update system packages and install required software:
+    ```bash
+    sudo apt update && sudo apt upgrade -y
+    ```
 
-```bash
-sudo apt update && sudo apt upgrade -y
-```
+    Install required packages:
 
-Install required packages:
-```bash
-sudo apt install nginx certbot python3-certbot-nginx git -y
-```
+    ```bash
+    sudo apt install nginx certbot python3-certbot-nginx git -y
+    ```
 
-Install Docker:
-```bash
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
-```
+    Install Docker:
 
-Install Docker Compose:
-```bash
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-```
-</Step>
+    ```bash
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    ```
 
-<Step title="Clone and Configure Application">
-Clone the repository and set up environment:
+    Install Docker Compose:
 
-```bash
-git clone https://github.com/weam-ai/weam.git
-cd weam
-cp .env.example .env
-```
+    ```bash
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    ```
+  </Step>
+  <Step title="Clone and Configure Application">
+    Clone the repository and set up environment:
 
-Edit the environment file:
-```bash
-nano .env
-```
+    ```bash
+    git clone https://github.com/weam-ai/weam.git
+    cd weam
+    cp .env.example .env
+    ```
 
-Update these critical values:
-```env
-NEXT_PUBLIC_DOMAIN_URL=https://yourexampledomain.com
-FRONT_URL=https://yourexampledomain.com
-NEXT_PUBLIC_HTTPS_PROTOCOL=true
-```
+    Edit the environment file:
 
-<Warning>
-Replace `yourexampledomain.com` with your actual domain name.
-</Warning>
-</Step>
+    ```bash
+    nano .env
+    ```
 
-<Step title="Configure NGINX">
-Create NGINX configuration:
+    Update these critical values:
 
-```bash
-sudo nano /etc/nginx/sites-available/yourapp
-```
+    ```env
+    NEXT_PUBLIC_DOMAIN_URL=https://yourexampledomain.com
+    FRONT_URL=https://yourexampledomain.com
+    NEXT_PUBLIC_HTTPS_PROTOCOL=true
+    ```
 
-Add this configuration (replace `yourexampledomain.com`):
+    <Warning>
+      Replace `yourexampledomain.com` with your actual domain name.
+    </Warning>
+  </Step>
+  <Step title="Configure NGINX">
+    Create NGINX configuration:
 
-```nginx
-server {
-    listen 80;
-    server_name yourexampledomain.com;
+    ```bash
+    sudo nano /etc/nginx/sites-available/yourapp
+    ```
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+    Add this configuration (replace `yourexampledomain.com`):
+
+    ```nginx
+    server {
+        listen 80;
+        server_name yourexampledomain.com;
+    
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    
+        location /napi/ {
+            proxy_pass http://localhost:4050/napi/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+        }
     }
+    ```
 
-    location /napi/ {
-        proxy_pass http://localhost:4050/napi/;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-    }
-}
-```
+    Enable the site:
 
-Enable the site:
-```bash
-sudo ln -s /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/yourapp /etc/nginx/sites-enabled/
+    sudo nginx -t
+    sudo systemctl reload nginx
+    ```
 
-<Note>If `nginx -t` fails, recheck the config syntax and ensure proper formatting.</Note>
-</Step>
+    <Note>
+      If `nginx -t` fails, recheck the config syntax and ensure proper formatting.
+    </Note>
+  </Step>
+  <Step title="Install SSL Certificate">
+    Generate Let's Encrypt certificate:
 
-<Step title="Install SSL Certificate">
-Generate Let's Encrypt certificate:
+    ```bash
+    sudo certbot --nginx -d yourexampledomain.com
+    ```
 
-```bash
-sudo certbot --nginx -d yourexampledomain.com
-```
+    Follow the interactive prompts to complete SSL setup. Certbot will automatically modify your NGINX configuration.
 
-Follow the interactive prompts to complete SSL setup. Certbot will automatically modify your NGINX configuration.
+    <Check>
+      Certbot will auto-renew your certificate every 90 days.
+    </Check>
+  </Step>
+  <Step title="Build and Start Application">
+    Build and start the services:
 
-<Check>
-Certbot will auto-renew your certificate every 90 days.
-</Check>
-</Step>
+    ```bash
+    bash build.sh
+    docker compose up -d
+    ```
 
-<Step title="Build and Start Application">
-Build and start the services:
+    This will:
 
-```bash
-bash build.sh
-docker compose up -d
-```
+    - Build all Docker images
+    - Start services in the background
+    - Create necessary containers and networks
+  </Step>
+  <Step title="Verify Deployment">
+    Check that all services are running:
 
-This will:
-- Build all Docker images
-- Start services in the background
-- Create necessary containers and networks
-</Step>
+    ```bash
+    docker compose ps
+    ```
 
-<Step title="Verify Deployment">
-Check that all services are running:
+    Test access:
 
-```bash
-docker compose ps
-```
+    - Visit [**https://yourexampledomain.com**](https://yourexampledomain.com)
+    - Verify the SSL certificate is valid
+    - Register a new account to test functionality
 
-Test access:
-- Visit **https://yourexampledomain.com**
-- Verify the SSL certificate is valid
-- Register a new account to test functionality
-
-<Check>
-All services should show "Up" status and the website should be accessible via HTTPS.
-</Check>
-</Step>
-
+    <Check>
+      All services should show "Up" status and the website should be accessible via HTTPS.
+    </Check>
+  </Step>
 </Steps>
 
 ## Troubleshooting
 
 <AccordionGroup>
+  <Accordion title="Domain Not Accessible">
+    **Check these items:**
 
-<Accordion title="Domain Not Accessible">
-**Check these items:**
-- Verify DNS records point to your server IP
-- Confirm firewall allows ports 80 and 443
-- Ensure NGINX is running: `sudo systemctl status nginx`
-- Test local access: `curl -I http://localhost:3000`
+    - Verify DNS records point to your server IP
+    - Confirm firewall allows ports 80 and 443
+    - Ensure NGINX is running: `sudo systemctl status nginx`
+    - Test local access: `curl -I http://localhost:3000`
 
-**Common solutions:**
-```bash
-# Check NGINX status
-sudo systemctl status nginx
+    **Common solutions:**
 
-# Restart NGINX
-sudo systemctl restart nginx
+    ```bash
+    # Check NGINX status
+    sudo systemctl status nginx
+    
+    # Restart NGINX
+    sudo systemctl restart nginx
+    
+    # Check firewall
+    sudo ufw status
+    ```
+  </Accordion>
+  <Accordion title="SSL Certificate Issues">
+    **Common causes:**
 
-# Check firewall
-sudo ufw status
-```
-</Accordion>
+    - Domain DNS not fully propagated
+    - Domain ownership verification failed
+    - NGINX configuration syntax errors
 
-<Accordion title="SSL Certificate Issues">
-**Common causes:**
-- Domain DNS not fully propagated
-- Domain ownership verification failed
-- NGINX configuration syntax errors
+    **Solutions:**
 
-**Solutions:**
-```bash
-# Check certificate status
-sudo certbot certificates
+    ```bash
+    # Check certificate status
+    sudo certbot certificates
+    
+    # Renew certificate manually
+    sudo certbot renew --dry-run
+    
+    # Check NGINX config
+    sudo nginx -t
+    ```
+  </Accordion>
+  <Accordion title="Application Errors">
+    **Debugging steps:**
 
-# Renew certificate manually
-sudo certbot renew --dry-run
+    - Check Docker container logs: `docker compose logs`
+    - Verify environment variables are set correctly
+    - Ensure all required services are running
+    - Check port conflicts
 
-# Check NGINX config
-sudo nginx -t
-```
-</Accordion>
+    **Common commands:**
 
-<Accordion title="Application Errors">
-**Debugging steps:**
-- Check Docker container logs: `docker compose logs`
-- Verify environment variables are set correctly
-- Ensure all required services are running
-- Check port conflicts
+    ```bash
+    # View all logs
+    docker compose logs
+    
+    # Check specific service
+    docker compose logs frontend
+    
+    # Restart services
+    docker compose restart
+    ```
+  </Accordion>
+  <Accordion title="Pull access denied Error">
+    **Error**
 
-**Common commands:**
-```bash
-# View all logs
-docker compose logs
+    - Error response from daemon: `pull access denied for <image-name>, repository does not exist or may require 'docker login'`
 
-# Check specific service
-docker compose logs frontend
+    **Solutions**
 
-# Restart services
-docker compose restart
-```
-</Accordion>
-
+    - Clear Docker Build Cache and Rebuild
+    - Remove all Docker build cache and images
+    - Run the following command to clear all cached layers and build data: `docker builder prune -a -f`
+    - This command removes all unused build cache and intermediate images, ensuring a clean environment.
+    - Rebuild the application from scratch
+  </Accordion>
 </AccordionGroup>
 
 <Note>

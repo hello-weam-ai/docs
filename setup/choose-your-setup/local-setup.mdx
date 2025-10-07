@@ -12,249 +12,236 @@ description: "Run Weam AI on your local machine for development, testing, or eva
   - **Docker Desktop** installed
   - **Git** installed
 
-**Operating Systems**
+  **Operating Systems**
 
-- **MacOS** (Intel or Apple Silicon)
-- **Linux** (Ubuntu 20.04+ recommended)
-- **Windows** 10/11 with WSL2
+  - **MacOS** (Intel or Apple Silicon)
+  - **Linux** (Ubuntu 20.04+ recommended)
+  - **Windows** 10/11 with WSL2
 
-Based on our testing, the app runs best with this configuration, providing a smooth and responsive experience.  
-  
-**⚠️ Using lower specs may lead to noticeable latency or performance issues.**
+  Based on our testing, the app runs best with this configuration, providing a smooth and responsive experience.
 
-If you're experiencing performance issues, consider closing background apps or upgrading system resources.
+  **⚠️ Using lower specs may lead to noticeable latency or performance issues.**
+
+  If you're experiencing performance issues, consider closing background apps or upgrading system resources.
 </Tip>
 
 ## Installation Steps
 
 <Tabs>
-<Tab title="macOS/Linux">
+  <Tab title="macOS/Linux">
+    <Steps>
+      <Step title="Clone Repository">
+        Clone the project from GitHub and create your environment file:
 
-<Steps>
+        ```bash
+        git clone https://github.com/weam-ai/weam.git
+        cd weam
+        cp .env.example .env
+        ```
+      </Step>
+      <Step title="Build and Start Services">
+        Use the following commands to build and run the project:
 
-<Step title="Clone Repository">
-Clone the project from GitHub and create your environment file:
+        ```bash
+        bash build.sh
+        docker compose up --build
+        ```
 
-```bash
-git clone https://github.com/weam-ai/weam.git
-cd weam
-cp .env.example .env
-```
-</Step>
+        This will:
 
-<Step title="Build and Start Services">
-Use the following commands to build and run the project:
+        - Build all necessary Docker images
+        - Start backend, frontend, and supporting services
 
-```bash
-bash build.sh
-docker compose up --build
-```
+        <Note>
+          Ensure Docker and Docker Compose are installed before proceeding.
+        </Note>
+      </Step>
+      <Step title="Access Application">
+        Open your browser and navigate to:
 
-This will:
-- Build all necessary Docker images
-- Start backend, frontend, and supporting services
+        - **Main Application:** http://localhost:3000
+        - **Registration:** http://localhost:3000/register
+        - **Login:** http://localhost:3000/login
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Windows (WSL2)">
+    <Steps>
+      <Step title="Install Docker Desktop">
+        [Official Installation Guide](https://docs.docker.com/desktop/setup/install/windows-install/)
 
-<Note>Ensure Docker and Docker Compose are installed before proceeding.</Note>
-</Step>
+        **During installation:**
 
-<Step title="Access Application">
-Open your browser and navigate to:
+        - ✅ Enable **WSL 2 integration**
+        - ✅ Choose your preferred Linux distro (e.g., **Ubuntu**)
+      </Step>
+      <Step title="Install WSL2 with Ubuntu">
+        Run in **PowerShell (Admin)**:
 
-- **Main Application:** [http://localhost:3000](http://localhost:3000)
-- **Registration:** [http://localhost:3000/register](http://localhost:3000/register)  
-- **Login:** [http://localhost:3000/login](http://localhost:3000/login)
-</Step>
+        ```powershell
+        wsl --install Ubuntu
+        ```
 
-</Steps>
+        This will:
 
-</Tab>
-<Tab title="Windows (WSL2)">
+        - Enable WSL features
+        - Install Ubuntu
+        - Set as default
 
-<Steps>
+        **Restart your PC** after installation.
+      </Step>
+      <Step title="Configure Line Endings">
+        ⚠️ `.sh` files with `CRLF` may break in WSL/Linux.
 
-<Step title="Install Docker Desktop">
-[Official Installation Guide](https://docs.docker.com/desktop/setup/install/windows-install/)
+        1. Open folder in **VS Code**
+        2. Bottom right: click `CRLF` → change to `LF`
+        3. Save the file again
+        4. Repeat for all `.sh` files (e.g., `winbuild.sh`, `build.sh`)
+      </Step>
+      <Step title="Clone Repository">
+        In **Ubuntu terminal**, clone the project:
 
-**During installation:**
-- ✅ Enable **WSL 2 integration**
-- ✅ Choose your preferred Linux distro (e.g., **Ubuntu**)
-</Step>
+        ```bash
+        git clone https://github.com/weam-ai/weam.git
+        cd weam
+        cp .env.example .env
+        ```
 
-<Step title="Install WSL2 with Ubuntu">
-Run in **PowerShell (Admin)**:
+        Navigate to your project directory:
 
-```powershell
-wsl --install Ubuntu
-```
+        ```bash
+        cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
+        ```
+      </Step>
+      <Step title="Set Execute Permissions">
+        Make script executable:
 
-This will:
-- Enable WSL features
-- Install Ubuntu
-- Set as default
+        ```bash
+        chmod +x winbuild.sh
+        ```
 
-**Restart your PC** after installation.
-</Step>
+        Run it:
 
-<Step title="Configure Line Endings">
-⚠️ `.sh` files with `CRLF` may break in WSL/Linux.
+        ```bash
+        bash winbuild.sh
+        ```
+      </Step>
+      <Step title="Start Services">
+        Start the environment:
 
-1. Open folder in **VS Code**
-2. Bottom right: click `CRLF` → change to `LF`
-3. Save the file again
-4. Repeat for all `.sh` files (e.g., `winbuild.sh`, `build.sh`)
-</Step>
+        ```bash
+        docker compose up --build
+        ```
+      </Step>
+      <Step title="Access Application">
+        Open your browser and navigate to:
 
-<Step title="Clone Repository">
-In **Ubuntu terminal**, clone the project:
-
-```bash
-git clone https://github.com/weam-ai/weam.git
-cd weam
-cp .env.example .env
-```
-
-Navigate to your project directory:
-```bash
-cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
-```
-</Step>
-
-<Step title="Set Execute Permissions">
-Make script executable:
-
-```bash
-chmod +x winbuild.sh
-```
-
-Run it:
-
-```bash
-bash winbuild.sh
-```
-</Step>
-
-<Step title="Start Services">
-Start the environment:
-
-```bash
-docker compose up --build
-```
-</Step>
-
-<Step title="Access Application">
-Open your browser and navigate to:
-
-- **Main Application:** [http://localhost:3000](http://localhost:3000)
-- **Registration:** [http://localhost:3000/register](http://localhost:3000/register)  
-- **Login:** [http://localhost:3000/login](http://localhost:3000/login)
-</Step>
-
-</Steps>
-
-</Tab>
+        - **Main Application:** http://localhost:3000
+        - **Registration:** http://localhost:3000/register
+        - **Login:** http://localhost:3000/login
+      </Step>
+    </Steps>
+  </Tab>
 </Tabs>
 
 ## Service Ports
 
-| Service | Port | URL |
-|---------|------|-----|
-| **Frontend (Next.js)** | 3000 | http://localhost:3000 |
-| **Backend (Node.js)** | 4050 | http://localhost:4050 |
-| **MongoDB** | 27017 | Internal only |
-| **Redis** | 6379 | Internal only |
-| **Qdrant (Vector DB)** | 6333 | http://localhost:6333 |
-| **MinIO (File Storage)** | 9000 | http://localhost:9000 |
+| Service                  | Port  | URL                   |
+| ------------------------ | ----- | --------------------- |
+| **Frontend (Next.js)**   | 3000  | http://localhost:3000 |
+| **Backend (Node.js)**    | 4050  | http://localhost:4050 |
+| **MongoDB**              | 27017 | Internal only         |
+| **Redis**                | 6379  | Internal only         |
+| **Qdrant (Vector DB)**   | 6333  | http://localhost:6333 |
+| **MinIO (File Storage)** | 9000  | http://localhost:9000 |
 
 ## Troubleshooting
 
 <Tabs>
-<Tab title="macOS/Linux">
+  <Tab title="macOS/Linux">
+    <AccordionGroup>
+      <Accordion title="Build Failures">
+        **Common causes:**
 
-<AccordionGroup>
+        - Docker doesn't have enough memory allocated (8GB minimum)
+        - Ports 3000 and 4050 are already in use
+        - Docker daemon not running
 
-<Accordion title="Build Failures">
-**Common causes:**
-- Docker doesn't have enough memory allocated (8GB minimum)
-- Ports 3000 and 4050 are already in use
-- Docker daemon not running
+        **Solutions:**
 
-**Solutions:**
-- Increase Docker's memory limit in Docker Desktop settings
-- Stop other services using those ports: `sudo lsof -i :3000`
-- Start Docker Desktop and wait for it to fully load
-</Accordion>
+        - Increase Docker's memory limit in Docker Desktop settings
+        - Stop other services using those ports: `sudo lsof -i :3000`
+        - Start Docker Desktop and wait for it to fully load
+      </Accordion>
+      <Accordion title="Permission Errors">
+        **On Linux:**
 
-<Accordion title="Permission Errors">
-**On Linux:**
-- Add your user to the docker group: `sudo usermod -aG docker $USER`
-- Restart your terminal session after adding to the docker group
-- Try: `newgrp docker` to apply group changes immediately
+        - Add your user to the docker group: `sudo usermod -aG docker $USER`
+        - Restart your terminal session after adding to the docker group
+        - Try: `newgrp docker` to apply group changes immediately
 
-**On macOS:**
-- Ensure Docker Desktop has proper permissions
-- Try running with `sudo` if needed (not recommended for regular use)
-</Accordion>
+        **On macOS:**
 
-<Accordion title="Out of Memory">
-**Solutions:**
-- Close other applications to free up RAM
-- Increase Docker's memory limit in Docker Desktop settings
-- Consider upgrading system RAM if consistently running into issues
-- Use `docker system prune` to clean up unused containers and images
-</Accordion>
+        - Ensure Docker Desktop has proper permissions
+        - Try running with `sudo` if needed (not recommended for regular use)
+      </Accordion>
+      <Accordion title="Out of Memory">
+        **Solutions:**
 
-<Accordion title="Pull access denied Error">
+        - Close other applications to free up RAM
+        - Increase Docker's memory limit in Docker Desktop settings
+        - Consider upgrading system RAM if consistently running into issues
+        - Use `docker system prune` to clean up unused containers and images
+      </Accordion>
+      <Accordion title="Pull access denied Error">
+        **Error**
 
-**Error**
-- Error response from daemon: `pull access denied for <image-name>, repository does not exist or may require 'docker login'`
+        - Error response from daemon: `pull access denied for <image-name>, repository does not exist or may require 'docker login'`
 
-**Solutions**
-- Clear Docker Build Cache and Rebuild
-- Remove all Docker build cache and images
-- Run the following command to clear all cached layers and build data: `docker builder prune -a -f`
-- This command removes all unused build cache and intermediate images, ensuring a clean environment.
-- Rebuild the application from scratch
-</Accordion>
+        **Solutions**
 
-</AccordionGroup>
+        - Clear Docker Build Cache and Rebuild
+        - Remove all Docker build cache and images
+        - Run the following command to clear all cached layers and build data: `docker builder prune -a -f`
+        - This command removes all unused build cache and intermediate images, ensuring a clean environment.
+        - Rebuild the application from scratch
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Windows (WSL2)">
+    <AccordionGroup>
+      <Accordion title="WSL2 Issues">
+        **Common problems:**
 
-</Tab>
-<Tab title="Windows (WSL2)">
+        - WSL2 not properly installed or configured
+        - Docker Desktop not integrated with WSL2
+        - Line ending issues with shell scripts
 
-<AccordionGroup>
+        **Solutions:**
 
-<Accordion title="WSL2 Issues">
-**Common problems:**
-- WSL2 not properly installed or configured
-- Docker Desktop not integrated with WSL2
-- Line ending issues with shell scripts
+        - Verify WSL2: `wsl --list --verbose`
+        - Enable WSL2 integration in Docker Desktop settings
+        - Convert line endings: `dos2unix build.sh winbuild.sh`
+        - Restart Docker Desktop after enabling WSL2 integration
+      </Accordion>
+      <Accordion title="Path and Permission Issues">
+        **Windows-specific fixes:**
 
-**Solutions:**
-- Verify WSL2: `wsl --list --verbose`
-- Enable WSL2 integration in Docker Desktop settings
-- Convert line endings: `dos2unix build.sh winbuild.sh`
-- Restart Docker Desktop after enabling WSL2 integration
-</Accordion>
+        - Use Ubuntu terminal, not PowerShell or Command Prompt
+        - Navigate using `/mnt/c/` paths for Windows drives
+        - Set execute permissions: `chmod +x *.sh`
+        - Ensure you're in the correct project directory
+      </Accordion>
+      <Accordion title="Docker Desktop Problems">
+        **Solutions:**
 
-<Accordion title="Path and Permission Issues">
-**Windows-specific fixes:**
-- Use Ubuntu terminal, not PowerShell or Command Prompt
-- Navigate using `/mnt/c/` paths for Windows drives
-- Set execute permissions: `chmod +x *.sh`
-- Ensure you're in the correct project directory
-</Accordion>
-
-<Accordion title="Docker Desktop Problems">
-**Solutions:**
-- Ensure Docker Desktop is running before commands
-- Check WSL2 integration is enabled in Docker settings
-- Restart Docker Desktop if containers fail to start
-- Verify virtualization is enabled in BIOS
-</Accordion>
-
-</AccordionGroup>
-
-</Tab>
+        - Ensure Docker Desktop is running before commands
+        - Check WSL2 integration is enabled in Docker settings
+        - Restart Docker Desktop if containers fail to start
+        - Verify virtualization is enabled in BIOS
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
 </Tabs>
 
 ## Key Reminders
@@ -266,28 +253,28 @@ Open your browser and navigate to:
 ## Advanced Configuration
 
 <Warning>
-**Mandatory Step:** Weam AI requires OpenAI API access for core functionality including RAG processing, document analysis, and web scraping. The application will not work properly without an OpenAI API key.
+  **Mandatory Step:** Weam AI requires OpenAI API access for core functionality including RAG processing, document analysis, and web scraping. The application will not work properly without an OpenAI API key.
 </Warning>
 
 <Warning>
-**⚠️ IMPORTANT DATABASE WARNING:**
+  **⚠️ IMPORTANT DATABASE WARNING:**
 
-If you run the command `docker compose down -v`, your **DATABASE will be RESET** and all data will be permanently lost. 
+  If you run the command `docker compose down -v`, your **DATABASE will be RESET** and all data will be permanently lost.
 
-**Always take a backup of your database before running this command:**
+  **Always take a backup of your database before running this command:**
 
-```bash
-# Create database backup first
-docker exec weam-mongodb mongodump --out /tmp/backup
+  ```bash
+  # Create database backup first
+  docker exec weam-mongodb mongodump --out /tmp/backup
+  
+  # Copy backup to host system
+  docker cp weam-mongodb:/tmp/backup ./mongodb-backup
+  
+  # Only then run the reset command if needed
+  docker compose down -v
+  ```
 
-# Copy backup to host system
-docker cp weam-mongodb:/tmp/backup ./mongodb-backup
-
-# Only then run the reset command if needed
-docker compose down -v
-```
-
-The `-v` flag removes all volumes including your database data. Use this command only when you want a complete fresh start.
+  The `-v` flag removes all volumes including your database data. Use this command only when you want a complete fresh start.
 </Warning>
 
 <Note>
