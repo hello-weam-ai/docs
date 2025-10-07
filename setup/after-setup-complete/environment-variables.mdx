@@ -4,133 +4,139 @@ description: "Complete environment variable configuration guide for Weam AI. Set
 ---
 
 <Info>
-This guide covers all environment variables for **Node.js API** and **Next.js frontend** components of Weam AI.
+  This guide covers all environment variables for **Node.js API** and **Next.js frontend** components of Weam AI.
 </Info>
 
 ## Service-Specific Variables
 
 <AccordionGroup>
+  <Accordion title="Node.js API Server Variables">
+    Complete environment variables for the Node.js API backend service:
 
-<Accordion title="Node.js API Server Variables">
+    ### Server Configuration
 
-Complete environment variables for the Node.js API backend service:
+    ```env
+    SERVER_PORT=4050
+    API_PREFIX=v1
+    ```
 
-### Server Configuration
-```env
-SERVER_PORT=4050
-API_PREFIX=v1
-```
+    ### Service URLs
 
-### Service URLs
-```env
-FRONT_URL=http://localhost:3000
-BASE_URL=http://localhost:4050
-OPEN_AI_MODAL=gpt-4
-OPEN_AI_API_URL=https://api.openai.com
-GEMINI_API_URL=https://gemini.google.com
-ANTHROPIC_AI_API_URL=https://api.anthropic.com
-```
+    ```env
+    FRONT_URL=http://localhost:3000
+    BASE_URL=http://localhost:4050
+    OPEN_AI_MODAL=gpt-4
+    OPEN_AI_API_URL=https://api.openai.com
+    GEMINI_API_URL=https://gemini.google.com
+    ANTHROPIC_AI_API_URL=https://api.anthropic.com
+    ```
 
-### Model Provider API Keys
-```env
-Weam AI_OPEN_AI_KEY=sk-your-openai-key
-Weam AI_GEMINI_KEY=your-gemini-key
-Weam AI_OPEN_ROUTER_KEY=sk-or-your-openrouter-key
-HUGGING_FACE_AUTH_TOKEN=hf-your-token
-Weam AI_ANTHROPIC_API_KEY=sk-ant-your-key
-Weam AI_DEEPSEEK_KEY=sk-your-deepseek-key
-```
+    ### Model Provider API Keys
 
-### Authentication Settings
-```env
-JWT_SECRET=access-secret
-JWT_REFRESH_SECRET=refresh-secret
-JWT_ACCESS_EXPIRE=1h
-JWT_REFRESH_EXPIRE=7d
-QR_NAME=YourApp-name
-```
+    ```env
+    Weam AI_OPEN_AI_KEY=sk-your-openai-key
+    Weam AI_GEMINI_KEY=your-gemini-key
+    Weam AI_OPEN_ROUTER_KEY=sk-or-your-openrouter-key
+    HUGGING_FACE_AUTH_TOKEN=hf-your-token
+    Weam AI_ANTHROPIC_API_KEY=sk-ant-your-key
+    Weam AI_DEEPSEEK_KEY=sk-your-deepseek-key
+    ```
 
-### Storage Settings
-```env
-BUCKET_TYPE=MINIO
-AWS_ACCESS_KEY_ID=your-key
-AWS_SECRET_ACCESS_KEY=your-secret
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=yourcompany-media
-AWS_S3_URL=https://s3.amazonaws.com
-AWS_CDN_URL=https://cdn.yourexampledomain.com
-MINIO_PORT=9000
-MINIO_DASHBOARD_PORT=9001
-MINIO_ENDPOINT=http://minio
-```
+    ### Authentication Settings
 
-### Email Configuration
-```env
-EMAIL_PROVIDER=SMTP
-AWS_SES_VERIFIED_MAIL=noreply@yourexampledomain.com
-SMTP_USER=user@example.com
-SMTP_PASSWORD=password123
-SMTP_SENDER_EMAIL=noreply@yourexampledomain.com
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-```
+    ```env
+    JWT_SECRET=access-secret
+    JWT_REFRESH_SECRET=refresh-secret
+    JWT_ACCESS_EXPIRE=1h
+    JWT_REFRESH_EXPIRE=7d
+    QR_NAME=YourApp-name
+    ```
 
-### Additional Settings
-```env
-SECURITY_KEY=secure-key
-SIGNUP_INFO_EMAIL=welcome@yourexampledomain.com
-API_RATE_LIMIT=100
-SEED=42
-TZ=Asia/Kolkata
-```
+    ### Storage Settings
 
-### SEO Agent Settings
-```env
-SEO_USER_ID=seo@yourexampledomain.com
-SEO_PASSWORD=securepassword
-```
+    ```env
+    BUCKET_TYPE=MINIO
+    AWS_ACCESS_KEY_ID=your-key
+    AWS_SECRET_ACCESS_KEY=your-secret
+    AWS_REGION=us-east-1
+    AWS_S3_BUCKET=yourcompany-media
+    AWS_S3_URL=https://s3.amazonaws.com
+    AWS_CDN_URL=https://cdn.yourexampledomain.com
+    MINIO_PORT=9000
+    MINIO_DASHBOARD_PORT=9001
+    MINIO_ENDPOINT=http://minio
+    ```
 
-</Accordion>
+    ### Email Configuration
 
-<Accordion title="Next.js Frontend Variables">
+    ```env
+    EMAIL_PROVIDER=SMTP
+    AWS_SES_VERIFIED_MAIL=noreply@yourexampledomain.com
+    SMTP_USER=user@example.com
+    SMTP_PASSWORD=password123
+    SMTP_SENDER_EMAIL=noreply@yourexampledomain.com
+    SMTP_SERVER=smtp.gmail.com
+    SMTP_PORT=587
+    ```
 
-Complete environment variables for the Next.js frontend application:
+    ### Additional Settings
 
-### API Endpoints
-```env
-NEXT_PUBLIC_BACKEND_API_URL=http://localhost:4050
-NEXT_PUBLIC_DOMAIN_URL=http://localhost:3000
-NEXT_PUBLIC_API_PREFIX=/v1
-```
+    ```env
+    SECURITY_KEY=secure-key
+    SIGNUP_INFO_EMAIL=welcome@yourexampledomain.com
+    API_RATE_LIMIT=100
+    SEED=42
+    TZ=Asia/Kolkata
+    ```
 
-### Application Settings
-```env
-NEXT_PUBLIC_APP_ENVIRONMENT=dev
-NEXT_PUBLIC_COOKIE_NAME=yourapp-token
-NEXT_PUBLIC_COOKIE_PASSWORD=encrypt-me
-NEXT_PUBLIC_HTTPS_PROTOCOL=false
-```
+    ### SEO Agent Settings
 
-### Asset Configuration
-```env
-NEXT_PUBLIC_AWS_S3_URL=https://cdn.yourexampledomain.com
-NEXT_PUBLIC_IMAGE_DOMAIN=cdn.yourexampledomain.com
-```
+    ```env
+    SEO_USER_ID=seo@yourexampledomain.com
+    SEO_PASSWORD=securepassword
+    ```
+  </Accordion>
+  <Accordion title="Next.js Frontend Variables">
+    Complete environment variables for the Next.js frontend application:
 
-### WebSocket Settings
-```env
-NEXT_PUBLIC_SOCKET_CONNECTION_URL=ws://localhost:3000
-```
+    ### API Endpoints
 
-### Additional Frontend Settings
-```env
-NEXT_PUBLIC_SECURITY_KEY=secure-frontend-key
-NEW_RELIC_APPNAME=YourAppFrontend
-NEXT_PUBLIC_OPENAI_PLATFORM_URL=https://platform.openai.com
-```
+    ```env
+    NEXT_PUBLIC_BACKEND_API_URL=http://localhost:4050
+    NEXT_PUBLIC_DOMAIN_URL=http://localhost:3000
+    NEXT_PUBLIC_API_PREFIX=/v1
+    ```
 
-</Accordion>
+    ### Application Settings
 
+    ```env
+    NEXT_PUBLIC_APP_ENVIRONMENT=dev
+    NEXT_PUBLIC_COOKIE_NAME=yourapp-token
+    NEXT_PUBLIC_COOKIE_PASSWORD=encrypt-me
+    NEXT_PUBLIC_HTTPS_PROTOCOL=false
+    ```
+
+    ### Asset Configuration
+
+    ```env
+    NEXT_PUBLIC_AWS_S3_URL=https://cdn.yourexampledomain.com
+    NEXT_PUBLIC_IMAGE_DOMAIN=cdn.yourexampledomain.com
+    ```
+
+    ### WebSocket Settings
+
+    ```env
+    NEXT_PUBLIC_SOCKET_CONNECTION_URL=ws://localhost:3000
+    ```
+
+    ### Additional Frontend Settings
+
+    ```env
+    NEXT_PUBLIC_SECURITY_KEY=secure-frontend-key
+    NEW_RELIC_APPNAME=YourAppFrontend
+    NEXT_PUBLIC_OPENAI_PLATFORM_URL=https://platform.openai.com
+    ```
+  </Accordion>
 </AccordionGroup>
 
 ## Required Configuration
@@ -166,6 +172,7 @@ CSRF_TOKEN_SECRET=your-csrf-token-secret
 ```
 
 **Generate secure keys:**
+
 ```bash
 # Using OpenSSL (recommended - available on all platforms)
 openssl rand -hex 32
@@ -195,38 +202,36 @@ BASE_URL=http://localhost:4050
 Choose between local MinIO storage or AWS S3 for file management:
 
 <Tabs>
-<Tab title="Local Development (MinIO)">
+  <Tab title="Local Development (MinIO)">
+    ```env
+    BUCKET_TYPE=MINIO
+    MINIO_ENDPOINT=http://localhost:9000
+    AWS_ACCESS_KEY_ID=minioadmin
+    AWS_SECRET_ACCESS_KEY=minioadmin
+    AWS_S3_BUCKET=yourapp-media
+    ```
 
-```env
-BUCKET_TYPE=MINIO
-MINIO_ENDPOINT=http://localhost:9000
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=minioadmin
-AWS_S3_BUCKET=yourapp-media
-```
+    **Benefits:**
 
-**Benefits:**
-- No external dependencies
-- Free for development
-- Easy local testing
+    - No external dependencies
+    - Free for development
+    - Easy local testing
+  </Tab>
+  <Tab title="Production (AWS S3)">
+    ```env
+    BUCKET_TYPE=AWS
+    AWS_ACCESS_KEY_ID=your-aws-access-key
+    AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+    AWS_REGION=us-east-1
+    AWS_S3_BUCKET=your-s3-bucket-name
+    ```
 
-</Tab>
-<Tab title="Production (AWS S3)">
+    **Benefits:**
 
-```env
-BUCKET_TYPE=AWS
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=your-s3-bucket-name
-```
-
-**Benefits:**
-- Scalable cloud storage
-- Built-in CDN integration
-- Production reliability
-
-</Tab>
+    - Scalable cloud storage
+    - Built-in CDN integration
+    - Production reliability
+  </Tab>
 </Tabs>
 
 ### Vector Database Settings
@@ -243,6 +248,48 @@ QDRANT_DASHBOARD_PORT=6333
 
 These settings enhance functionality but aren't required for basic operation.
 
+### Optional Dashboard (Mongo Express)
+
+<Info>
+  An optional dashboard is available to view MongoDB records for the running project. It is disabled by default. Enable only if you need the dashboard (recommended for development, not production).
+</Info>
+
+#### Enable the dashboard
+
+1. Update `docker-compose.yml` by adding/uncommenting this service:
+
+```yaml
+mongo-express:
+  image: mongo-express:latest
+  restart: always
+  ports:
+    - "8081:8081"
+  environment:
+    ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+    ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+    ME_CONFIG_MONGODB_ADMINPASSWORD=password
+    ME_CONFIG_BASICAUTH_USERNAME=weam
+    ME_CONFIG_BASICAUTH_PASSWORD=password
+    ME_CONFIG_MONGODB_SERVER=mongo
+  networks:
+    - app-network
+  depends_on:
+    - mongo
+```
+
+2. Start the service:
+
+```bash
+docker compose up -d mongo-express
+```
+
+3. Open the dashboard:
+
+```
+URL: http://localhost:8081
+Login: uses the basic auth from the service block above
+```
+
 ### Email Notifications
 
 Configure SMTP for user notifications and account management:
@@ -258,6 +305,7 @@ SENDER_EMAIL=noreply@yourexampledomain.com
 ```
 
 **Popular SMTP providers:**
+
 - **Gmail**: `smtp.gmail.com:587` (requires app password)
 - **SendGrid**: `smtp.sendgrid.net:587`
 - **AWS SES**: Regional endpoints available
@@ -267,39 +315,33 @@ SENDER_EMAIL=noreply@yourexampledomain.com
 Configure OAuth credentials for third-party integrations:
 
 <Tabs>
-<Tab title="Slack Integration">
+  <Tab title="Slack Integration">
+    ```env
+    SLACK_CLIENT_ID=your-slack-client-id
+    SLACK_CLIENT_SECRET=your-slack-client-secret
+    NEXT_PUBLIC_SLACK_CLIENT_ID=your-slack-client-id
+    NEXT_PUBLIC_SLACK_CLIENT_SECRET=your-slack-client-secret
+    ```
 
-```env
-SLACK_CLIENT_ID=your-slack-client-id
-SLACK_CLIENT_SECRET=your-slack-client-secret
-NEXT_PUBLIC_SLACK_CLIENT_ID=your-slack-client-id
-NEXT_PUBLIC_SLACK_CLIENT_SECRET=your-slack-client-secret
-```
+    Enable Slack workspace integration for team collaboration.
+  </Tab>
+  <Tab title="GitHub Integration">
+    ```env
+    GITHUB_CLIENT_ID=your-github-client-id
+    GITHUB_CLIENT_SECRET=your-github-client-secret
+    GITHUB_REDIRECT_URI=https://yourexampledomain.com/api/auth/github/callback
+    ```
 
-Enable Slack workspace integration for team collaboration.
+    Connect GitHub repositories for code-based workflows.
+  </Tab>
+  <Tab title="Google Workspace">
+    ```env
+    GOOGLE_CLIENT_ID=your-google-client-id.googleusercontent.com
+    GOOGLE_CLIENT_SECRET=your-google-client-secret
+    ```
 
-</Tab>
-<Tab title="GitHub Integration">
-
-```env
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
-GITHUB_REDIRECT_URI=https://yourexampledomain.com/api/auth/github/callback
-```
-
-Connect GitHub repositories for code-based workflows.
-
-</Tab>
-<Tab title="Google Workspace">
-
-```env
-GOOGLE_CLIENT_ID=your-google-client-id.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
-
-Integrate Google Drive, Gmail, and Calendar services.
-
-</Tab>
+    Integrate Google Drive, Gmail, and Calendar services.
+  </Tab>
 </Tabs>
 
 ## Environment-Specific Settings
@@ -348,21 +390,10 @@ docker exec yourapp-mongodb mongosh --eval "db.runCommand('ping')"
 ## Next Steps
 
 <CardGroup cols={2}>
-
-<Card
-  title="API Credential Setup"
-  icon="key"
-  href="/setup/after-setup-complete/credential-setup"
->
-  Configure model provider API keys and external integrations
-</Card>
-
-<Card
-  title="Launch & Verify"
-  icon="check"
-  href="/setup/after-setup-complete/launch-verify"
->
-  Start services and verify your environment configuration
-</Card>
-
+  <Card title="API Credential Setup" icon="key" href="/setup/after-setup-complete/credential-setup">
+    Configure model provider API keys and external integrations
+  </Card>
+  <Card title="Launch & Verify" icon="check" href="/setup/after-setup-complete/launch-verify">
+    Start services and verify your environment configuration
+  </Card>
 </CardGroup>
