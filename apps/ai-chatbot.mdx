@@ -14,11 +14,15 @@ The Weam AI Chatbot is a conversational assistant that answers questions using o
 
 ## What it does
 
-- Answers questions using your uploaded documents and Weam-managed knowledge.
-- Supports multi-tenant agents with isolated knowledge per agent.
-- Retrieves relevant content snippets using vector search (similarity) and generates grounded answers.
-- Tracks chat sessions, messages, and optional visitor identities for analytics and continuity.
-- Provides UI for uploading content, training, testing, and deploying the chat experience within Weam surfaces.
+- **Document Upload**: Upload PDF, DOCX, and TXT (also MD/CSV/JSON where supported) with validation and progress tracking.
+- **AI Training**: Automatic text extraction, chunking, and vectorization; staged processing with queue-backed reliability.
+- **Smart Chat**: Retrieval-augmented answers grounded in your uploaded content; clear fallback when context is insufficient.
+- **Embed within Weam**: - One‑line script to embed the chatbot into any website.
+- **Analytics**: Track usage and performance inside Weam.
+- **Secure**: User isolation, data privacy safeguards, and rate limiting.
+- **Multi-tenancy**: Company- and agent-scoped data and retrieval.
+- **Sessions & Visitors**: Session continuity via `sessionId`; optional visitor linkage for analytics.
+- **Validation & Controls**: Input validation, safe defaults, scoped retrieval, and protective limits.
 
 ## Key user flows
 
