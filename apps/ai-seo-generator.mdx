@@ -1,3 +1,248 @@
 ---
-title: "AI Document Generator"
+title: "Weam AI Chatbot"
+description: "Conversational answers grounded in your company’s content using Weam’s RAG pipeline, sessions, and multi-tenant agent scoping."
+sidebarTitle: "AI Chatbot"
 ---
+
+### Overview
+
+The Weam AI Chatbot provides accurate, context-grounded answers using your company’s documents and settings, scoped by agents and sessions. It streamlines support, onboarding, and internal knowledge retrieval while preserving tenant isolation and analytics continuity.
+
+<Info>
+  This capability is part of Weam.
+</Info>
+
+### What it does (Capabilities)
+
+- **Org knowledge answers**: Uses your files to produce grounded responses with referenced chunk previews and similarity scores.
+- **Agents**: Configure behavior and scope per agent; all retrieval and chat are filtered by `agentId` and company.
+- **Multi-tenancy**: Isolation by company context across APIs, storage, queues, and vector search.
+- **RAG**: Embed query → Pinecone similarity search → build context from top chunks → LLM completion → safe fallback if no context.
+- **Sessions/visitors**: Track conversation continuity via `sessionId` (UUID) and optional visitor linking.
+- **Rate limiting**: Controlled usage via `express-rate-limit` for stability and fairness.
+- **Validations**: All inputs validated with `Joi`; security via `helmet`, `cors`, and request logging via `morgan`.
+
+### User flows (non-ops usage only)
+
+- **Create agent**: Define an agent with company scope and default behavior.
+- **Upload docs**: Add PDFs/DOCX and other supported files to the agent’s knowledge.
+- **Processing**: Documents are parsed, chunked, embedded, and stored for retrieval.
+- **Test in playground**: Validate answers, context, and thresholds with example questions.
+- **Use within Weam surfaces**: Embed the agent-backed chat where Weam supports it (e.g., support/internal knowledge surfaces).
+
+### Architecture
+
+- **UI (Next.js 14 + React 18 + TypeScript)**: Chat surfaces, file upload, previews, and agent configuration. Styling via Tailwind CSS with `tailwind-merge` and `clsx`. UX libraries include `lucide-react`, `react-hot-toast`, `react-dropzone`, `react-markdown`, and `remark-gfm`. HTTP via `axios`; session handling via `iron-session`.
+- **API (Node.js + Express)**: REST endpoints for agents, uploads, search, chat, and sessions. Request validation with `Joi`, protection via `helmet`, `express-rate-limit`, `cors`, and request logging with `morgan`.
+- **Processing & queues (BullMQ + Redis)**: Background jobs for document processing, embedding generation, notifications, and file deletion to keep interactions responsive.
+- **Data stores (MongoDB + mongoose)**: Agents, files (metadata), chat sessions, chat messages, and usage analytics.
+- **Vector DB (Pinecone)**: Stores embeddings; retrieval filtered by `agentId` and company with metadata-driven constraints.
+
+### Technical design
+
+- **Agents**
+  - **Config**: Defines instructions, retrieval parameters (top-k, thresholds), allowed file scopes, and response style.
+  - **Defaults**: Sensible defaults for chunking and retrieval; customizable per agent.
+  - **Multi-tenant scoping**: Every operation is filtered by `companyId` and `agentId`.
+- **Ingestion pipeline**
+  - **Validation**: `Joi` enforces file type/size and metadata; rate limits gate abusive upload patterns.
+  - **Storage**: Stream uploads via `busboy`; store objects using S3 SDK (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`).
+  - **Extraction**: Parse with `pdf-parse` and `mammoth` (PDF/DOCX → text).
+  - **Chunking & embeddings**: Split text into chunks; generate embeddings using `openai`, `@langchain/openai`, and `langchain`.
+  - **Vector storage**: Upsert to Pinecone with metadata: `companyId`, `agentId`, `fileId`, `chunkId`, source, and timestamps.
+- **Retrieval/RAG**
+  - **Flow**: Embed user query → Pinecone similarity search (scoped to agent/company) → assemble top chunk contexts → LLM completion with grounded system prompt → fallback message if no context meets threshold.
+  - **Referenced chunks**: Responses store previews and similarity scores for transparency and QA.
+  - **System prompt**: Encourages concise, source-grounded answers; avoids speculation.
+- **Sessions & visitors**
+  - **Lifecycle**: Each chat uses a `sessionId` (UUID). Sessions persist for continuity and analytics.
+  - **Visitor linking**: Optionally associate a visitor identity to a session for cross-surface continuity.
+  - **Analytics**: Messages record tokens, model, timing, and retrieval metadata.
+- **Vector search**
+  - **Filters**: Always filter by `companyId` and `agentId`; optional attribute filters per agent settings.
+  - **Thresholds**: Enforce minimum similarity; fall back when insufficiently confident.
+  - **Metadata return**: Include file references, chunk IDs, similarity scores.
+- **Operational controls**
+  - **Validation & security**: `Joi`, `helmet`, `cors`, and `morgan`.
+  - **Rate limiting**: `express-rate-limit` on sensitive endpoints (upload, chat, search).
+  - **Safe fallbacks**: Clear “no sufficient context” replies; never fabricate sources.
+
+### API reference (Weam-scoped, no deployment)
+
+- **Agents**
+  - `GET /agents` — list agents (scoped to company).
+  - `POST /agents` — create an agent (name, defaults, retrieval params).
+  - `PUT /agents/{agentId}` — update configuration.
+  - `DELETE /agents/{agentId}` — remove agent and associated vector scope.
+- **Upload**
+  - `POST /agents/{agentId}/files` — stream upload files; metadata captured.
+  - Status and processing progress are available within Weam.
+- **Search**
+  - `POST /agents/{agentId}/search` — returns top chunks and scores (no LLM completion).
+- **Chat**
+  - `POST /agents/{agentId}/chat` — send a message with `sessionId`; returns model reply and `referencedChunks`.
+  - `GET /sessions?agentId=...` — list sessions; includes timing, token usage aggregates.
+- **Visitors**
+  - Associate a visitor to a `sessionId` for continuity; disassociate when required by privacy settings.
+- **Auth & scoping**
+  - All endpoints are authenticated and multi-tenant scoped by Weam; filters enforce `companyId` and `agentId`.
+
+### Data and schemas (conceptual)
+
+- **Files**
+  - **Key fields**: `fileId`, `companyId`, `agentId`, `filename`, `mimeType`, `byteSize`, `storageKey`, `status`, `extractedTextStats`, `createdAt`.
+  - **Notes**: Upload metadata and processing status; source used for chunk provenance.
+- **ChatSessions**
+  - **Key fields**: `sessionId` (UUID), `companyId`, `agentId`, `visitorId?`, `createdAt`, `lastActiveAt`, `messageCount`, `usageSummary`.
+  - **Notes**: Optional visitor linking; supports analytics and continuity.
+- **ChatMessages**
+  - **Key fields**: `messageId`, `sessionId`, `role` (user/assistant/system), `content`, `model`, `tokensPrompt`, `tokensCompletion`, `latencyMs`, `referencedChunks[]` (file, chunk preview, similarity score), `createdAt`.
+  - **Notes**: Stores RAG context for QA and monitoring.
+
+### Troubleshooting
+
+<Tabs>
+  <Tab title="Tab">
+    <AccordionGroup>
+      <Accordion title="Uploads fail or stall">
+        - **Symptoms**: Upload never completes; progress freezes near end; repeated retries.
+        - **Common causes**: Exceeded size limits; stream interruptions; invalid MIME; aggressive client retries.
+        - **Solutions**: Verify allowed types/sizes via validation; retry smaller files; confirm client uses streaming (`busboy`) compatible form-data.
+      </Accordion>
+      <Accordion title="Unsupported file formats">
+        - **Symptoms**: Immediate rejection; “invalid file type” messages.
+        - **Common causes**: Non-PDF/DOCX formats; misreported MIME.
+        - **Solutions**: Convert to PDF/DOCX; ensure correct `Content-Type`; validate with `Joi` before sending.
+      </Accordion>
+      <Accordion title="File appears uploaded but not searchable">
+        - **Symptoms**: File listed, but no chunks retrieved in search.
+        - **Common causes**: Processing job not enqueued; parsing failure; embedding upsert error.
+        - **Solutions**: Re-upload; check processing status in Weam; simplify document (remove images/scans) and retry.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Tab">
+    <AccordionGroup>
+      <Accordion title="Processing stuck in 'queued'">
+        - **Symptoms**: Status remains queued for an extended period.
+        - **Common causes**: Redis pressure; worker concurrency limits; large backlog.
+        - **Solutions**: Reduce bulk uploads; space out submissions; confirm queue health; retry later.
+      </Accordion>
+      <Accordion title="Embedding generation failures">
+        - **Symptoms**: Processing switches to 'failed' quickly.
+        - **Common causes**: Empty extracted text; overly large chunks; transient provider issues.
+        - **Solutions**: Ensure documents contain selectable text; split large files; retry after a short interval.
+      </Accordion>
+      <Accordion title="File deletion jobs not completing">
+        - **Symptoms**: Deleted files still referenced by chunks.
+        - **Common causes**: Deletion queue paused; partial vector cleanup.
+        - **Solutions**: Re-initiate deletion; re-run cleanup for the agent scope.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Tab">
+    <AccordionGroup>
+      <Accordion title="No relevant chunks returned">
+        - **Symptoms**: Empty retrieval; fallback message shown.
+        - **Common causes**: Threshold too high; documents not embedded; wrong agent/company filter.
+        - **Solutions**: Lower similarity threshold; confirm ingestion completed; validate `agentId` and `companyId` filters.
+      </Accordion>
+      <Accordion title="Irrelevant or mixed-tenant results">
+        - **Symptoms**: Chunks from unexpected sources.
+        - **Common causes**: Missing filter metadata; inconsistent `agentId` on upsert.
+        - **Solutions**: Re-embed with correct metadata; ensure all queries filter by `companyId` and `agentId`.
+      </Accordion>
+      <Accordion title="Duplicate chunks in answers">
+        - **Symptoms**: Repeated citations; similar text blocks.
+        - **Common causes**: Overlapping chunking; high top-k.
+        - **Solutions**: Adjust chunk overlap/size; reduce top-k; de-duplicate by `chunkId` before prompt assembly.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Tab">
+    <AccordionGroup>
+      <Accordion title="Session continuity lost">
+        - **Symptoms**: Conversation resets mid-thread; analytics fragmented.
+        - **Common causes**: Missing `sessionId`; session expiration without renewal.
+        - **Solutions**: Persist and reuse `sessionId` (UUID) per chat surface; refresh session on expiry.
+      </Accordion>
+      <Accordion title="Visitor not linked to session">
+        - **Symptoms**: History not following user across surfaces.
+        - **Common causes**: Visitor association omitted; race conditions on first message.
+        - **Solutions**: Link visitor before sending first message; confirm association persisted.
+      </Accordion>
+      <Accordion title="High latency replies">
+        - **Symptoms**: Slow model responses.
+        - **Common causes**: Large context windows; many retrieved chunks; provider slowness.
+        - **Solutions**: Tighten retrieval thresholds/top-k; compress chunk text; monitor token counts.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Tab">
+    <AccordionGroup>
+      <Accordion title="403 or 401 responses">
+        - **Symptoms**: Authorization or authentication failures.
+        - **Common causes**: Missing auth context; cross-company access attempt.
+        - **Solutions**: Ensure requests include Weam auth; verify company scoping on all endpoints.
+      </Accordion>
+      <Accordion title="429 rate limit exceeded">
+        - **Symptoms**: Throttled requests; backoff errors.
+        - **Common causes**: Rapid retries; parallel uploads/chats.
+        - **Solutions**: Back off per headers; serialize critical calls; respect `express-rate-limit`.
+      </Accordion>
+      <Accordion title="Validation errors on payloads">
+        - **Symptoms**: 400 responses with field details.
+        - **Common causes**: Joi schema mismatches; missing required fields.
+        - **Solutions**: Align payloads with schemas; trim unknown fields; validate client-side before send.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Tab">
+    <AccordionGroup>
+      <Accordion title="Hallucinations or off-topic answers">
+        - **Symptoms**: Confident but ungrounded responses.
+        - **Common causes**: Low similarity threshold; weak context; missing documents.
+        - **Solutions**: Raise threshold; improve document coverage; strengthen system prompt grounding.
+      </Accordion>
+      <Accordion title="High token usage">
+        - **Symptoms**: Elevated costs; context truncation.
+        - **Common causes**: Too many chunks; verbose prompts.
+        - **Solutions**: Reduce top-k; summarize chunks; tighten prompts and max tokens.
+      </Accordion>
+      <Accordion title="Inconsistent model behavior">
+        - **Symptoms**: Variable tone or depth.
+        - **Common causes**: Model changes; agent instruction drift.
+        - **Solutions**: Pin model; standardize agent instructions; review temperature and penalties.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+</Tabs>
+
+### Tech Stack
+
+| Layer                   | Technologies                                                              | Purpose                                                       |
+| ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Frontend                | Next.js 14, React 18, TypeScript                                          | Chat UI, agent management, playground                         |
+| Styling & Utilities     | Tailwind CSS, tailwind-merge, clsx                                        | Consistent design and class merging                           |
+| UI/UX Libraries         | lucide-react, react-hot-toast, react-dropzone, react-markdown, remark-gfm | Icons, toasts, uploads, markdown rendering                    |
+| HTTP & Sessions         | axios, iron-session                                                       | API calls and session persistence                             |
+| Backend                 | Node.js, Express                                                          | REST APIs and middleware                                      |
+| Validation & Security   | Joi, helmet, express-rate-limit, cors, morgan                             | Input validation, protection, logging                         |
+| File Handling & Storage | busboy, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner                 | Streamed uploads and object storage                           |
+| Processing & Queues     | BullMQ, Redis                                                             | Background jobs for parsing/embeddings/notifications/deletion |
+| AI & LLM                | openai, @langchain/openai, langchain                                      | Chat completions and embeddings                               |
+| Vector Database         | Pinecone, @pinecone-database/pinecone                                     | Similarity search with metadata filters                       |
+| Document Parsing        | pdf-parse, mammoth                                                        | PDF/DOCX text extraction                                      |
+| Data Layer              | MongoDB, mongoose                                                         | Agents, files, sessions, messages, usage                      |
+
+### Best practices
+
+- **Curate documents**: Prefer clean, selectable text over scans; remove duplicates and boilerplate.
+- **Structure content**: Use clear headings and sections to improve chunk quality and retrieval.
+- **Scope agents tightly**: Limit sources to what each agent should answer; set thresholds thoughtfully.
+- **Iterate in playground**: Inspect `referencedChunks`, similarity scores, and tune top-k/thresholds.
+- **Monitor metadata**: Track tokens, latency, and fallback frequency to guide improvements.
+
+<Danger>
+  The AI Chatbot is part of Weam.
+</Danger>

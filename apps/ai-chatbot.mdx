@@ -1,3 +1,387 @@
 ---
-title: "AI Document Generator"
+title: "Weam AI Chatbot"
+description: "Product overview, functionality, technical design, data flow, APIs, and troubleshooting for the Weam AI Chatbot Application"
+sidebarTitle: "AI Chatbot"
 ---
+
+## Overview
+
+The Weam AI Chatbot is a conversational assistant that answers questions using organization-specific knowledge. It is a core part of Weam and is not designed for standalone hosting. This document covers functionality, how it works within Weam, technical details, and troubleshooting.
+
+<Info>
+  This chatbot is part of Weam. Configuration, usage, and access happen within Weam.
+</Info>
+
+## What it does
+
+- Answers questions using your uploaded documents and Weam-managed knowledge.
+- Supports multi-tenant agents with isolated knowledge per agent.
+- Retrieves relevant content snippets using vector search (similarity) and generates grounded answers.
+- Tracks chat sessions, messages, and optional visitor identities for analytics and continuity.
+- Provides UI for uploading content, training, testing, and deploying the chat experience within Weam surfaces.
+
+## Key user flows
+
+- Create an agent in Weam and define its behavior (name, base instructions, model, temperature).
+- Upload documents for that agent; Weam processes, chunks, and embeds them into vector search.
+- Test responses in the playground; then use the Weam-provided interfaces to expose the chat where needed (e.g., Weam pages, widgets).
+- Monitor chat history and refine instructions or add more documents as needed.
+
+## Core features
+
+- Agent management (create, view, update, delete agents).
+- Document ingestion: PDF, TXT, DOC/DOCX, MD, JSON, CSV and more.
+- Background processing pipeline with queues for extraction, chunking, embeddings, and vector storage.
+- Retrieval-Augmented Generation (RAG): semantic search + LLM responses grounded in retrieved context.
+- Session-aware chat with visitor linkage for continuity.
+- Rate limiting, input validation, and error handling.
+
+## How it works (high level)
+
+1. You upload documents to an agent.
+2. We extract text, chunk it, generate embeddings, and store them in a vector database with metadata that ties chunks to the agent and company.
+3. When a user sends a message, Weam embeds the query, performs a similarity search scoped to the agent, and sends the top chunks to the LLM to generate a grounded answer.
+4. We record session/message metadata and referenced chunks for transparency and debugging.
+
+## Architecture
+
+- UI (Weam frontend)
+  - Agent pages for upload, training progress, playground, and deploy surfaces.
+  - Optional client widget surface managed by Weam.
+- API (Weam backend services)
+  - Agents, Upload, Search, Chat, Chat History, and Visitor endpoints.
+- Processing
+  - Queue workers perform text extraction, chunking, embedding, and vector storage.
+- Data
+  - Metadata and chat history are stored in Weam-managed databases.
+  - Vector store contains chunk embeddings with multi-tenant metadata.
+
+## Technical design details
+
+### Agents
+
+- Each agent belongs to a company (multi-tenant) and has defaults like `systemPrompt`, `model`, `temperature`, and `maxTokens`.
+- Agent identity is used to scope document ingestion and retrieval.
+
+### Ingestion pipeline
+
+- Upload validation, S3 storage, and metadata creation.
+- Background jobs:
+  - Text extraction per file
+  - Chunking (configurable strategy, size, overlap)
+  - Embedding generation (OpenAI embeddings)
+  - Vector storage with metadata: `agentId`, `companyId`, `fileId`, `chunkIndex`, content hash, and timestamps
+- Progress and per-stage statuses are persisted for visibility.
+
+### Retrieval and response generation (RAG)
+
+- On message:
+  - Validate and fetch agent context.
+  - Embed the user query.
+  - Perform similarity search in the vector store scoped to `agentId` (and company).
+  - Build context from top chunks.
+  - Generate a response via LLM using a system prompt that prioritizes provided context.
+  - If no suitable chunks are found, fall back to a general helpful answer while clearly indicating the limitation.
+- Messages record referenced chunk previews and similarity scores for traceability.
+
+### Sessions and visitors
+
+- Sessions:
+  - Identified by `sessionId` (UUID).
+  - Track `agent`, `companyId`, `createdBy`, status, totals, and timestamps.
+- Messages:
+  - Include `messageType` (user/assistant/system), content, content hash, tokens used, model, response time, and RAG metadata (`searchPerformed`, `chunksFound`, `fallbackUsed`).
+- Visitors:
+  - Optionally associated with sessions for continuity and analytics.
+
+### Vector search
+
+- Vector DB stores embeddings with rich metadata for scoping and analytics.
+- Queries filter by `agentId` and apply a similarity threshold.
+- Results include content and metadata like `fileId` and `chunkIndex`.
+
+## Frontend experience in Weam
+
+- Agent flow:
+  - Step 1: Upload documents
+  - Step 2: Training progress and status
+  - Step 3: Playground for interactive testing
+  - Step 4: Deploy surfaces within Weam (e.g., widget usage controlled by Weam)
+- Chat widget (Weam-managed surface):
+  - Allows session continuity and can pass optional visitor identifiers.
+  - Uses Weam APIs under the hood; configuration is managed within Weam.
+
+## API reference (within Weam)
+
+All endpoints are available within Weam’s environment and scoped per agent/company. Typical routes include:
+
+- Agents
+  - `GET /api/agents`
+  - `GET /api/agents/:id`
+  - `POST /api/agents`
+  - `PUT /api/agents/:id`
+  - `DELETE /api/agents/:id`
+- Upload
+  - `POST /api/upload/:agentId` — multipart form upload; Weam queues processing
+  - Status and file management endpoints are available through Weam
+- Search
+  - `POST /api/search/:agentId` — semantic retrieval scoped to agent
+- Chat
+  - `POST /api/chat/:agentId/message` — send a message; includes optional `sessionId`, model overrides, and instructions
+  - `GET /api/chat/:agentId/sessions` — list sessions (authenticated contexts)
+- Visitors
+  - Visitor association for sessions and analytics when provided.
+
+Note: Authentication, authorization, rate limits, and multi-tenant scoping are enforced by Weam.
+
+## Data and schemas (conceptual)
+
+- Files
+  - `originalFilename`, `fileSize`, `mimeType`, `fileHash`, `s3Key`, `s3Url`
+  - `processing.status` per stage (textExtraction, chunking, embeddings, vector storage)
+  - `companyId`, `createdBy` for multi-tenant scoping
+- ChatSessions
+  - `sessionId`, `agent`, optional `visitor`, `companyId`, `createdBy`, status, counters
+- ChatMessages
+  - `session`, `agent`, `companyId`, `createdBy`, `messageType`, `content`, `contentHash`
+  - `tokensUsed`, `modelUsed`, `responseTimeMs`
+  - `referencedChunks[]` with `fileId`, `chunkIndex`, `score`, `content` preview
+  - `ragMetadata`: `searchPerformed`, `chunksFound`, `searchScore`, `fallbackUsed`
+
+## Operational behaviors
+
+- Input validation and sane defaults for model and temperature.
+- Rate limiting is applied to protect service quality.
+- Clear fallbacks when no relevant context is found; responses indicate limitations.
+
+## Tech Stack
+
+| Layer                 | Technologies                                                                    | Purpose                                                       |
+| --------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Frontend              | Next.js 14, React 18, TypeScript                                                | App framework, UI, type safety                                |
+| Styling               | Tailwind CSS, tailwind-merge                                                    | Styling and utility-first design                              |
+| UI/UX                 | lucide-react, react-hot-toast, react-dropzone, react-markdown, remark-gfm, clsx | Icons, toasts, uploads, markdown rendering, class composition |
+| Networking            | Axios                                                                           | HTTP client for API calls                                     |
+| Session               | iron-session                                                                    | Client session handling within Weam                           |
+| Backend               | Node.js, Express                                                                | API and application logic                                     |
+| Validation & Security | Joi, helmet, express-rate-limit, cors, morgan                                   | Input validation, headers, rate limits, logging               |
+| File Handling         | busboy, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner                       | Upload parsing and object storage integration                 |
+| Processing & Queues   | BullMQ, Redis                                                                   | Background jobs for extraction, chunking, embeddings, storage |
+| AI & Embeddings       | openai, @langchain/openai, langchain                                            | Chat completions and embedding generation                     |
+| Vector Database       | @pinecone-database/pinecone (Pinecone)                                          | Similarity search and context retrieval                       |
+| Document Parsing      | pdf-parse, mammoth                                                              | PDF and DOCX text extraction                                  |
+| Database (App)        | mongoose (MongoDB)                                                              | Agent, files metadata, sessions, messages, stats              |
+
+## Troubleshooting
+
+<Tabs>
+  <Tab title="Document Upload">
+    <AccordionGroup>
+      <Accordion title="File type or size rejected">
+        **Common problems:**
+
+        - Unsupported extension or corrupted file
+        - Exceeds size limits
+        - Incorrect MIME type
+
+        **Solutions:**
+
+        - Check allowed types in Weam’s upload UI
+        - Reduce file size or split large documents
+        - Re-export the file to fix MIME/type inconsistencies
+      </Accordion>
+      <Accordion title="Upload completes but file never processes">
+        **Symptoms:**
+
+        - Status stuck in “queued” or “processing”
+        - No chunks or embeddings appear
+
+        **Solutions:**
+
+        - Re-upload the file to re-trigger the pipeline
+        - Use a simpler text-based version (e.g., export PDF to text/MD)
+        - Verify the file isn’t empty or image-only without extractable text
+      </Accordion>
+      <Accordion title="Duplicate or near-duplicate uploads">
+        **Symptoms:**
+
+        - Repeated documents showing minimal effect on answers
+
+        **Solutions:**
+
+        - Remove older duplicates from the agent’s document list
+        - Prefer curated, deduplicated sources to improve retrieval quality
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Processing & Queues">
+    <AccordionGroup>
+      <Accordion title="Text extraction issues">
+        **Symptoms:**
+
+        - Extracted text is empty or garbled
+        - DOCX/PDF content doesn’t appear in chunks
+
+        **Solutions:**
+
+        - Re-save source as DOCX/PDF with selectable text
+        - Try a TXT/Markdown export to ensure clean text extraction
+        - Avoid scanned/image-only PDFs without OCR
+      </Accordion>
+      <Accordion title="Chunking not producing useful segments">
+        **Symptoms:**
+
+        - Chunks are too small/large; context seems fragmented
+
+        **Solutions:**
+
+        - Upload a more structured source (headings, bullets)
+        - Split very long documents into logical sections
+        - Use concise documents focused on the agent’s scope
+      </Accordion>
+      <Accordion title="Embedding generation inconsistencies">
+        **Symptoms:**
+
+        - Some files embed, others don’t
+        - Retrieval returns few or no results
+
+        **Solutions:**
+
+        - Re-upload impacted files to re-run embeddings
+        - Remove low-quality documents that introduce noise
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Retrieval & Vector Search">
+    <AccordionGroup>
+      <Accordion title="No relevant context found">
+        **Symptoms:**
+
+        - Answers say insufficient information
+        - No or very low similarity matches
+
+        **Solutions:**
+
+        - Add documents that directly cover the queried topic
+        - Use clearer, more specific user questions
+        - Reduce noise by removing unrelated content from the agent
+      </Accordion>
+      <Accordion title="Irrelevant context returned">
+        **Symptoms:**
+
+        - Answers cite unrelated snippets
+
+        **Solutions:**
+
+        - Remove off-topic documents from this agent
+        - Split mixed-domain content into separate agents
+        - Improve document structure with clear headings
+      </Accordion>
+      <Accordion title="Too many/too few chunks in context">
+        **Symptoms:**
+
+        - Answers are too verbose or miss key details
+
+        **Solutions:**
+
+        - Prefer well-structured, concise documents
+        - Avoid overly long monolithic files without headings
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Chat & Sessions">
+    <AccordionGroup>
+      <Accordion title="Generic or repetitive answers">
+        **Common causes:**
+
+        - No strong matches in vector search
+        - Ambiguous or broad user query
+        - Overly general agent instructions
+
+        **Solutions:**
+
+        - Ask more specific questions that match document phrasing
+        - Add targeted documents for the missing topics
+        - Refine the agent’s instructions to emphasize grounded answers
+      </Accordion>
+      <Accordion title="Session continuity issues">
+        **Symptoms:**
+
+        - Conversations forget context across messages or devices
+
+        **Solutions:**
+
+        - Use a stable session identifier when interacting within Weam surfaces
+        - Associate visitors where supported to retain continuity
+      </Accordion>
+      <Accordion title="High latency or timeouts">
+        **Symptoms:**
+
+        - Slow responses; conversation pauses
+
+        **Solutions:**
+
+        - Keep documents concise and focused to improve retrieval speed
+        - Reduce unnecessary content that bloats the search space
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="API & Auth">
+    <AccordionGroup>
+      <Accordion title="Unauthorized or forbidden">
+        **Symptoms:**
+
+        - 401/403 errors in UI
+
+        **Solutions:**
+
+        - Ensure you’re signed in and have access to the agent in Weam
+        - Confirm the agent belongs to your company/workspace
+      </Accordion>
+      <Accordion title="Rate limiting">
+        **Symptoms:**
+
+        - Requests throttled intermittently
+
+        **Solutions:**
+
+        - Slow down repeated actions and allow brief cooldowns
+        - Batch document uploads into smaller groups
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="LLM & Usage">
+    <AccordionGroup>
+      <Accordion title="Model or temperature overrides not respected">
+        **Symptoms:**
+
+        - Responses feel inconsistent with configured style
+
+        **Solutions:**
+
+        - Keep overrides minimal and consistent across tests
+        - Align the agent’s instructions with the desired tone and scope
+      </Accordion>
+      <Accordion title="Token usage feels high">
+        **Symptoms:**
+
+        - Long answers with little added value
+
+        **Solutions:**
+
+        - Make documents succinct and use clear headings
+        - Ask narrower questions to reduce required context
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  <Tab title="Tab">
+    
+  </Tab>
+</Tabs>
+
+## Best practices
+
+- Keep documents concise and well-structured to improve retrieval quality.
+- Use the playground to test question patterns; iterate on instructions.
+- Organize uploads per agent purpose; avoid mixing disparate domains in one agent.
+- Monitor RAG metadata and referenced chunk previews to refine inputs.
