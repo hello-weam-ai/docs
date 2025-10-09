@@ -1,3 +1,298 @@
 ---
 title: "AI Document Generator"
+description: "Overview and technical reference for the AI-powered document editor with templates, generation, and session-based access control."
+sidebarTitle: "Overview"
 ---
+
+### Overview
+
+An AI-powered document Generator built on Next.js that helps users create, edit, and manage documents from predefined templates and AI-assisted generation. It centralizes document creation workflows, template management, and AI generation while persisting data in MongoDB with secure, session-based access control.
+
+### What it does (Capabilities)
+
+- **Document creation and editing**: Create new documents, edit content in rich-text/HTML/Markdown editors, and manage updates.
+- **Template library**: Browse and fetch predefined templates for common document types (e.g., resumes, reports).
+- **AI generation**: Generate document content via OpenAI-powered endpoints.
+- **Document storage & retrieval**: Persist documents to MongoDB; fetch by ID.
+- **Chat history storage**: Save and retrieve chat interactions related to AI generation.
+- **Session-based access control**: Validate access via session middleware and server-side checks.
+- **Export utilities**: Utilities for exporting or transforming content.
+
+### User Flows
+
+- **Start from a template**: Select a template → open in editor → customize and save.
+- **Create from scratch**: Open a blank editor → compose content → save as a new document.
+- **AI-assisted creation**: Provide prompts/inputs → trigger generation → refine in the editor → save.
+- **Revisit or share**: Open existing document by ID → edit or export as needed.
+- **Review history**: Retrieve chat history for context and iteration.
+
+### Architecture
+
+- **UI (Next.js App Router)**: Pages under `app/` render the editor, template browsing, and session-aware views. Editors include rich-text, HTML, Markdown, and specialized layouts.
+- **API routes (Next.js)**: REST-like endpoints under `app/api/` handle templates, documents, generation, chat history, auth checks, and health checks.
+- **Data store (MongoDB via Mongoose)**: Models in `models/` define `User`, `Document`, `Template`, and `ChatHistory`.
+- **External services (OpenAI)**: AI generation and health checks via OpenAI API.
+- **Session layer (iron-session)**: Session options and helpers in `app/config/ironOption.tsx` and `app/config/withSession.tsx`; `middleware.ts` supports session-aware routing.
+- **Utilities and export**: Helpers in `lib/` for export, utils, and Mongo connection URIs. HTML template helpers in `html/`.
+
+### Technical Design
+
+- **Editors**: Rich text, Markdown, HTML, font size selector, two-column layout.
+- **Templates module**: Catalog of TypeScript/TSX templates with API access.
+- **Documents module**: CRUD operations over documents.
+- **AI generation module**: Integrates with OpenAI; health checks.
+- **Chat history module**: Stores and fetches interactions.
+- **Session & access control**: Iron Session config; access enforcement.
+- **Data access layer**: Mongo connection pooling and helper functions.
+- **Security & validation**: Session-based auth, scoped access checks.
+- **Pipelines**: Not applicable.
+
+### API Reference
+
+- `GET /api/templates` - List or fetch available templates.
+- `POST /api/generate` - Generate content via OpenAI.
+- `GET /api/check-openai` - Health check for OpenAI.
+- `GET /api/documents` - List/query documents.
+- `POST /api/documents` - Create a document.
+- `GET /api/documents/[id]` - Retrieve a document.
+- `PATCH /api/documents/[id]` - Update a document.
+- `DELETE /api/documents/[id]` - Delete a document.
+- `GET /api/chat-history` - Retrieve chat history.
+- `POST /api/chat-history` - Store chat history.
+- `GET /api/auth/check-access` - Validate session-based access.
+
+### Data and Schemas (Conceptual)
+
+- **User**: Authenticated session owner.
+- **Template**: Metadata and content for predefined structures.
+- **Document**: Saved artifact of user content.
+- **ChatHistory**: AI prompts/responses for context and iteration.
+
+### Troubleshooting
+
+### Troubleshooting Guide
+
+<Tabs>
+  <Tab title="Document Creation Issues">
+    <Accordion title="Cannot create or save a document">
+      **Symptoms**
+
+      - Save button fails, API errors, document missing after creation.
+
+      **Common causes**
+
+      - Missing session, MongoDB connection issues, invalid payload.
+
+      **Solutions**
+
+      - Re-authenticate, check MongoDB config, validate payload.
+    </Accordion>
+    <Accordion title="Document not found by ID">
+      **Symptoms**
+
+      - 404 errors, broken links.
+
+      **Common causes**
+
+      - ID mismatch, deleted document, incorrect URL.
+
+      **Solutions**
+
+      - Verify ID, re-copy URL, recreate document.
+    </Accordion>
+    <Accordion title="Template does not load">
+      **Symptoms**
+
+      - Empty list, API errors.
+
+      **Common causes**
+
+      - Missing seed data, template build errors.
+
+      **Solutions**
+
+      - Seed templates, fix syntax, return metadata.
+    </Accordion>
+  </Tab>
+  <Tab title="Editor & Export Problems">
+    <Accordion title="Editor content not rendering correctly">
+      **Symptoms**
+
+      - Formatting lost, layout misaligned.
+
+      **Common causes**
+
+      - CSS conflicts, invalid content, component misuse.
+
+      **Solutions**
+
+      - Validate content, inspect classes, use correct editor.
+    </Accordion>
+    <Accordion title="Export fails or produces blank output">
+      **Symptoms**
+
+      - Blank exports, errors.
+
+      **Common causes**
+
+      - Unsupported content, missing dependencies.
+
+      **Solutions**
+
+      - Simplify content, review utilities, test templates.
+    </Accordion>
+  </Tab>
+  <Tab title="AI Generation Errors">
+    <Accordion title="OpenAI generation returns errors">
+      **Symptoms**
+
+      - API errors, empty responses.
+
+      **Common causes**
+
+      - Missing API key, oversized prompts.
+
+      **Solutions**
+
+      - Configure API key, reduce prompt size, retry.
+    </Accordion>
+    <Accordion title="Generated content irrelevant to template">
+      **Symptoms**
+
+      - Off-topic content.
+
+      **Common causes**
+
+      - Poor prompt context.
+
+      **Solutions**
+
+      - Include template hints, refine prompts.
+    </Accordion>
+    <Accordion title="Chat history missing or stale">
+      **Symptoms**
+
+      - Missing or unordered entries.
+
+      **Common causes**
+
+      - Missing refs, DB issues.
+
+      **Solutions**
+
+      - Check refs, sort queries, validate writes.
+    </Accordion>
+  </Tab>
+  <Tab title="API & Authentication Issues">
+    <Accordion title="401/403 from protected endpoints">
+      **Symptoms**
+
+      - Access denied, redirects.
+
+      **Common causes**
+
+      - Expired session, config issues.
+
+      **Solutions**
+
+      - Re-authenticate, verify config.
+    </Accordion>
+    <Accordion title="Unexpected CORS or method errors">
+      **Symptoms**
+
+      - CORS errors, method not allowed.
+
+      **Common causes**
+
+      - Disallowed methods, missing headers.
+
+      **Solutions**
+
+      - Match methods, same-origin calls.
+    </Accordion>
+  </Tab>
+  <Tab title="Session & Access Problems">
+    <Accordion title="Session issues">
+      **Symptoms**
+
+      - Client shows no user; `/api/auth/session` returns 401.
+      - Stale cookies break auth consistency.
+
+      **Common causes**
+
+      - Cookie name/password mismatch; iron-session misconfig.
+      - Legacy cookies.
+
+      **Solutions**
+
+      - Set correct cookie name/password.
+      - Clear old cookies, re-fetch session.
+    </Accordion>
+  </Tab>
+  <Tab title="Performance & Cost Optimization">
+    <Accordion title="Slow editor interactions">
+      **Symptoms**
+
+      - Typing lag, slow load.
+
+      **Common causes**
+
+      - Large DOM, re-renders.
+
+      **Solutions**
+
+      - Memoize components, split content.
+    </Accordion>
+    <Accordion title="High OpenAI costs">
+      **Symptoms**
+
+      - Increased billing.
+
+      **Common causes**
+
+      - Large prompts, repeated calls.
+
+      **Solutions**
+
+      - Use concise prompts, caching.
+    </Accordion>
+    <Accordion title="MongoDB performance issues">
+      **Symptoms**
+
+      - Slow queries.
+
+      **Common causes**
+
+      - Missing indexes.
+
+      **Solutions**
+
+      - Index queries, paginate.
+    </Accordion>
+  </Tab>
+</Tabs>
+
+### Tech Stack
+
+| Layer           | Technologies                                        | Purpose                                    |
+| --------------- | --------------------------------------------------- | ------------------------------------------ |
+| Frontend UI     | Next.js App Router, React, TypeScript, Tailwind CSS | Pages, editors, styling                    |
+| Backend API     | Next.js API routes                                  | Handle templates, documents, generation    |
+| Database        | MongoDB, Mongoose                                   | Persist users, documents, templates, chats |
+| Auth & Sessions | iron-session                                        | Session-based access control               |
+| AI/ML           | OpenAI API                                          | Text generation                            |
+| Build & Package | pnpm, TypeScript, PostCSS                           | Build tooling                              |
+| Styling         | Tailwind CSS, globals.css                           | Utility-first styling                      |
+| Utilities       | lib/\*                                              | Helpers and export routines                |
+| Seeding         | scripts/seed-templates.js                           | Populate template catalog                  |
+
+### Best Practices
+
+- Scope all data by session.
+- Reuse MongoDB connections.
+- Validate input before persisting.
+- Include template structure in AI prompts.
+- Stick to one editor mode per document.
+- Paginate and index lists/histories.
+- Fail fast on external calls.
+- Prefer idempotent updates.

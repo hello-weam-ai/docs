@@ -1,0 +1,227 @@
+---
+title: "AI Recruiter"
+sidebarTitle: "Interview Recruiter App"
+---
+
+## Overview
+
+This **Next.js 14** app manages AI-driven interview workflows: create interviewers (Retell agents), create interviews with shareable call links, register and analyze calls, and store transcripts and insights in **MongoDB** with session-based access.
+
+<Info>
+  This AI Recruiter is part of Weam. Configuration, usage, and access happen within Weam.
+</Info>
+
+## What It Does (Capabilities)
+
+- Create Retell-backed interviewers and LLM agents
+- Create interviews with questions/objectives and shareable call URLs
+- Register calls and receive webhook events from Retell
+- Fetch call details/transcripts and generate OpenAI analytics
+- Manage interviews and responses via dashboard and APIs
+- Session-based access control with `iron-session` and middleware
+
+## User Flows
+
+- **Configure interviewer:** Provision a Retell-backed agent.
+- **Create interview:** Set name, objective, and questions; generate a shareable call URL.
+- **Conduct call:** Candidate joins via the link; system registers and receives Retell events.
+- **Analyze & review:** Transcript is processed, insights are generated via OpenAI, and data is stored for dashboard review.
+
+## Architecture
+
+| Layer                       | Components                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **UI (Next.js App Router)** | Client pages in `src/app/(client)` with React contexts (`auth`, `interviews`, `interviewers`, `responses`) |
+| **API/Services**            | Route handlers in `src/app/api/*`; business logic in `src/services/*`                                      |
+| **Webhooks/Processing**     | `api/response-webhook` validates Retell signatures and triggers call retrieval and analysis                |
+| **Data Store**              | MongoDB for interviews, interviewers, responses, users, and organizations                                  |
+| **External Services**       | Retell (LLM agents + events) and OpenAI (analytics generation)                                             |
+
+## Technical Design
+
+- **Interviewers:** Create Retell LLM and agent, store `agent_id` with user and company context.
+- **Interviews:** Generate shareable call URL using `NEXT_PUBLIC_LIVE_URL` and optional slug; store questions and metadata.
+- **Responses:** Register calls and persist transcript, analytics, duration, and status flags.
+- **Analytics:** Build prompt from transcript and interview questions, generate structured insights with OpenAI.
+- **Session/State:** `iron-session` with `/api/auth/session`; middleware checks public/protected routes via `check-access` for role `USER`.
+- **Security/Validation:** Retell webhook signature verification; API key validation; session-based access control; selective public routes for integration flows.
+
+## API Reference (High Level)
+
+#### Auth / Session
+
+- `GET /api/auth/session` - Returns current session user and `companyId` (401 if none).
+- `POST /api/auth/logout` - Ends session.
+- `POST /api/auth/check-access` - Used by middleware for authorization decisions.
+
+#### Interviewers
+
+- `GET /api/interviewers` - List interviewers.
+- `POST /api/interviewers` - Create interviewer (provisions Retell agent).
+
+#### Interviews
+
+- `GET /api/interviews` - List interviews (scoped by user/company).
+- `POST /api/interviews` - Create new interview.
+- `POST /api/create-interview` - Alternate creation path with call URL generation.
+- `POST /api/interviews/[id]/generate-token` - Generates secure token.
+
+#### Calls and Responses
+
+- **Public:**
+  - `POST /api/public/register-call`
+  - `POST /api/public/get-call`
+  - `POST /api/public/responses`
+- **Authenticated:**
+  - `POST /api/register-call`
+  - `POST /api/get-call`
+  - `GET /api/responses/call/[callId]`
+  - CRUD under `/api/responses`
+
+#### Webhooks
+
+- `POST /api/response-webhook` - Validates Retell signature and triggers call retrieval/analysis.
+
+**Auth Scoping:**
+
+- Public endpoints are available for integrations (no session).
+- Protected endpoints require `iron-session`; middleware enforces `USER` role access.
+
+## Data and Schemas (Conceptual)
+
+| Entity           | Key Fields                                                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Interviewer**  | `name`, `agent_id`, `user { id, email }`, `companyId`                                                                                        |
+| **Interview**    | `id`, `name`, `objective`, `questions[]`, `url`, `readable_slug`, `user`, `companyId`                                                        |
+| **Response**     | `call_id`, `transcript`, `analytics { score, strengths, improvements, insights }`, `duration`, `is_analysed`, `candidate_status`, timestamps |
+| **Organization** | `name`, `logo_url`, `companyId`                                                                                                              |
+| **User/Session** | `_id`, `email`, `roleCode`, `companyId`                                                                                                      |
+
+**Multi-tenancy:**\
+All core entities are scoped by `companyId` for secure isolation between tenants.
+
+<Tabs>
+  <Tab title="Interview Creation">
+    <Accordion title="Failed to create interview">
+      **Symptoms**
+
+      - 500 errors; toast shows “Failed to create interview”
+      - Missing API keys; no new records
+
+      **Common causes**
+
+      - Missing `OPENAI_API_KEY`, `RETELL_API_KEY`, `NEXT_PUBLIC_*`, DB vars
+      - No user session (401)
+      - Invalid payload types (e.g., BigInts)
+
+      **Solutions**
+
+      - Set required env vars; retry
+      - Ensure valid session before calling API
+      - Sanitize payload on client
+    </Accordion>
+  </Tab>
+  <Tab title="Calls & Analysis">
+    <Accordion title="Invalid signature or missing analysis">
+      **Symptoms**
+
+      - Webhook returns 401 “Invalid signature”
+      - Analytics not generated; `is_analysed` remains false
+      - Public `get-call` fails and fallback also fails
+
+      **Common causes**
+
+      - Incorrect/missing `RETELL_API_KEY`
+      - Transcript missing from call response
+      - Misconfigured `NEXT_PUBLIC_LIVE_URL`/base path; call ID not ready
+
+      **Solutions**
+
+      - Verify Retell signature and API key
+      - Check transcript existence; set `OPENAI_API_KEY`
+      - Fix base URL/path; retry after analysis event
+    </Accordion>
+  </Tab>
+  <Tab title="API & Auth">
+    <Accordion title="Protected endpoints failing">
+      **Symptoms**
+
+      - 401 from protected endpoints; redirect to `/login`
+      - Public endpoints return 4xx/5xx
+
+      **Common causes**
+
+      - Expired/missing session; `check-access` denies
+      - Invalid request body; entity not found
+
+      **Solutions**
+
+      - Ensure session is set; verify role and `_id`
+      - Validate payload fields; ensure entities exist
+    </Accordion>
+  </Tab>
+  <Tab title="App & Sessions">
+    <Accordion title="Session issues">
+      **Symptoms**
+
+      - Client shows no user; `/api/auth/session` returns 401
+      - Stale cookies break auth consistency
+
+      **Common causes**
+
+      - Cookie name/password mismatch; iron-session misconfig
+      - Legacy cookies (`foloup_auth_session`, `iron-session`)
+
+      **Solutions**
+
+      - Set `NEXT_PUBLIC_COOKIE_NAME` and `NEXT_PUBLIC_COOKIE_PASSWORD`
+      - Clear old cookies; re-fetch session
+    </Accordion>
+  </Tab>
+  <Tab title="Performance & Cost">
+    <Accordion title="Slow analytics or high costs">
+      **Symptoms**
+
+      - Slow analytics
+      - High OpenAI usage
+      - Dashboard slow due to data fetching
+
+      **Common causes**
+
+      - Large transcripts; repeated re-analysis
+      - Unscoped queries; no pagination
+
+      **Solutions**
+
+      - Generate analytics once; cache/store results
+      - Scope by `companyId`, paginate, reuse context state
+    </Accordion>
+  </Tab>
+</Tabs>
+
+## Tech Stack
+
+| Layer               | Technologies                                                                    | Purpose                               |
+| ------------------- | ------------------------------------------------------------------------------- | ------------------------------------- |
+| **Frontend UI**     | Next.js 14 (App Router), React 18, Tailwind, Radix UI, shadcn/ui, framer-motion | Dashboard, modals, forms              |
+| **State/Forms**     | React Context, React Hook Form                                                  | Client state and validation           |
+| **API/Server**      | Next.js Route Handlers, iron-session                                            | API endpoints and session management  |
+| **Services**        | `src/services/*`                                                                | Business logic and data access        |
+| **Database**        | MongoDB (native driver)                                                         | Data persistence                      |
+| **AI/ML**           | OpenAI SDK                                                                      | Transcript analytics                  |
+| **Voice/Telephony** | Retell SDK                                                                      | LLM agent creation and event handling |
+| **Utilities**       | axios, zod, uuid/nanoid, lucide-react                                           | HTTP, validation, IDs, icons          |
+| **Styling**         | tailwindcss-animate, clsx, class-variance-authority                             | Styling helpers                       |
+| **Build/Tooling**   | TypeScript, ESLint, PostCSS, Tailwind                                           | Developer tooling                     |
+
+## Best Practices
+
+- Validate env vars before sensitive operations.
+- Preserve HTTP status codes for clarity.
+- Use authenticated endpoints wherever possible.
+- Cache analytics results to avoid recomputation.
+- Enforce tenant scoping via `companyId`.
+- Clear cookies on inconsistent auth state.
+- Log and handle Retell/OpenAI errors gracefully.
+- Avoid re-analyzing the same transcript multiple times.
+- Keep prompts deterministic and lightweight for stable OpenAI costs.

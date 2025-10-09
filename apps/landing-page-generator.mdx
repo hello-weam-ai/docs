@@ -1,3 +1,301 @@
 ---
 title: "Landing Page Generator"
+description: "End-to-end overview of the Landing Page Content Generator, its architecture, APIs, data, and best practices."
+sidebarTitle: "Overview"
 ---
+
+## Overview
+
+The **Landing Page Content Generator** is a full-stack solution that transforms design sources (Figma URLs or PDFs) and business details into structured, editable landing page content. It solves the problem of turning raw designs and basic business context into production-ready copy and sections using AI, while providing tooling to upload, extract, plan, generate, preview, and manage landing pages.
+
+<Info>
+  This Landing Page Generator is part of Weam. Configuration, usage, and access happen within Weam.
+</Info>
+
+## What It Does (Capabilities)
+
+- **Design ingestion** – Upload PDFs or reference Figma URLs; basic validation and metadata capture.
+- **Content extraction** – OCR/parse PDFs; extract design elements and structure from URLs/Figma (public demo endpoints available).
+- **Business context capture** – Collect business name, overview, audience, brand tone, and optional website URL.
+- **AI content generation** – Use Gemini to plan and generate section-based landing page content; per-section regeneration supported.
+- **Section management** - Normalize sections with titles, ordering, components, and bounding boxes; publish flow.
+- **Editing & preview** – Review, inline edit, and preview generated content in the Next.js app.
+- **History & management** – List, filter, update, and delete landing pages; track status (draft/published/archived).
+- **Security and validation** – Request validation, input sanitization, basic rate limiting, and structured error handling.
+
+## User Flows (Non-Ops Usage)
+
+1. **Configure business context** → Enter business details (name, overview, audience, tone, optional website URL).
+2. **Ingest design** → Upload a PDF or provide a Figma/website URL for extraction.
+3. **Extract & analyze** → Parse files or URLs and extract layout/content hints.
+4. **Plan & generate** → Use AI endpoints to plan content structure and generate copy by sections.
+5. **Review & edit** → Adjust sections, regenerate selectively, and refine text in the editor.
+6. **Save & publish** → Save updates, manage status, and publish when complete.
+
+## Architecture
+
+| Layer              | Technologies                                                   | Purpose                                            |
+| ------------------ | -------------------------------------------------------------- | -------------------------------------------------- |
+| **UI**             | Next.js 14 (App Router), React, TypeScript, Tailwind, Radix UI | End-to-end UX: upload, forms, editor, previews     |
+| **API / Services** | Node.js (Express)                                              | REST endpoints: auth, CRUD, uploads, AI generation |
+| **Data Store**     | MongoDB (Mongoose)                                             | Stores users, landing pages, and metadata          |
+| **AI / External**  | Gemini (Google Generative AI)                                  | Content planning and generation                    |
+| **Auth / Session** | JWT, iron-session                                              | Authentication and session persistence             |
+| **Security**       | Helmet, CORS, express-validator, express-rate-limit            | Validation, input sanitization, rate limiting      |
+
+## Technical Design
+
+- **Modules**
+  - **Ingestion** – Validates uploads (type/size) via Multer; captures metadata.
+  - **Extraction** – OCR or parse PDFs; normalize data into sections.
+  - **Planning & Generation** – Combines business context and extracted data; uses Gemini for structured copy.
+  - **Lifecycle** – CRUD for landing pages; handles section normalization and ordering.
+  - **Logging & Errors** – Centralized logger (Winston) and error middleware.
+- **Pipelines**\
+  Extraction → Validation → Content Planning → Section Generation → Edit/Preview → Publish.
+- **Retrieval Logic**\
+  Section normalization ensures consistent schema (title, content, components, order, bounding boxes).
+- **Security & Validation**
+  - Helmet, CORS, express-validator, bcrypt for hashing.
+  - express-rate-limit for request throttling.
+
+## API Reference (High-Level)
+
+### Auth
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `PUT /api/auth/profile`
+- `PUT /api/auth/change-password`
+
+### Landing Pages
+
+- `GET /api/landing-pages`
+- `GET /api/landing-pages/:id`
+- `POST /api/landing-pages`
+- `PUT /api/landing-pages/:id`
+- `PUT /api/landing-pages/:id/sections`
+- `DELETE /api/landing-pages/:id`
+- `PUT /api/landing-pages/:id/publish`
+
+### Upload & Processing
+
+- `POST /api/upload/public`
+- `DELETE /api/upload/cleanup`
+- `POST /api/upload/pdf`
+- `POST /api/upload/figma`
+- `GET /api/upload/status/:fileId`
+- `DELETE /api/upload/:fileId`
+
+### AI & Content
+
+- Extraction: `POST /api/ai/extract-pdf`, `extract-design-from-url`, `extract-figma`
+- Planning: `POST /api/ai/validate`, `plan-content`, `analyze-design`
+- Generation: `POST /api/ai/generate-content`, `regenerate-section`
+- Full-page: `POST /api/ai/generate-landing-page`, `preview-landing-page`, `download-landing-page`
+
+> Public demo endpoints exist; production should enforce JWT authentication.
+
+## Data & Schemas (Conceptual)
+
+### User
+
+| Field    | Type    | Description                          |
+| -------- | ------- | ------------------------------------ |
+| name     | String  | User’s full name                     |
+| email    | String  | Unique; used for login               |
+| password | String  | Hashed                               |
+| role     | Enum    | `user` or `admin`                    |
+| profile  | Object  | avatar, preferences, lastLogin       |
+| tokens   | Methods | JWT generation and bcrypt validation |
+
+### LandingPage
+
+| Field            | Type   | Description                                                   |
+| ---------------- | ------ | ------------------------------------------------------------- |
+| businessName     | String | Company name                                                  |
+| businessOverview | String | Business overview                                             |
+| targetAudience   | String | Audience or market                                            |
+| brandTone        | Enum   | professional, friendly, playful, authoritative, casual        |
+| websiteUrl       | String | Optional URL                                                  |
+| designSource     | Object | Figma/PDF metadata                                            |
+| sections         | Array  | Section objects (id, title, content, components, order, etc.) |
+| status           | Enum   | draft, published, archived                                    |
+| aiMetadata       | Object | model, generatedAt, steps                                     |
+
+## Troubleshooting
+
+<Tabs>
+  <Tab title="File Upload Issues">
+    <Accordion title="File rejected or upload fails">
+      **Symptoms**
+
+      - 400 errors on upload
+      - “Invalid file type” message
+      - Large PDFs fail quickly
+
+      **Common causes**
+
+      - MIME type not allowed (PDF/JPEG/PNG/GIF)
+      - File exceeds max size
+      - Incorrect form field name
+
+      **Solutions**
+
+      - Use `pdf` field for PDF uploads
+      - Reduce file size under configured limit
+      - Verify `Content-Type` and multipart form settings
+    </Accordion>
+    <Accordion title="Upload succeeded but file not found">
+      **Symptoms**
+
+      - `GET /api/upload/status/:fileId` returns 404
+      - File deleted prematurely
+
+      **Solutions**
+
+      - Use correct `fileId`
+      - Confirm uploads dir matches backend config
+      - Avoid early cleanup
+    </Accordion>
+    <Accordion title="Figma URL rejected">
+      **Symptoms**
+
+      - 400 error on `POST /api/upload/figma`
+      - “Invalid Figma URL format”
+
+      **Solutions**
+
+      - Use full file URL (`https://www.figma.com/file/...`)
+      - Avoid share/prototype links
+    </Accordion>
+  </Tab>
+  <Tab title="Extraction & Parsing Errors">
+    <Accordion title="PDF extraction returns empty content">
+      **Causes**
+
+      - Scanned PDFs or poor quality
+      - Image-only documents\
+        **Solutions**
+      - Provide text-based PDFs
+      - Improve source quality
+    </Accordion>
+    <Accordion title="Design structure extraction fails">
+      **Causes**
+
+      - Unreachable or blocked URL
+      - Unexpected layout patterns\
+        **Solutions**
+      - Test URL reachability
+      - Try PDF flow first
+    </Accordion>
+    <Accordion title="Preview/download endpoints blank">
+      **Causes**
+
+      - Missing sections or order values\
+        **Solutions**
+      - Normalize via sections API
+      - Ensure valid `order` and component maps
+    </Accordion>
+  </Tab>
+  <Tab title="AI Output & Generation">
+    <Accordion title="Generic output">
+      **Causes**
+
+      - Insufficient business context
+      - No tone or website provided\
+        **Solutions**
+      - Add detailed overview and tone
+      - Include design elements
+    </Accordion>
+    <Accordion title="Section regeneration fails">
+      **Causes**
+
+      - Missing `sectionType`, ids, or content\
+        **Solutions**
+      - Ensure valid fields; use supported section types
+    </Accordion>
+  </Tab>
+  <Tab title="Content Validation & Publishing">
+    <Accordion title="Create/update returns validation errors">
+      **Causes**
+
+      - Title/overview length invalid
+      - Unsupported tone\
+        **Solutions**
+      - Follow constraints and enums
+    </Accordion>
+    <Accordion title="Publish rejects request">
+      **Causes**
+
+      - No valid sections or content\
+        **Solutions**
+      - Normalize sections and retry
+    </Accordion>
+  </Tab>
+  <Tab title="Session & Editor Issues">
+    <Accordion title="Session not preserved">
+      **Causes**
+
+      - Cookie misconfig
+      - Mixed origins\
+        **Solutions**
+      - Align CORS and same-site settings
+      - Use consistent auth handling
+    </Accordion>
+    <Accordion title="Editor missing components">
+      **Causes**
+
+      - Old schema or empty components\
+        **Solutions**
+      - Re-normalize via API
+    </Accordion>
+  </Tab>
+  <Tab title="Performance & Cost Optimization">
+    <Accordion title="API throttling or timeouts">
+      **Solutions**
+
+      - Debounce calls, reduce payload size
+      - Implement retry with backoff
+    </Accordion>
+    <Accordion title="High AI cost">
+      **Solutions**
+
+      - Cache stable steps
+      - Limit full-page regenerations
+    </Accordion>
+    <Accordion title="Large PDFs slow down">
+      **Solutions**
+
+      - Split or compress PDFs
+      - Use partial extraction
+    </Accordion>
+  </Tab>
+</Tabs>
+
+---
+
+## Tech Stack Summary
+
+| Layer    | Technologies                                  | Purpose                         |
+| -------- | --------------------------------------------- | ------------------------------- |
+| Frontend | Next.js 14, React 18, Tailwind, Radix, Lucide | UI, editor, preview             |
+| Backend  | Node.js, Express, Helmet, CORS, Winston       | REST APIs, validation, logging  |
+| Database | MongoDB, Mongoose                             | Data persistence                |
+| Auth     | JWT, bcryptjs, iron-session                   | Authentication                  |
+| Files    | Multer                                        | PDF uploads and metadata        |
+| OCR      | pdf-parse, pdfjs-dist                         | PDF extraction                  |
+| AI       | @google/generative-ai                         | Gemini-based content generation |
+| Utils    | dotenv, uuid, sharp, axios                    | Config and assets               |
+
+## Best Practices
+
+- Normalize sections before publish.
+- Provide rich business and design context.
+- Validate inputs per schema.
+- Keep public and private routes separate.
+- Paginate and filter results efficiently.
+- Log actions meaningfully (avoid sensitive data).
+- Restrict uploads to safe types and sizes.
+- Limit regeneration and cache stable planning steps.
