@@ -191,6 +191,21 @@
         ]
       },
       {
+        "tab": "Apps",
+        "groups": [
+          {
+            "group": "Applications in Weam AI",
+            "pages": [
+              "apps/ai-doc-generator",
+              "apps/ai-chatbot",
+              "apps/ai-recruiter",
+              "apps/ai-seo-generator",
+              "apps/landing-page-generator"
+            ]
+          }
+        ]
+      },
+      {
             "tab": "FAQ",
             "pages": [
               "faq/faqs"
