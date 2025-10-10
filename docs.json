@@ -196,6 +196,7 @@
           {
             "group": "Applications in Weam AI",
             "pages": [
+              "apps/overview",
               "apps/ai-document-generator",
               "apps/ai-chatbot",
               "apps/ai-recruiter",
