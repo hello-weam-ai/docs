@@ -197,11 +197,11 @@
             "group": "Applications in Weam AI",
             "pages": [
               "apps/overview",
-              "apps/ai-document-generator",
-              "apps/ai-chatbot",
+              "apps/aidocs",
+              "apps/smartbots",
               "apps/ai-recruiter",
-              "apps/ai-seo-generator",
-              "apps/landing-page-generator"
+              "apps/blogengine",
+              "apps/pagerevamp"
             ]
           }
         ]

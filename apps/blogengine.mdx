@@ -1,0 +1,400 @@
+---
+title: "AI-SEO-Generator"
+description: "Concise overview of the Blog Engine its architecture, APIs, data, and best practices."
+sidebarTitle: "AI-SEO-Gen"
+---
+
+### Audit progress missing stepsOverview
+
+Blog Engine is a multi-service application for planning and generating content. It combines a React frontend, a NestJS API, and a FastAPI service to support article ideation, content drafting, site audits, and content review workflows.
+
+### What it does (Capabilities)
+
+- **Article and project management**: Create and manage projects and articles, including titles, keywords, and outlines.
+- **Rich text editor**: BlockNote-based editor module with toolbars, focus mode, sidebars, checks, and share/export options.
+- **SEO audit workflow**: Chunked, real-time progress updates for site audits and final report handling.
+- **Sitemap discovery and analysis**: Resolve `sitemap.xml` or `sitemap_index.xml`, discover URLs, and analyze pages in batches.
+- **Web scraping for references**: Google Custom Search + Playwright scraping to gather reference URLs and content signals.
+- **AI summaries and content**: Generate content via OpenAI, Gemini, and Claude with references appended.
+- **OCR extract**: Extract text from PDF/DOCX/DOC (DOC via LibreOffice conversion) for content ingestion.
+- **Auth and rate limiting**: JWT-based guards in the Node API with throttling and security middleware.
+
+### User flows
+
+- **Plan content**: Define a project, keywords, and titles; optionally fetch suggested titles and outlines.
+- **Draft & edit**: Use the editor to draft content with toolbar options and writing checks.
+- **Reference & cite**: Pull reference links via scraping; add citations and review sources.
+- **Audit site**: Run site audits and monitor progress in real time; view the final audit report once complete.
+- **Export & share**: Export or share content from the editor with role-based controls.
+
+### Architecture
+
+- **Frontend (React + Vite)**: The UI in `frontend/` provides project/article pages, the editor module (`src/modules/editor/`), and utilities. It communicates with the Node API using a configurable base URL.
+- **Node API (NestJS)**: The main API in `node/` exposes domain modules for projects, articles, prompts, and streaming updates (SSE). It uses MongoDB via Mongoose and applies Helmet, CORS, and rate limiting.
+- **Python API (FastAPI)**: The service in `backend_python/` handles scraping, sitemap analysis, AI summarization, OCR, and the SEO Audit router with chunked updates.
+- **Data store**: MongoDB via Mongoose/Motor stores projects, articles, prompts, guidelines, and audit records.
+- **External services**: OpenAI, Gemini, Claude, Google Custom Search; Playwright for page rendering.
+
+### Technical design
+
+- **Modules & features (Node)**:
+  - `projects`, `articles`, `article-documents`, `guidelines`, `system-prompts`, `prompt-types`, `sse`, `webhooks`, `openai`, `claude`, `gemini`.
+  - Global prefix `seo-content-api`; Helmet, CORS, throttling; JWT guards.
+- **Pipelines (Python)**:
+  - **SEO audit**: Single endpoint streams progress; final report stored with status and steps.
+  - **Sitemap analysis**: Discover → batch analyze with concurrency limits → attach content types.
+  - **Reference scraping**: Google Custom Search → Playwright extraction → clean content → dedupe → append citations.
+  - **Summarization**: Generate content via OpenAI/Gemini/Claude; return with references, optionally via webhooks to the Node API.
+- **Session/state**: Frontend uses `zustand` for state and `react-query` for fetching; Node uses JWT guards. No multi-tenant specifics stated.
+- **Security & validation**:
+  - Helmet, CORS, throttling (`@nestjs/throttler`).
+  - Validation in Python endpoints for ObjectId formats and input shapes; global exception handling in Node.
+
+### API reference (high level)
+
+- **`Node API (NestJS, prefixed with seo-content-api)`**:
+  - Projects, Articles, Article Documents, Guidelines, System Prompts, Prompt Types, SSE, Webhooks, AI providers (OpenAI/Claude/Gemini)
+  - Auth: JWT-based guards; rate limiting enabled.
+  - Exact routes: Not applicable.
+- **Python API (FastAPI)**:
+  - `GET /health`: Service/Mongo health.
+  - `POST /company-business-summary`: Summarize company details.
+  - `POST /target-audience`: Generate target audience from details.
+  - `POST /generate-outline`: Generate content preview/outline for an article by ID.
+  - `POST /fetch-sitemaps`: Locate sitemap and summarize counts.
+  - `POST /sitemap`: Discover URLs and analyze in batches; returns annotated results.
+  - `POST /get-titles`: Generate SEO titles per keyword and prompt types; similarity checks.
+  - `POST /check-title`: Check if a title already exists within a project.
+  - `POST /file-ocr`: Extract text from documents (PDF/DOCX/DOC).
+  - `router /seo-audit/*`: SEO Audit endpoints (progress and final report).
+
+### Data and schemas (conceptual)
+
+- **Project**: Name, website URL, language, location, targeted audience, guideline reference, additional brand fields.
+- **Article**: Name (title), keywords, secondary keywords, project reference, generated outline, scraped content metadata.
+- **Guideline/System Prompt/Prompt Type**: Stored prompt texts and relationships used for content generation.
+- **SEO Audit**: Status, current step, progress steps, final `audit_report`, error message.
+- **Users/Auth**: JWT-only single-user assumptions; no multi-tenant fields stated.
+
+## TroubleShooting
+
+<Tabs>
+  <Tab title="Audit Issues">
+    <Accordion title="Failed to create interview">
+      **Symptoms**
+
+      - Progress stalls at a step
+      - No final report stored
+      - Frontend shows in-progress indefinitely
+
+      **Common causes**
+
+      - Timeouts during chunked processing
+      - Network/stream parsing errors
+      - Background scheduler not updating failed audits
+
+      **Solutions**
+
+      - Check scheduler logs; confirm stuck audits are marked failed
+      - Reduce timeouts or chunk sizes if applicable
+      - Verify router integration under /seo-audit
+    </Accordion>
+    <Accordion title="Audit progress missing steps">
+      **Symptoms**
+
+      - Only final status appears
+      - No progress_steps saved
+      - UI lacks granular updates
+
+      **Common causes**
+
+      - Parser ignoring non-JSON lines
+      - Stream buffering
+      - Schema changes not reflected in code
+
+      **Solutions**
+
+      - Ensure each progress line is appended to progress_steps
+      - Flush handlers more frequently
+      - Re-run migration 
+    </Accordion>
+    <Accordion title="Audit reports fail to save">
+      **Symptoms**
+
+      - Final JSON lost
+      - DB record lacks audit_report
+      - Error message populated
+
+      **Common causes**
+
+      - JSON framing after "Done." not parsed
+      - DB validation error
+      - Connectivity to Mongo
+
+      **Solutions**
+
+      - Handle the post-"Done." JSON explicitly
+      - Validate schema fields before insert/update
+      - Verify database connectivity and indexes
+    </Accordion>
+  </Tab>
+  <Tab title="No reference URLs returned">
+    <Accordion title="Invalid signature or missing analysis">
+      **Symptoms**
+
+      - Empty list from Google search
+      - Scraping job completes instantly
+      - No citations appended
+
+      **Common causes**
+
+      - Missing/invalid `CUSTOM_GOOGLE_SEARCH` or `CX_ID`
+      - Query too restrictive
+      - API quota exhausted
+
+      **Solutions**
+
+      - Check env keys and quotas
+      - Broaden the query
+      - Fallback to fewer results
+    </Accordion>
+    <Accordion title="Playwright extraction fails">
+      **Symptoms**
+
+      - Timeouts on `page.goto`
+      - Blank/empty content extracted
+      - Large memory usage
+
+      **Common causes**
+
+      - Headless browser blocked or strict resource blocking
+      - Selectors not found
+      - Batch size too large
+
+      **Solutions**
+
+      - Adjust timeouts and blocked resources list
+      - Wait for body or main article container
+      - Lower concurrency/batch size
+    </Accordion>
+    <Accordion title="Citations duplicated or noisy">
+      **Symptoms**
+
+      - Repeated or irrelevant URLs
+      - Malformed links in output
+      - Unexpected images/assets captured
+
+      **Common causes**
+
+      - Insufficient filtering of non-article URLs
+      - Regex over-matching
+      - Lack of deduplication
+
+      **Solutions**
+
+      - Filter by file extensions and path patterns
+      - Tighten regex for `extract_citations`
+      - Deduplicate with ordered sets
+    </Accordion>
+  </Tab>
+  <Tab title="Sitemap & Crawling">
+    <Accordion title="No sitemap found">
+      **Symptoms**
+
+      - Both `sitemap.xml` and `sitemap_index.xml` return 404
+      - Pipeline exits early
+      - No content types resolved
+
+      **Common causes**
+
+      - Incorrect base URL
+      - Robots or server restrictions
+      - Timeouts during discovery
+
+      **Solutions**
+
+      - Validate input URL format
+      - Try alternate discovery method
+      - Adjust timeouts/retries
+    </Accordion>
+    <Accordion title="Partial URL discovery">
+      **Symptoms**
+
+      - URL count lower than expected
+      - Content types missing for some URLs
+      - Batch analysis completes too quickly
+
+      **Common causes**
+
+      - Timeout path in `asyncio.wait_for`
+      - Deep sitemap nesting
+      - Rate limiting on target site
+
+      **Solutions**
+
+      - Use partial results when timeout occurs
+      - Iterate nested indices
+      - Throttle batch size and delays
+    </Accordion>
+    <Accordion title="Batch analysis memory pressure">
+      **Symptoms**
+
+      - High memory or process OOM
+      - Slowdowns during analysis
+      - System instability
+
+      **Common causes**
+
+      - Batch size too large
+      - Unbounded result accumulation
+      - Inefficient parsing
+
+      **Solutions**
+
+      - Lower batch size (e.g., 50 → 25)
+      - Stream results or paginate
+      - Profile and optimize hot paths
+    </Accordion>
+  </Tab>
+  <Tab title="Editor & Real-time">
+    <Accordion title="Editor toolbar not responsive">
+      **Symptoms**
+
+      - Buttons no-op
+      - Formatting not applied
+      - Console warnings from BlockNote
+
+      **Common causes**
+
+      - Version mismatch among `@blocknote/*` packages
+      - Context provider not mounted
+      - CSS collisions
+
+      **Solutions**
+
+      - Align `@blocknote/*` versions
+      - Verify `EditorProvider` setup
+      - Scope editor styles
+    </Accordion>
+    <Accordion title="Share/export fails">
+      **Symptoms**
+
+      - Exported file empty
+      - Clipboard fails silently
+      - Download blocked by browser
+
+      **Common causes**
+
+      - Missing permissions in browser
+      - Blob generation errors
+      - Pop-up/download blockers
+
+      **Solutions**
+
+      - Enable clipboard/download permissions
+      - Validate blob/content creation
+      - Instruct users to allow pop-ups
+    </Accordion>
+    <Accordion title="Real-time updates not visible">
+      **Symptoms**
+
+      - No activity in sidebars
+      - Expected SSE-driven events missing
+      - UI shows stale data
+
+      **Common causes**
+
+      - API base URL mismatch
+      - Event source not connected
+      - Auth token missing
+
+      **Solutions**
+
+      - Confirm `VITE_API_BASE_URL`
+      - Check SSE subscription logic
+      - Verify auth store token retrieval
+    </Accordion>
+  </Tab>
+  <Tab title="API & Webhooks">
+    <Accordion title="Unauthorized errors from API">
+      **Symptoms**
+
+      - 401 on API requests
+      - Endpoints accessible without headers in dev tools
+      - Inconsistent auth state
+
+      **Common causes**
+
+      - Missing JWT in request headers
+      - Mismatched token storage
+      - Stale token not refreshed
+
+      **Solutions**
+
+      - Ensure `Authorization: Bearer <jwt>` is set
+      - Validate `useAuthStore` integration
+      - Re-authenticate to refresh state
+    </Accordion>
+    <Accordion title="CORS issues between frontend and API">
+      **Symptoms**
+
+      - Preflight failures
+      - Blocked requests in browser
+      - Different base URLs in code
+
+      **Common causes**
+
+      - Incorrect `VITE_API_BASE_URL` vs actual API port
+      - Missing allowed origins
+      - Conflicting prefixes
+
+      **Solutions**
+
+      - Align frontend base URL with backend port
+      - Verify CORS config in Node/Python
+      - Check global prefix `seo-content-api` usage
+    </Accordion>
+    <Accordion title="Webhook not receiving summaries">
+      **Symptoms**
+
+      - Python logs show webhook attempts
+      - No content appears in app
+      - HTTP 4xx/5xx from webhook endpoint
+
+      **Common causes**
+
+      - Incorrect `BASE_URL` or auth token
+      - Node route path/prefix mismatch
+      - Timeouts or firewall
+
+      **Solutions**
+
+      - Confirm `BASE_URL` and `WEBHOOK_AUTH_TOKEN`
+      - Validate webhook route path and prefix
+      - Capture and inspect response bodies
+    </Accordion>
+  </Tab>
+</Tabs>
+
+### Tech Stack
+
+| Layer       | Technologies                                                         | Purpose                                                 |
+| ----------- | -------------------------------------------------------------------- | ------------------------------------------------------- |
+| Frontend    | React, Vite, React Router, React Query, Zustand, BlockNote, Tailwind | UI, editor, state, data fetching                        |
+| Node API    | NestJS, Mongoose, `@nestjs/*`, SSE, Helmet, CORS, Throttler          | Core APIs, auth, rate limiting, streaming               |
+| Python API  | FastAPI, Playwright, aiohttp, httpx, Crawl4AI                        | Scraping, sitemap analysis, SEO audit, AI orchestration |
+| AI/LLM      | OpenAI, Google Generative AI (Gemini), Anthropic (Claude), LangChain | Content generation and summarization                    |
+| Storage     | MongoDB (Mongoose + Motor)                                           | Projects, articles, prompts, audits                     |
+| Parsing/OCR | PyMuPDF, python-docx, LibreOffice CLI                                | Text extraction from documents                          |
+| Utilities   | Date-fns, Winston logging                                            | Formatting and logging                                  |
+
+### Best practices
+
+- **Validate inputs early**: Enforce ObjectId and payload validation at the edge.
+- **Control concurrency**: Tune semaphore and batch sizes to avoid timeouts and memory pressure.
+- **Truncate long contexts**: Summarize scraped text before sending to LLMs to reduce cost.
+- **Harden scraping**: Block heavy assets, use timeouts and retries, and sanitize selectors.
+- **Align API base/prefixes**: Keep `VITE_API_BASE_URL` and Node `SERVER_PORT` consistent; be mindful of the global prefix.
+- **Instrument and log**: Use centralized logging and surface progress via SSE for UX and debugging.
+- **Secure webhooks**: Verify `BASE_URL` and auth tokens; capture non-2xx responses.
+- **Version alignment**: Keep BlockNote and Radix UI packages in sync to avoid UI issues.
