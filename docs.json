@@ -178,7 +178,8 @@
               "knowledgebase/anthropic-api",
               "knowledgebase/gemini-api",
               "knowledgebase/hugging-face-api",
-              "knowledgebase/openrouter-api"
+              "knowledgebase/openrouter-api",
+              "knowledgebase/ollama"
             ]
           },
           {
