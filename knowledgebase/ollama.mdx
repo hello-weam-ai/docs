@@ -38,7 +38,10 @@ Follow these steps to connect Ollama to Weam:
 
 1. **Navigate to Settings**
    - Go to **Settings** → **Configuration**
-2. **Add New Model**
+
+![image.png](/Screenshot2025-10-27at4.00.48PM.png)
+
+3. **Add New Model**
    - Click **Add Model**
 3. **Select Ollama Provider**
    - Select **Ollama** as the provider
@@ -48,6 +51,8 @@ Follow these steps to connect Ollama to Weam:
 5. **Configure and Download**
    - Click **Configure**
    - The model will be automatically downloaded and linked to Weam
+
+![Screenshot2025 10 27at4 01 55PM Pn](/images/Screenshot2025-10-27at4.01.55PM.png)
 
 <Warning>
   **You must add an OpenAI API key to see Llama models in the dropdown menu.** Without a valid OpenAI API key, the Ollama models will not appear in the model selection dropdown.
@@ -116,7 +121,7 @@ Different models have different resource requirements:
 **Ollama container won't start**
 
 - Ensure Docker Desktop is running
-- Check if port 11434 is already in use
+- Check if port `11434` is already in use
 - Try: `docker compose -f nextjs/docker-compose.ollama.yml --profile cpu down` then restart
 
 **Models not appearing in Weam dropdown**
@@ -180,9 +185,8 @@ docker logs <weam_service_name>
 - Consider network isolation if running in production
 - Regularly update Ollama and model versions
 
-
 ## That's It!
 
 Once configured, you can use your local Ollama models in Weam chats, agents, and prompts. All inference will run locally on your machine, keeping your data private and giving you complete control over your AI experience.
 
-⭐ Star us on [GitHub](https://github.com/Weam-ai/Weam) 
+⭐ Star us on [GitHub](https://github.com/Weam-ai/Weam)
