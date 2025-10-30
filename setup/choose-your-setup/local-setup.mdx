@@ -25,6 +25,34 @@ description: "Run Weam AI on your local machine for development, testing, or eva
   If you're experiencing performance issues, consider closing background apps or upgrading system resources.
 </Tip>
 
+<Tip>
+  **Domain & Proxy Setup (RECOMMENDED)**
+
+  To keep all your AI applications and services under one unified domain, and prevent conflicts when running multiple apps or services, Weam uses an [**NGINX proxy setup**](https://nginx.org/).
+
+  - **Why?** Having everything under a single (local) domain is robust and scalable if you ever run multiple apps/services, and avoids port conflicts.
+  - We **strongly recommend** using a custom local domain (such as [**https://weam.local**](https://weam.local)), rather than only using ‘localhost:3000’.
+  - You can use any custom local domain but it **must** start with `https://` to ensure security and compatibility.
+
+  **Mandatory Step Before nginx Proxy Setup:**
+
+  1. Edit your `.env` file and set:
+
+  ```env
+  NEXT_PUBLIC_DOMAIN_URL=https://weam.local
+  ```
+
+  > (You may use another custom local domain, but it must start with `https://`.)
+
+  2. Edit your `.env` file and set:
+
+  ```env
+  bash nginx_setup.sh
+  ```
+
+  > **Note:** Skipping this setup or using only localhost:3000 may cause problems if running multiple apps/services or using browser API features that require HTTPS domains.
+</Tip>
+
 ## Installation Steps
 
 <Tabs>
@@ -39,6 +67,15 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         cp .env.example .env
         ```
       </Step>
+      <Step title="Edit .env for Domain">
+        Open your `.env` file and **set your local domain** (recommended: `https://weam.local`):
+
+        ```env
+        NEXT_PUBLIC_DOMAIN_URL=https://weam.local
+        ```
+
+        You can use any custom local domain, but it must start with `https://`.
+      </Step>
       <Step title="Build and Start Services">
         Use the following commands to build and run the project:
 
@@ -46,22 +83,22 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         bash build.sh
         docker compose up --build
         ```
+      </Step>
+      <Step title="Run Proxy Setup (NGINX)">
+        After the above services are running, start the NGINX proxy:
 
-        This will:
-
-        - Build all necessary Docker images
-        - Start backend, frontend, and supporting services
-
-        <Note>
-          Ensure Docker and Docker Compose are installed before proceeding.
-        </Note>
+        ```bash
+        bash nginx_setup.sh
+        ```
       </Step>
       <Step title="Access Application">
         Open your browser and navigate to:
 
-        - **Main Application:** http://localhost:3000
-        - **Registration:** http://localhost:3000/register
-        - **Login:** http://localhost:3000/login
+        - **Main Application:** https://weam.local
+        - **Registration:** https://weam.local/register
+        - **Login:** https://weam.local/login
+
+        If you used a different domain, replace `weam.local` with your chosen value.
       </Step>
     </Steps>
   </Tab>
@@ -113,6 +150,15 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         cd /mnt/c/Users/YOUR_USERNAME/path/to/your/project
         ```
       </Step>
+      <Step title="Edit .env for Domain">
+        Open your `.env` file and **set your local domain** (recommended: `https://weam.local`):
+
+        ```env
+        NEXT_PUBLIC_DOMAIN_URL=https://weam.local
+        ```
+
+        You can use any custom local domain, but it must start with `https://`.
+      </Step>
       <Step title="Set Execute Permissions">
         Make script executable:
 
@@ -133,12 +179,21 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         docker compose up --build
         ```
       </Step>
+      <Step title="Run Proxy Setup (NGINX)">
+        After the above services are running, start the NGINX proxy:
+
+        ```bash
+        bash nginx_setup.sh
+        ```
+      </Step>
       <Step title="Access Application">
         Open your browser and navigate to:
 
-        - **Main Application:** http://localhost:3000
-        - **Registration:** http://localhost:3000/register
-        - **Login:** http://localhost:3000/login
+        - **Main Application:** https://weam.local
+        - **Registration:** https://weam.local/register
+        - **Login:** https://weam.local/login
+
+        If you used a different domain, replace `weam.local` with your chosen value.
       </Step>
     </Steps>
   </Tab>
