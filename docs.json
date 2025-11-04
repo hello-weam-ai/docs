@@ -236,9 +236,16 @@
   "navbar": {
     "primary": {
       "type": "button",
-      "label": "Github",
-      "href": "https://github.com/weam-ai/weam"
-    }
+      "label": "Try Weam Cloud!",
+      "href": "https://weam.ai/"
+    },
+    "links": [
+      {
+        "label": "weam-ai/weam",
+        "href": "https://github.com/weam-ai/weam",
+        "icon": "github"
+      }
+    ]
   },
   "footer": {
     "socials": {
