@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Weam AI",
   "colors": {
-    "primary": "#7E22CE",
-    "light": "#7E22CE",
-    "dark": "#7E22CE"
+    "primary": "#8463F1",
+    "light": "#8463F1",
+    "dark": "#8463F1"
   },
   "favicon": "/fav.png",
   "navigation": {
