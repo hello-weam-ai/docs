@@ -236,8 +236,8 @@
   "navbar": {
     "primary": {
       "type": "button",
-      "label": "Try Weam Cloud!",
-      "href": "https://weam.ai/"
+      "label": "Try Weam Open Source",
+      "href": "https://opensource.weam.ai/"
     },
     "links": [
       {
