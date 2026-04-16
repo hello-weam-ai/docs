@@ -1,5 +1,5 @@
 ---
-title : "Google Apps"
+title: "Google Apps"
 ---
 
 OAuth configuration for Google services integration including Gmail, Google Drive, and Google Calendar.
@@ -7,19 +7,22 @@ OAuth configuration for Google services integration including Gmail, Google Driv
 ## OAuth Setup
 
 ### 1. Create Google Cloud Project
+
 1. Visit [console.cloud.google.com](https://console.cloud.google.com/)
 2. Click "Select a project" → "New Project"
 3. Enter project name and click "Create"
 
 ### 2. Enable APIs
+
 1. Go to **APIs & Services** → **Library**
 2. Enable required APIs:
-   - Google+ API (profile access)
+   - Google\+ API (profile access)
    - Gmail API (email access)
    - Google Drive API (file access)
    - Google Calendar API (calendar access)
 
 ### 3. Configure OAuth Consent Screen
+
 1. Go to **APIs & Services** → **OAuth consent screen**
 2. Choose "External" user type
 3. Fill required fields:
@@ -30,15 +33,17 @@ OAuth configuration for Google services integration including Gmail, Google Driv
 4. Add scopes: `userinfo.email`, `userinfo.profile`
 
 ### 4. Create OAuth Credentials
+
 1. Go to **APIs & Services** → **Credentials**
 2. Click **"Create Credentials"** → **"OAuth client ID"**
 3. Select "Web application"
 4. Add redirect URI:
-   ```
-   https://yourexampledomain.com/auth/google/callback
+   ```text
+   https://yourexampledomain.com/api/auth/google/callback
    ```
 
 ### 5. Environment Variables
+
 Add to your `.env` file:
 
 ```env
@@ -49,6 +54,7 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 ## Production Verification
 
 For production use, submit for Google verification:
+
 1. Go to OAuth consent screen → **"Publish App"**
 2. Provide required documentation:
    - Privacy Policy URL
