@@ -15,7 +15,7 @@ description: "Run Weam AI on your local machine for development, testing, or eva
   **Operating Systems**
 
   - **MacOS** (Intel or Apple Silicon)
-  - **Linux** (Ubuntu 20.04+ recommended)
+  - **Linux** (Ubuntu 20.04\+ recommended)
   - **Windows** 10/11 with WSL2
 
   Based on our testing, the app runs best with this configuration, providing a smooth and responsive experience.
@@ -94,9 +94,9 @@ description: "Run Weam AI on your local machine for development, testing, or eva
       <Step title="Access Application">
         Open your browser and navigate to:
 
-        - **Main Application:** https://weam.local
-        - **Registration:** https://weam.local/register
-        - **Login:** https://weam.local/login
+        - **Main Application:** [https://weam.local](https://weam.local)
+        - **Registration:** [https://weam.local/register](https://weam.local/register)
+        - **Login:** [https://weam.local/login](https://weam.local/login)
 
         If you used a different domain, replace `weam.local` with your chosen value.
       </Step>
@@ -189,9 +189,9 @@ description: "Run Weam AI on your local machine for development, testing, or eva
       <Step title="Access Application">
         Open your browser and navigate to:
 
-        - **Main Application:** https://weam.local
-        - **Registration:** https://weam.local/register
-        - **Login:** https://weam.local/login
+        - **Main Application:** [https://weam.local](https://weam.local)
+        - **Registration:** [https://weam.local/register](https://weam.local/register)
+        - **Login:** [https://weam.local/login](https://weam.local/login)
 
         If you used a different domain, replace `weam.local` with your chosen value.
       </Step>
@@ -201,14 +201,14 @@ description: "Run Weam AI on your local machine for development, testing, or eva
 
 ## Service Ports
 
-| Service                  | Port  | URL                   |
-| ------------------------ | ----- | --------------------- |
-| **Frontend (Next.js)**   | 3000  | http://localhost:3000 |
-| **Backend (Node.js)**    | 4050  | http://localhost:4050 |
-| **MongoDB**              | 27017 | Internal only         |
-| **Redis**                | 6379  | Internal only         |
-| **Qdrant (Vector DB)**   | 6333  | http://localhost:6333 |
-| **MinIO (File Storage)** | 9000  | http://localhost:9000 |
+| Service | Port | URL |
+| --- | --- | --- |
+| **Frontend (Next.js)** | 3000 | [http://localhost:3000](http://localhost:3000) |
+| **Backend (Node.js)** | 4050 | [http://localhost:4050](http://localhost:4050) |
+| **MongoDB** | 27017 | Internal only |
+| **Redis** | 6379 | Internal only |
+| **Qdrant (Vector DB)** | 6333 | [http://localhost:6333](http://localhost:6333) |
+| **MinIO (File Storage)** | 9000 | [http://localhost:9000](http://localhost:9000) |
 
 ## Troubleshooting
 
@@ -228,6 +228,7 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         - Stop other services using those ports: `sudo lsof -i :3000`
         - Start Docker Desktop and wait for it to fully load
       </Accordion>
+
       <Accordion title="Permission Errors">
         **On Linux:**
 
@@ -240,6 +241,7 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         - Ensure Docker Desktop has proper permissions
         - Try running with `sudo` if needed (not recommended for regular use)
       </Accordion>
+
       <Accordion title="Out of Memory">
         **Solutions:**
 
@@ -248,6 +250,7 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         - Consider upgrading system RAM if consistently running into issues
         - Use `docker system prune` to clean up unused containers and images
       </Accordion>
+
       <Accordion title="Pull access denied Error">
         **Error**
 
@@ -279,6 +282,7 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         - Convert line endings: `dos2unix build.sh winbuild.sh`
         - Restart Docker Desktop after enabling WSL2 integration
       </Accordion>
+
       <Accordion title="Path and Permission Issues">
         **Windows-specific fixes:**
 
@@ -287,6 +291,7 @@ description: "Run Weam AI on your local machine for development, testing, or eva
         - Set execute permissions: `chmod +x *.sh`
         - Ensure you're in the correct project directory
       </Accordion>
+
       <Accordion title="Docker Desktop Problems">
         **Solutions:**
 
@@ -333,5 +338,5 @@ description: "Run Weam AI on your local machine for development, testing, or eva
 </Warning>
 
 <Note>
-  **Need help?** Reach out via the [GitHub issues](https://github.com/Weam-ai/Weam-ai/issues) or [Discord Community](https://discord.com) for faster response.
+  **Need help?** Reach out via the [GitHub issues](https://github.com/weam-ai/weam/issues) or [Discord Community](https://discord.com) for faster response.
 </Note>
